@@ -14,7 +14,6 @@ var battleEyeLive = {
         this.overridePomelo();
         this.layout = new Layout();
         this.runTicker();
-
         this.handleEvents();
     },
     getTeamStats(){
@@ -57,6 +56,7 @@ var battleEyeLive = {
 			}
 
             self.handle(data);
+            // console.log(data);
 		});
     },
     handle: function(data){
@@ -68,4 +68,14 @@ var battleEyeLive = {
 
 setTimeout(function(){
     battleEyeLive.init();
+    //Removing that annoying cometchat background
+    var waitForCometchat = setInterval(fixCometchat, 500);
+    function fixCometchat(){
+        var cometchat = document.getElementById('cometchat_base');
+        if(cometchat != null){
+            var style = "width:auto;position:aboslute;right:0;background:none;";
+            cometchat.setAttribute('style', style);
+            clearInterval(waitForCometchat);
+        }
+    }
 }, 1000);
