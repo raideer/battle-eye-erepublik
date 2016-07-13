@@ -2,19 +2,26 @@
 var battleEyeLive = {
     init: function(){
         console.log('Battle Eye INIT');
-        if(GM_info.scriptHandler == "Tampermonkey"){
+        // if(GM_info.scriptHandler == "Tampermonkey"){
             this.window = unsafeWindow;
-        }else{
-            this.window = window;
-        }
+        // }else{
+        //     this.window = window;
+        // }
+        //
+        // console.log(this.window.testrecall.emit('test'));
+        // this.window.belRecaller.on('message', exportFunction(function(data) {
+        //     console.log(data);
+        // }, unsafeWindow));
 
         this.events = new EventHandler();
-        this.teamA = new Stats(this.window.leftBattleId);
-        this.teamB = new Stats(this.window.rightBattleId);
+        this.teamA = new Stats(this.window.SERVER_DATA.leftBattleId);
+        this.teamB = new Stats(this.window.SERVER_DATA.rightBattleId);
         this.overridePomelo();
-        this.layout = new Layout();
+        this.layout = new Layout(new Stylesheet());
         this.runTicker();
         this.handleEvents();
+        // console.log(this.window.pomelo);
+        //
     },
     getTeamStats(){
         return {
@@ -46,7 +53,9 @@ var battleEyeLive = {
     },
     overridePomelo: function(){
         var self = this;
-        self.window.pomelo.on('onMessage', function(data) {
+
+
+        var handler = function(data) {
 			if(self.window.currentPlayerDisplayRateValue !== "Maximum") {
 				if(self.window.battleFX.checkPlayerDisplayRate(self.window.currentPlayerDisplayRateValue)) {
 					self.window.battleFX.populatePlayerData(data);
@@ -56,8 +65,9 @@ var battleEyeLive = {
 			}
 
             self.handle(data);
-            // console.log(data);
-		});
+		};
+
+        self.window.pomelo.on('onMessage', exportFunction(handler, unsafeWindow));
     },
     handle: function(data){
         this.teamA.handle(data);
@@ -78,4 +88,4 @@ setTimeout(function(){
             clearInterval(waitForCometchat);
         }
     }
-}, 1000);
+}, 2000);
