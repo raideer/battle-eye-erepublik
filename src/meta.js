@@ -5,7 +5,7 @@
 // @homepage    https://github.com/raideer
 // @description LIVE battlefield statistics
 // @include     http*://www.erepublik.com/*/military/battlefield-new/*
-// @version     1.1.3-a
+// @version     1.1.4-a
 // @require     https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js
 // @run-at      document-idle
 // @grant       unsafeWindow

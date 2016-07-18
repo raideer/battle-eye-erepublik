@@ -2,29 +2,22 @@
 var battleEyeLive = {
     init: function(){
         console.log('Battle Eye INIT');
-        // if(GM_info.scriptHandler == "Tampermonkey"){
-            this.window = unsafeWindow;
-        // }else{
-        //     this.window = window;
-        // }
-        //
-        // console.log(this.window.testrecall.emit('test'));
-        // this.window.belRecaller.on('message', exportFunction(function(data) {
-        //     console.log(data);
-        // }, unsafeWindow));
+        this.window = unsafeWindow;
 
         this.events = new EventHandler();
         this.teamA = new Stats(this.window.SERVER_DATA.leftBattleId);
+        this.teamAName = this.window.SERVER_DATA.countries[this.window.SERVER_DATA.leftBattleId]
         this.teamB = new Stats(this.window.SERVER_DATA.rightBattleId);
+        this.teamBName = this.window.SERVER_DATA.countries[this.window.SERVER_DATA.rightBattleId]
         this.overridePomelo();
         this.layout = new Layout(new Stylesheet());
         this.runTicker();
         this.handleEvents();
-        // console.log(this.window.pomelo);
-        //
     },
     getTeamStats(){
         return {
+            'teamAName': this.teamAName,
+            'teamBName': this.teamBName,
             'left': this.teamA.toObject(),
             'right': this.teamB.toObject()
         };

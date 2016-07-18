@@ -18,10 +18,11 @@ class DivisionStats extends DpsHandler{
 
     toObject(){
         return {
-            'damage': this.damage.toLocaleString(),
+            'damage': this.damage,
             'id': this.id,
-            'dps': this.dps.toLocaleString(),
-            'avgHit': Math.round(this.damage/this.hits).toLocaleString()
+            'dps': this.dps,
+            'hits': this.hits,
+            'avgHit': Math.round(this.damage/this.hits)
         };
     }
 }

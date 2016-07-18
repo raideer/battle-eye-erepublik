@@ -4,7 +4,6 @@ class Stats extends DpsHandler{
         this.id = id;
         this.damage = 0;
         this.hits = 0;
-        this.dps = 0;
         this.divisions = new Divisions();
     }
 
@@ -31,10 +30,11 @@ class Stats extends DpsHandler{
 
     toObject(){
         return {
-            'damage': this.damage.toLocaleString(),
+            'damage': this.damage,
             'id': this.id,
-            'dps': this.dps.toLocaleString(),
-            'avgHit': Math.round(this.damage/this.hits).toLocaleString(),
+            'dps': this.dps,
+            'hits': this.hits,
+            'avgHit': Math.round(this.damage/this.hits),
             'divisions': this.divisions.toObject()
         };
     }
