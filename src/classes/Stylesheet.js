@@ -155,6 +155,7 @@ class Stylesheet{
     }
 
     load(){
+        GM_addStyle(GM_getResourceText('simplemodal'));
         GM_addStyle(this.sheet);
     }
 }
