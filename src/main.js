@@ -1,23 +1,62 @@
 
 var battleEyeLive = {
     init: function(){
+        var self = this;
         console.log('Battle Eye INIT');
-        this.window = unsafeWindow;
+        self.window = unsafeWindow;
 
-        this.events = new EventHandler();
-        this.teamA = new Stats(this.window.SERVER_DATA.leftBattleId);
-        this.teamAName = this.window.SERVER_DATA.countries[this.window.SERVER_DATA.leftBattleId]
-        this.teamB = new Stats(this.window.SERVER_DATA.rightBattleId);
-        this.teamBName = this.window.SERVER_DATA.countries[this.window.SERVER_DATA.rightBattleId]
-        this.overridePomelo();
-        this.layout = new Layout(new Stylesheet());
-        this.runTicker();
-        this.handleEvents();
-    },
-    getTeamStats(){
-        return {
+        var storage = self.settingsStorage = new Settings();
+        if(storage === false){
+            return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
+        }
+
+        storage.define('reduceLoad', false);
+
+        self.settings = storage.getAll();
+
+        self.events = new EventHandler();
+        self.teamA = new Stats(self.window.SERVER_DATA.leftBattleId);
+        self.teamAName = this.window.SERVER_DATA.countries[self.window.SERVER_DATA.leftBattleId]
+        self.teamB = new Stats(self.window.SERVER_DATA.rightBattleId);
+        self.teamBName = this.window.SERVER_DATA.countries[self.window.SERVER_DATA.rightBattleId]
+        self.overridePomelo();
+
+        self.layout = new Layout(new Stylesheet(), {
             'teamAName': this.teamAName,
             'teamBName': this.teamBName,
+            'version': GM_info.script.version
+        });
+
+        self.layout.compileSettings(self.settings);
+        self.handleModal();
+
+        self.runTicker();
+        self.handleEvents();
+    },
+
+    handleModal(){
+        var modal = document.getElementById('battleEyeSettingsModal');
+        var btn = document.getElementById("battle-eye-settings");
+
+        var span = document.getElementsByClassName("bel-close")[0];
+
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    },
+
+    getTeamStats(){
+        return {
             'left': this.teamA.toObject(),
             'right': this.teamB.toObject()
         };
@@ -63,9 +102,13 @@ var battleEyeLive = {
         self.window.pomelo.on('onMessage', exportFunction(handler, unsafeWindow));
     },
     handle: function(data){
-        this.teamA.handle(data);
-        this.teamB.handle(data);
-        this.layout.update(this.getTeamStats());
+        var self = this;
+
+        self.teamA.handle(data);
+        self.teamB.handle(data);
+        if(!self.settings.reduceLoad){
+            self.layout.update(self.getTeamStats());
+        }
     }
 };
 

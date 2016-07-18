@@ -29,8 +29,6 @@ class Stylesheet{
         //Grids
         this.addCSSRule('.bel-grid:after', 'content: "";display: table;clear: both;');
         this.addCSSRule("[class*='bel-col-']", 'float: left;')
-        // this.addCSSRule("[class*='bel-col-']", 'padding-right: 20px;');
-        // this.addCSSRule("[class*='bel-col-']:last-of-type", 'padding-right: 0;');
         this.addCSSRule('.bel-col-1-1', 'width: 100%;');
         this.addCSSRule('.bel-col-1-2', 'width: 50%;');
         this.addCSSRule('.bel-col-1-4', 'width: 25%;');
@@ -38,6 +36,71 @@ class Stylesheet{
         this.addCSSRule('.bel-col-1-8', 'width: 12.5%;');
         //Lists
         this.addCSSRule('.list-unstyled', 'list-style: outside none none;padding-left: 0;');
+        this.addCSSRule('.list-inline li', 'display: inline-block;');
+
+        //Modal
+        this.addCSSRule('.bel-modal', `
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        `);
+
+        this.addCSSRule('.bel-modal-content', `
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        `);
+
+        this.addCSSRule('.bel-close', `
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        `);
+
+        this.addCSSRule('.bel-close:hover, .bel-close:focus', `
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        `);
+
+        //Button
+        this.addCSSRule('.bel-btn', `
+            -moz-user-select: none;
+            background-image: none;
+            border: medium none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: normal;
+            margin-bottom: 0;
+            text-align: center;
+            border-radius: 4px;
+            font-size: 12px;
+            padding: 3px 8px;
+        `);
+
+        this.addCSSRule('.bel-btn-default', `
+            background-color: #1abc9c;
+            color: #ffffff;
+        `);
+
+        this.addCSSRule('.bel-btn-default:hover', `
+            background-color: #16a085;
+            color: #ffffff;
+        `);
+
+        //Header menu
+        this.addCSSRule('.bel-header-menu', 'margin-bottom: 10px;');
+        this.addCSSRule('.bel-header-menu li', 'padding: 0 5px;');
         //Progress bars
         this.addCSSRule('.bel-progress', `
             height: 4px;

@@ -1,5 +1,7 @@
 class Layout{
-    constructor(style){
+    constructor(style, headerData){
+        var self = this;
+
         Handlebars.registerHelper('percentage', function(a, b, options) {
             var aPerc = 0;
             var bPerc = 0;
@@ -15,11 +17,34 @@ class Layout{
           return parseFloat(number).toLocaleString();
         });
 
-        this.template = Handlebars.compile(this.createLayout());
-        var el = document.createElement('div');
-        el.setAttribute('id', 'battle_eye_live');
-        document.getElementById('content').appendChild(el);
+        Handlebars.registerHelper('forEachDiv', function(left, right, options) {
+            var divs = ['div1', 'div2', 'div3', 'div4'];
+
+            var str = '';
+            for(var i in divs){
+                var div = divs[i];
+                str += options.fn({left: left.divisions[div], right: right.divisions[div], div: (parseInt(i)+1)});
+            }
+
+            return str;
+        })
+
+        self.feedTemplate = Handlebars.compile(self.compileFeed());
+        self.headerTemplate = Handlebars.compile(self.compileHeader());
+
+        var battleEye = document.createElement('div');
+            battleEye.setAttribute('id', 'battle_eye_live');
+        var header = document.createElement('div');
+            header.setAttribute('id', 'battle_eye_header');
+        var liveFeed = document.createElement('div');
+            liveFeed.setAttribute('id', 'battle_eye_feed');
+
+            battleEye.appendChild(header);
+            battleEye.appendChild(liveFeed);
+        document.getElementById('content').appendChild(battleEye);
+
         style.load();
+        document.getElementById('battle_eye_header').innerHTML = self.headerTemplate(headerData);
     }
 
     update(data){
@@ -29,15 +54,36 @@ class Layout{
             this.lastData = data;
         }
 
-        data.version = GM_info.script.version;
-
-        var html = this.template(data);
-        document.getElementById('battle_eye_live').innerHTML = html;
+        var html = this.feedTemplate(data);
+        document.getElementById('battle_eye_feed').innerHTML = html;
     }
 
-    createLayout(){
-        var l = `
-            <div class="text-left"><span class="bel-version">{{version}}</span> BATTLE EYE LIVE</div>
+    compileSettings(settings){
+        var html = `
+            <div id="battleEyeSettingsModal" class="bel-modal">
+                <div class="bel-modal-content">
+                    <span class="bel-close">x</span>
+
+                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae, reprehenderit, sed! Officia porro, earum quia, laborum vitae numquam, minus possimus id eaque fugiat, totam aliquid saepe quis quod provident illum!
+                </div>
+            </div>
+        `;
+
+        document.body.innerHTML += html;
+    }
+
+    compileHeader(){
+        var html = `
+            <ul class="list-unstyled list-inline text-left bel-header-menu" style="padding-bottom:6px; border-bottom: 1px solid #ecf0f1;">
+                <li>
+                    <span class="bel-version">{{version}}</span> BATTLE EYE LIVE
+                </li>
+
+                <li style="float:right;">
+                    <button id="battle-eye-settings" class="bel-btn bel-btn-default" style="margin-top: -3px;">Settings</button>
+                </li>
+            </ul>
+
             <div class="bel-grid">
                 <div class="bel-col-1-2 text-left" style="color:#27ae60;font-weight:700;font-size:1.3em;">
                     {{teamAName}}
@@ -45,260 +91,66 @@ class Layout{
                 <div class="bel-col-1-2 text-right" style="color:#c0392b;font-weight:700;font-size:1.3em;">
                     {{teamBName}}
                 </div>
-                <div class="bel-col-1-1 text-center bel-title">
-                    DIV 1
-                </div>
-                <div class="bel-col-1-3 text-right">
-                    <ul class="list-unstyled">
-                        <li>
-                            <span class="bel-value">{{number left.divisions.div1.hits}} kills</span>
-                            <span class="bel-value">{{number left.divisions.div1.damage}}</span>
-                        </li>
-                        <!-- <li><span class="bel-value">{{number left.divisions.div1.avgHit}}</span></li> -->
-                        <li><span class="bel-value">{{number left.divisions.div1.dps}}</span></li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-3 text-center">
-                    <ul class="list-unstyled" style="font-weight:700;">
-                        <li>Total Damage</li>
-                        <!-- <li>Average Damage</li> -->
-                        <li>DPS</li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-3 text-left">
-                    <ul class="list-unstyled">
-                        <li>
-                            <span class="bel-value">{{number right.divisions.div1.damage}}</span>
-                            <span class="bel-value">{{number right.divisions.div1.hits}} kills</span>
-                        </li>
-                        <!-- <li><span class="bel-value">{{number left.divisions.div1.avgHit}}</span></li> -->
-                        <li><span class="bel-value">{{number right.divisions.div1.dps}}</span></li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-1">
-                    <!-- <div class="bel-progress">
-                        <div class="bel-progress-center-marker"></div>
-                        {{#percentage left.divisions.div1.damage right.divisions.div1.damage}}
-                            <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>
-                            <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>
-                        {{/percentage}}
-                    </div> -->
-                    <div class="bel-progress">
-                        <div class="bel-progress-center-marker"></div>
-                        {{#percentage left.divisions.div1.dps right.divisions.div1.dps}}
-                            <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>
-                            <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>
-                        {{/percentage}}
-                    </div>
-                </div>
-
-                <div class="bel-col-1-1 text-center bel-title">
-                    DIV 2
-                </div>
-                <div class="bel-col-1-3 text-right">
-                    <ul class="list-unstyled">
-                        <li>
-                            <span class="bel-value">{{number left.divisions.div2.hits}} kills</span>
-                            <span class="bel-value">{{number left.divisions.div2.damage}}</span>
-                        </li>
-                        <!-- <li><span class="bel-value">{{number left.divisions.div2.avgHit}}</span></li> -->
-                        <li><span class="bel-value">{{number left.divisions.div2.dps}}</span></li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-3 text-center">
-                    <ul class="list-unstyled" style="font-weight:700;">
-                        <li>Total Damage</li>
-                        <!-- <li>Average Damage</li> -->
-                        <li>DPS</li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-3 text-left">
-                    <ul class="list-unstyled">
-                        <li>
-                            <span class="bel-value">{{number right.divisions.div2.damage}}</span>
-                            <span class="bel-value">{{number right.divisions.div2.hits}} kills</span>
-                        </li>
-                        <!-- <li><span class="bel-value">{{number right.divisions.div2.avgHit}}</span></li> -->
-                        <li><span class="bel-value">{{number right.divisions.div2.dps}}</span></li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-1">
-                    <!-- <div class="bel-progress">
-                        <div class="bel-progress-center-marker"></div>
-                        {{#percentage left.divisions.div2.damage right.divisions.div2.damage}}
-                            <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>
-                            <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>
-                        {{/percentage}}
-                    </div> -->
-
-                    <div class="bel-progress">
-                        <div class="bel-progress-center-marker"></div>
-                        {{#percentage left.divisions.div2.dps right.divisions.div2.dps}}
-                            <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>
-                            <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>
-                        {{/percentage}}
-                    </div>
-                </div>
-
-                <div class="bel-col-1-1 text-center bel-title">
-                    DIV 3
-                </div>
-                <div class="bel-col-1-3 text-right">
-                    <ul class="list-unstyled">
-                        <li>
-                            <span class="bel-value">{{number left.divisions.div3.hits}} kills</span>
-                            <span class="bel-value">{{number left.divisions.div3.damage}}</span>
-                        </li>
-                        <!-- <li><span class="bel-value">{{number left.divisions.div3.avgHit}}</span></li> -->
-                        <li><span class="bel-value">{{number left.divisions.div3.dps}}</span></li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-3 text-center">
-                    <ul class="list-unstyled" style="font-weight:700;">
-                        <li>Total Damage</li>
-                        <!-- <li>Average Damage</li> -->
-                        <li>DPS</li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-3 text-left">
-                    <ul class="list-unstyled">
-                        <li>
-                            <span class="bel-value">{{number right.divisions.div3.damage}}</span>
-                            <span class="bel-value">{{number right.divisions.div3.hits}} kills</span>
-                        </li>
-                        <!-- <li><span class="bel-value">{{number right.divisions.div3.avgHit}}</span></li> -->
-                        <li><span class="bel-value">{{number right.divisions.div3.dps}}</span></li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-1">
-                    <!-- <div class="bel-progress">
-                        <div class="bel-progress-center-marker"></div>
-                        {{#percentage left.divisions.div3.damage right.divisions.div3.damage}}
-                            <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>
-                            <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>
-                        {{/percentage}}
-                    </div> -->
-
-                    <div class="bel-progress">
-                        <div class="bel-progress-center-marker"></div>
-                        {{#percentage left.divisions.div3.dps right.divisions.div3.dps}}
-                            <div class="bel-progress-bar" style="width: {{a}}%;"></div>
-                            <div class="bel-progress-bar" style="width: {{b}}%;"></div>
-                        {{/percentage}}
-                    </div>
-                </div>
-
-                <div class="bel-col-1-1 text-center bel-title">
-                    DIV 4
-                </div>
-                <div class="bel-col-1-3 text-right">
-                    <ul class="list-unstyled">
-                        <li>
-                            <span class="bel-value">{{number left.divisions.div4.hits}} kills</span>
-                            <span class="bel-value">{{number left.divisions.div4.damage}}</span>
-                        </li>
-                        <!-- <li><span class="bel-value">{{number left.divisions.div4.avgHit}}</span></li> -->
-                        <li><span class="bel-value">{{number left.divisions.div4.dps}}</span></li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-3 text-center">
-                    <ul class="list-unstyled" style="font-weight:700;">
-                        <li>Total Damage</li>
-                        <!-- <li>Average Damage</li> -->
-                        <li>DPS</li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-3 text-left">
-                    <ul class="list-unstyled">
-                        <li>
-                            <span class="bel-value">{{number right.divisions.div4.damage}}</span>
-                            <span class="bel-value">{{number right.divisions.div4.hits}} kills</span>
-                        </li>
-                        <!-- <li><span class="bel-value">{{number right.divisions.div4.avgHit}}</span></li> -->
-                        <li><span class="bel-value">{{number right.divisions.div4.dps}}</span></li>
-                    </ul>
-                </div>
-                <div class="bel-col-1-1">
-                    <!-- <div class="bel-progress">
-                        <div class="bel-progress-center-marker"></div>
-                        {{#percentage left.divisions.div4.damage right.divisions.div4.damage}}
-                            <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>
-                            <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>
-                        {{/percentage}}
-                    </div> -->
-
-                    <div class="bel-progress">
-                        <div class="bel-progress-center-marker"></div>
-                        {{#percentage left.divisions.div4.dps right.divisions.div4.dps}}
-                            <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>
-                            <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>
-                        {{/percentage}}
-                    </div>
-                </div>
             </div>
         `;
-        // l += '<table id="bel-table">';
-        //     l += '<tr>';
-        //         l += '<td class="bel-value text-right">{{left.damage}}</td>';
-        //         l += '<td class="bel-title text-center">Total damage</td>';
-        //         l += '<td class="bel-value text-left">{{right.damage}}</td>';
-        //     l += '</tr>';
-        //     l += '<tr style="color:#e74c3c;">';
-        //         l += '<td class="bel-value text-right">{{left.dps}}</td>';
-        //         l += '<td class="bel-title text-center"><i>Damage Per Second</i> (DPS)</td>';
-        //         l += '<td class="bel-value text-left">{{right.dps}}</td>';
-        //     l += '</tr>';
-        //     l += '<tr>';
-        //         l += '<td class="bel-value text-right">{{left.avgHit}}</td>';
-        //         l += '<td class="bel-title text-center">Average hit</td>';
-        //         l += '<td class="bel-value text-left">{{right.avgHit}}</td>';
-        //     l += '</tr>';
-        //     l += '<tr></tr>';
-        //     l += '<tr style="color:#9b59b6;">';
-        //         l += '<td class="bel-value text-right">{{left.divisions.div4.damage}}</td>';
-        //         l += '<td class="bel-title text-center">Total D4 damage</td>';
-        //         l += '<td class="bel-value text-left">{{right.divisions.div4.damage}}</td>';
-        //     l += '</tr>';
-        //     l += '<tr>';
-        //         l += '<td class="bel-value text-right">{{left.divisions.div3.damage}}</td>';
-        //         l += '<td class="bel-title text-center">Total D3 damage</td>';
-        //         l += '<td class="bel-value text-left">{{right.divisions.div3.damage}}</td>';
-        //     l += '</tr>';
-        //     l += '<tr>';
-        //         l += '<td class="bel-value text-right">{{left.divisions.div2.damage}}</td>';
-        //         l += '<td class="bel-title text-center">Total D2 damage</td>';
-        //         l += '<td class="bel-value text-left">{{right.divisions.div2.damage}}</td>';
-        //     l += '</tr>';
-        //     l += '<tr>';
-        //         l += '<td class="bel-value text-right">{{left.divisions.div1.damage}}</td>';
-        //         l += '<td class="bel-title text-center">Total D1 damage</td>';
-        //         l += '<td class="bel-value text-left">{{right.divisions.div1.damage}}</td>';
-        //     l += '</tr>';
-        //     l += '<tr style="color:#9e71f9;">';
-        //         l += '<td class="bel-value text-right">{{left.divisions.div4.dps}}</td>';
-        //         l += '<td class="bel-title text-center">D4 DPS</td>';
-        //         l += '<td class="bel-value text-left">{{right.divisions.div4.dps}}</td>';
-        //     l += '</tr>';
-        //     l += '<tr>';
-        //         l += '<td class="bel-value text-right">{{left.divisions.div3.dps}}</td>';
-        //         l += '<td class="bel-title text-center">D3 DPS</td>';
-        //         l += '<td class="bel-value text-left">{{right.divisions.div3.dps}}</td>';
-        //     l += '</tr>';
-        //     l += '<tr>';
-        //         l += '<td class="bel-value text-right">{{left.divisions.div2.dps}}</td>';
-        //         l += '<td class="bel-title text-center">D2 DPS</td>';
-        //         l += '<td class="bel-value text-left">{{right.divisions.div2.dps}}</td>';
-        //     l += '</tr>';
-        //     l += '<tr>';
-        //         l += '<td class="bel-value text-right">{{left.divisions.div1.dps}}</td>';
-        //         l += '<td class="bel-title text-center">D1 DPS</td>';
-        //         l += '<td class="bel-value text-left">{{right.divisions.div1.dps}}</td>';
-        //     l += '</tr>';
-        // l += '</table>';
-        // l += '<div style="text-align:left;color: #1abc9c;font-weight:bold;font-size:16px;">';
-        // l += '<span class="bel-version">{{version}}</span> BATTLE EYE LIVE';
-        // l += '</div>';
-        return l;
+
+        return html;
+    }
+
+    compileFeed(){
+        var html = `
+            <div class="bel-grid">
+                {{#forEachDiv left right}}
+                    <div class="bel-col-1-1 text-center bel-title">
+                        DIVISION {{div}}
+                    </div>
+                    <div class="bel-col-1-3 text-right">
+                        <ul class="list-unstyled">
+                            <li>
+                                <span class="bel-value">{{number left.hits}} kills</span>
+                                <span class="bel-value">{{number left.damage}}</span>
+                            </li>
+                            <!-- <li><span class="bel-value">{{number left.avgHit}}</span></li> -->
+                            <li><span class="bel-value">{{number left.dps}}</span></li>
+                        </ul>
+                    </div>
+                    <div class="bel-col-1-3 text-center">
+                        <ul class="list-unstyled" style="font-weight:700;">
+                            <li>Total Damage</li>
+                            <!-- <li>Average Damage</li> -->
+                            <li>DPS</li>
+                        </ul>
+                    </div>
+                    <div class="bel-col-1-3 text-left">
+                        <ul class="list-unstyled">
+                            <li>
+                                <span class="bel-value">{{number right.damage}}</span>
+                                <span class="bel-value">{{number right.hits}} kills</span>
+                            </li>
+                            <!-- <li><span class="bel-value">{{number right.avgHit}}</span></li> -->
+                            <li><span class="bel-value">{{number right.dps}}</span></li>
+                        </ul>
+                    </div>
+                    <div class="bel-col-1-1">
+                        <!-- <div class="bel-progress">
+                            <div class="bel-progress-center-marker"></div>
+                            {{#percentage left.damage right.damage}}
+                                <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>
+                                <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>
+                            {{/percentage}}
+                        </div> -->
+                        <div class="bel-progress">
+                            <div class="bel-progress-center-marker"></div>
+                            {{#percentage left.dps right.dps}}
+                                <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>
+                                <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>
+                            {{/percentage}}
+                        </div>
+                    </div>
+                {{/forEachDiv}}
+            </div>
+        `;
+        return html;
     }
 
 
