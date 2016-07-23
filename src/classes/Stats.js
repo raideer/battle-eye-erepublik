@@ -1,10 +1,21 @@
 class Stats extends DpsHandler{
     constructor(id){
         super(10);
+
         this.id = id;
         this.damage = 0;
         this.hits = 0;
+        this.constructDivisions();
+    }
+
+    constructDivisions(){
         this.divisions = new Divisions();
+
+        this.divisions.create('div1', 1);
+        this.divisions.create('div2', 2);
+        this.divisions.create('div3', 3);
+        this.divisions.create('div4', 4);
+        this.divisions.create('air', 11);
     }
 
     isSide(side){

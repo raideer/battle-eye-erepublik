@@ -19,10 +19,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // @include     http*://www.erepublik.com/*/military/battlefield-new/*
 // @version     1.1.5-a
 // @require     https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js
+// @require     https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/modals.min.js
+// @resource    modals https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/modals.min.css
 // @run-at      document-idle
 // @grant       unsafeWindow
 // @grant       GM_info
 // @grant       GM_addStyle
+// @grant       GM_getResourceText
 // ==/UserScript==
 
 var DpsHandler = function () {
@@ -61,47 +64,6 @@ var DpsHandler = function () {
     return DpsHandler;
 }();
 
-var Divisions = function () {
-    function Divisions() {
-        _classCallCheck(this, Divisions);
-
-        this.div1 = new DivisionStats(1);
-        this.div2 = new DivisionStats(2);
-        this.div3 = new DivisionStats(3);
-        this.div4 = new DivisionStats(4);
-    }
-
-    _createClass(Divisions, [{
-        key: 'handle',
-        value: function handle(data) {
-            this.div1.handle(data);
-            this.div2.handle(data);
-            this.div3.handle(data);
-            this.div4.handle(data);
-        }
-    }, {
-        key: 'updateDps',
-        value: function updateDps(time) {
-            this.div1.updateDps(time);
-            this.div2.updateDps(time);
-            this.div3.updateDps(time);
-            this.div4.updateDps(time);
-        }
-    }, {
-        key: 'toObject',
-        value: function toObject() {
-            return {
-                'div1': this.div1.toObject(),
-                'div2': this.div2.toObject(),
-                'div3': this.div3.toObject(),
-                'div4': this.div4.toObject()
-            };
-        }
-    }]);
-
-    return Divisions;
-}();
-
 var DivisionStats = function (_DpsHandler) {
     _inherits(DivisionStats, _DpsHandler);
 
@@ -119,6 +81,7 @@ var DivisionStats = function (_DpsHandler) {
     _createClass(DivisionStats, [{
         key: 'handle',
         value: function handle(data) {
+
             if (data.division != this.division) {
                 return;
             }
@@ -142,6 +105,54 @@ var DivisionStats = function (_DpsHandler) {
 
     return DivisionStats;
 }(DpsHandler);
+
+var Divisions = function () {
+    function Divisions() {
+        _classCallCheck(this, Divisions);
+
+        var self = this;
+        this.divisions = {};
+    }
+
+    _createClass(Divisions, [{
+        key: 'create',
+        value: function create(id, division) {
+            this.divisions[id] = new DivisionStats(division);
+            return this.divisions[id];
+        }
+    }, {
+        key: 'get',
+        value: function get(id) {
+            return this.divisions[id];
+        }
+    }, {
+        key: 'handle',
+        value: function handle(data) {
+            for (var i in this.divisions) {
+                this.divisions[i].handle(data);
+            }
+        }
+    }, {
+        key: 'updateDps',
+        value: function updateDps(time) {
+            for (var i in this.divisions) {
+                this.divisions[i].updateDps(time);
+            }
+        }
+    }, {
+        key: 'toObject',
+        value: function toObject() {
+            var object = {};
+            for (var i in this.divisions) {
+                object[i] = this.divisions[i].toObject();
+            }
+
+            return object;
+        }
+    }]);
+
+    return Divisions;
+}();
 
 var EventHandler = function () {
     function EventHandler() {
@@ -232,7 +243,7 @@ var HitHistory = function () {
 }();
 
 var Layout = function () {
-    function Layout(style, headerData) {
+    function Layout(style, headerData, settings) {
         _classCallCheck(this, Layout);
 
         var self = this;
@@ -240,7 +251,8 @@ var Layout = function () {
         Handlebars.registerHelper('percentage', function (a, b, options) {
             var aPerc = 0;
             var bPerc = 0;
-            if (a + b != 0) {
+
+            if (a + b !== 0) {
                 aPerc = Math.round(a * 100 / (a + b) * 10) / 10;
                 bPerc = Math.round(b * 100 / (a + b) * 10) / 10;
             }
@@ -253,12 +265,13 @@ var Layout = function () {
         });
 
         Handlebars.registerHelper('forEachDiv', function (left, right, options) {
-            var divs = ['div1', 'div2', 'div3', 'div4'];
+            var divs = ['air', 'div1', 'div2', 'div3', 'div4'];
+            var divName = ['Air Force', 'Division 1', 'Division 2', 'Division 3', 'Division 4'];
 
             var str = '';
             for (var i in divs) {
                 var div = divs[i];
-                str += options.fn({ left: left.divisions[div], right: right.divisions[div], div: parseInt(i) + 1 });
+                str += options.fn({ left: left.divisions[div], right: right.divisions[div], div: divName[i] });
             }
 
             return str;
@@ -266,6 +279,7 @@ var Layout = function () {
 
         self.feedTemplate = Handlebars.compile(self.compileFeed());
         self.headerTemplate = Handlebars.compile(self.compileHeader());
+        self.settingsTemplate = Handlebars.compile(self.createSettingsModal());
 
         var battleEye = document.createElement('div');
         battleEye.setAttribute('id', 'battle_eye_live');
@@ -280,12 +294,14 @@ var Layout = function () {
 
         style.load();
         document.getElementById('battle_eye_header').innerHTML = self.headerTemplate(headerData);
+        document.getElementById('container').innerHTML += self.settingsTemplate(settings);
+        modals.init();
     }
 
     _createClass(Layout, [{
         key: 'update',
         value: function update(data) {
-            if (data == null) {
+            if (data === null) {
                 data = this.lastData;
             } else {
                 this.lastData = data;
@@ -295,23 +311,21 @@ var Layout = function () {
             document.getElementById('battle_eye_feed').innerHTML = html;
         }
     }, {
-        key: 'compileSettings',
-        value: function compileSettings(settings) {
-            var html = '\n            <div id="battleEyeSettingsModal" class="bel-modal">\n                <div class="bel-modal-content">\n                    <span class="bel-close">x</span>\n\n                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Beatae, reprehenderit, sed! Officia porro, earum quia, laborum vitae numquam, minus possimus id eaque fugiat, totam aliquid saepe quis quod provident illum!\n                </div>\n            </div>\n        ';
-
-            document.body.innerHTML += html;
+        key: 'createSettingsModal',
+        value: function createSettingsModal() {
+            return '\n            <div class="modal bel-modal" data-modal-window id="battle-eye-settings-modal">\n                <a class="close" data-modal-close>x</a>\n                <h3>Battle Eye settings</h3>\n                {{#each all}}\n                    <p>{{field}}</p>\n                {{/each}}\n\n                <button data-modal-close>Close</button>\n            </div>\n        ';
         }
     }, {
         key: 'compileHeader',
         value: function compileHeader() {
-            var html = '\n            <ul class="list-unstyled list-inline text-left bel-header-menu" style="padding-bottom:6px; border-bottom: 1px solid #ecf0f1;">\n                <li>\n                    <span class="bel-version">{{version}}</span> BATTLE EYE LIVE\n                </li>\n\n                <li style="float:right;">\n                    <button id="battle-eye-settings" class="bel-btn bel-btn-default" style="margin-top: -3px;">Settings</button>\n                </li>\n            </ul>\n\n            <div class="bel-grid">\n                <div class="bel-col-1-2 text-left" style="color:#27ae60;font-weight:700;font-size:1.3em;">\n                    {{teamAName}}\n                </div>\n                <div class="bel-col-1-2 text-right" style="color:#c0392b;font-weight:700;font-size:1.3em;">\n                    {{teamBName}}\n                </div>\n            </div>\n        ';
+            var html = '\n            <ul class="list-unstyled list-inline text-left bel-header-menu" style="padding-bottom:6px; border-bottom: 1px solid #ecf0f1;">\n                <li>\n                    <span class="bel-version">{{version}}</span> BATTLE EYE LIVE\n                </li>\n\n                <li style="float:right;">\n                    <button data-modal="#battle-eye-settings-modal" id="battle-eye-settings" class="bel-btn bel-btn-default" style="margin-top: -3px;">Settings</button>\n                </li>\n            </ul>\n\n            <div class="bel-grid">\n                <div class="bel-col-1-2 text-left" style="color:#27ae60;font-weight:700;font-size:1.3em;">\n                    {{teamAName}}\n                </div>\n                <div class="bel-col-1-2 text-right" style="color:#c0392b;font-weight:700;font-size:1.3em;">\n                    {{teamBName}}\n                </div>\n            </div>\n        ';
 
             return html;
         }
     }, {
         key: 'compileFeed',
         value: function compileFeed() {
-            var html = '\n            <div class="bel-grid">\n                {{#forEachDiv left right}}\n                    <div class="bel-col-1-1 text-center bel-title">\n                        DIVISION {{div}}\n                    </div>\n                    <div class="bel-col-1-3 text-right">\n                        <ul class="list-unstyled">\n                            <li>\n                                <span class="bel-value">{{number left.hits}} kills</span>\n                                <span class="bel-value">{{number left.damage}}</span>\n                            </li>\n                            <!-- <li><span class="bel-value">{{number left.avgHit}}</span></li> -->\n                            <li><span class="bel-value">{{number left.dps}}</span></li>\n                        </ul>\n                    </div>\n                    <div class="bel-col-1-3 text-center">\n                        <ul class="list-unstyled" style="font-weight:700;">\n                            <li>Total Damage</li>\n                            <!-- <li>Average Damage</li> -->\n                            <li>DPS</li>\n                        </ul>\n                    </div>\n                    <div class="bel-col-1-3 text-left">\n                        <ul class="list-unstyled">\n                            <li>\n                                <span class="bel-value">{{number right.damage}}</span>\n                                <span class="bel-value">{{number right.hits}} kills</span>\n                            </li>\n                            <!-- <li><span class="bel-value">{{number right.avgHit}}</span></li> -->\n                            <li><span class="bel-value">{{number right.dps}}</span></li>\n                        </ul>\n                    </div>\n                    <div class="bel-col-1-1">\n                        <!-- <div class="bel-progress">\n                            <div class="bel-progress-center-marker"></div>\n                            {{#percentage left.damage right.damage}}\n                                <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>\n                                <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>\n                            {{/percentage}}\n                        </div> -->\n                        <div class="bel-progress">\n                            <div class="bel-progress-center-marker"></div>\n                            {{#percentage left.dps right.dps}}\n                                <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>\n                                <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>\n                            {{/percentage}}\n                        </div>\n                    </div>\n                {{/forEachDiv}}\n            </div>\n        ';
+            var html = '\n            <div class="bel-grid">\n                {{#forEachDiv left right}}\n                    <div class="bel-col-1-1 text-center bel-title">\n                        {{div}}\n                    </div>\n                    <div class="bel-col-1-3 text-right">\n                        <ul class="list-unstyled">\n                            <li>\n                                <span class="bel-value">{{number left.hits}} kills</span>\n                                <span class="bel-value">{{number left.damage}}</span>\n                            </li>\n                            <!-- <li><span class="bel-value">{{number left.avgHit}}</span></li> -->\n                            <li><span class="bel-value">{{number left.dps}}</span></li>\n                        </ul>\n                    </div>\n                    <div class="bel-col-1-3 text-center">\n                        <ul class="list-unstyled" style="font-weight:700;">\n                            <li>Total Damage</li>\n                            <!-- <li>Average Damage</li> -->\n                            <li>DPS</li>\n                        </ul>\n                    </div>\n                    <div class="bel-col-1-3 text-left">\n                        <ul class="list-unstyled">\n                            <li>\n                                <span class="bel-value">{{number right.damage}}</span>\n                                <span class="bel-value">{{number right.hits}} kills</span>\n                            </li>\n                            <!-- <li><span class="bel-value">{{number right.avgHit}}</span></li> -->\n                            <li><span class="bel-value">{{number right.dps}}</span></li>\n                        </ul>\n                    </div>\n                    <div class="bel-col-1-1">\n                        <!-- <div class="bel-progress">\n                            <div class="bel-progress-center-marker"></div>\n                            {{#percentage left.damage right.damage}}\n                                <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>\n                                <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>\n                            {{/percentage}}\n                        </div> -->\n                        <div class="bel-progress">\n                            <div class="bel-progress-center-marker"></div>\n                            {{#percentage left.dps right.dps}}\n                                <div class="bel-progress-bar bel-teama" style="width: {{a}}%;"></div>\n                                <div class="bel-progress-bar bel-teamb" style="width: {{b}}%;"></div>\n                            {{/percentage}}\n                        </div>\n                    </div>\n                {{/forEachDiv}}\n            </div>\n        ';
             return html;
         }
     }]);
@@ -387,7 +401,7 @@ var Settings = function () {
 
             for (var i in self.fields) {
                 var f = self.fields[i];
-                object[f] = self.get(f);
+                object[f] = { field: f, value: self.get(f) };
             }
 
             return object;
@@ -413,11 +427,22 @@ var Stats = function (_DpsHandler2) {
         _this2.id = id;
         _this2.damage = 0;
         _this2.hits = 0;
-        _this2.divisions = new Divisions();
+        _this2.constructDivisions();
         return _this2;
     }
 
     _createClass(Stats, [{
+        key: 'constructDivisions',
+        value: function constructDivisions() {
+            this.divisions = new Divisions();
+
+            this.divisions.create('div1', 1);
+            this.divisions.create('div2', 2);
+            this.divisions.create('div3', 3);
+            this.divisions.create('div4', 4);
+            this.divisions.create('air', 11);
+        }
+    }, {
         key: 'isSide',
         value: function isSide(side) {
             return this.id == side;
@@ -487,13 +512,7 @@ var Stylesheet = function () {
         this.addCSSRule('.list-inline li', 'display: inline-block;');
 
         //Modal
-        this.addCSSRule('.bel-modal', '\n            display: none;\n            position: fixed;\n            z-index: 1;\n            left: 0;\n            top: 0;\n            width: 100%;\n            height: 100%;\n            overflow: auto;\n            background-color: rgb(0,0,0); /* Fallback color */\n            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */\n        ');
-
-        this.addCSSRule('.bel-modal-content', '\n            background-color: #fefefe;\n            margin: 15% auto; /* 15% from the top and centered */\n            padding: 20px;\n            border: 1px solid #888;\n            width: 80%; /* Could be more or less, depending on screen size */\n        ');
-
-        this.addCSSRule('.bel-close', '\n            color: #aaa;\n            float: right;\n            font-size: 28px;\n            font-weight: bold;\n        ');
-
-        this.addCSSRule('.bel-close:hover, .bel-close:focus', '\n            color: black;\n            text-decoration: none;\n            cursor: pointer;\n        ');
+        this.addCSSRule('.bel-modal', '\n            z-index: 999;\n        ');
 
         //Button
         this.addCSSRule('.bel-btn', '\n            -moz-user-select: none;\n            background-image: none;\n            border: medium none;\n            cursor: pointer;\n            font-size: 14px;\n            font-weight: normal;\n            margin-bottom: 0;\n            text-align: center;\n            border-radius: 4px;\n            font-size: 12px;\n            padding: 3px 8px;\n        ');
@@ -526,6 +545,7 @@ var Stylesheet = function () {
     }, {
         key: 'load',
         value: function load() {
+            GM_addStyle(GM_getResourceText('modals'));
             GM_addStyle(this.sheet);
         }
     }]);
@@ -570,41 +590,19 @@ var battleEyeLive = {
         self.teamAName = this.window.SERVER_DATA.countries[self.window.SERVER_DATA.leftBattleId];
         self.teamB = new Stats(self.window.SERVER_DATA.rightBattleId);
         self.teamBName = this.window.SERVER_DATA.countries[self.window.SERVER_DATA.rightBattleId];
+
         self.overridePomelo();
 
         self.layout = new Layout(new Stylesheet(), {
             'teamAName': this.teamAName,
             'teamBName': this.teamBName,
             'version': GM_info.script.version
-        });
-
-        self.layout.compileSettings(self.settings);
-        self.handleModal();
+        }, { 'all': self.settings });
 
         self.runTicker();
         self.handleEvents();
     },
 
-    handleModal: function handleModal() {
-        var modal = document.getElementById('battleEyeSettingsModal');
-        var btn = document.getElementById("battle-eye-settings");
-
-        var span = document.getElementsByClassName("bel-close")[0];
-
-        btn.onclick = function () {
-            modal.style.display = "block";
-        };
-
-        span.onclick = function () {
-            modal.style.display = "none";
-        };
-
-        window.onclick = function (event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        };
-    },
     getTeamStats: function getTeamStats() {
         return {
             'left': this.teamA.toObject(),
@@ -615,6 +613,7 @@ var battleEyeLive = {
     runTicker: function runTicker() {
         var self = this;
         var second = 0;
+
         var ticker = function ticker() {
             second++;
             var timeData = {
@@ -641,7 +640,7 @@ var battleEyeLive = {
             if (self.window.currentPlayerDisplayRateValue !== "Maximum") {
                 if (self.window.battleFX.checkPlayerDisplayRate(self.window.currentPlayerDisplayRateValue)) {
                     self.window.battleFX.populatePlayerData(data);
-                };
+                }
             } else {
                 self.window.battleFX.populatePlayerData(data);
             }
@@ -653,6 +652,8 @@ var battleEyeLive = {
     },
     handle: function handle(data) {
         var self = this;
+
+        // console.log(data);
 
         self.teamA.handle(data);
         self.teamB.handle(data);
@@ -668,7 +669,7 @@ setTimeout(function () {
     var waitForCometchat = setInterval(fixCometchat, 500);
     function fixCometchat() {
         var cometchat = document.getElementById('cometchat_base');
-        if (cometchat != null) {
+        if (cometchat !== null) {
             var style = "width:auto;position:aboslute;right:0;background:none;";
             cometchat.setAttribute('style', style);
             clearInterval(waitForCometchat);

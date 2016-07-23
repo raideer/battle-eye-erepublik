@@ -19,16 +19,17 @@ class Stylesheet{
             line-height: 1.7;
         `);
 
-        this.addCSSRule('#battle_eye_live *,#battle_eye_live *:after,#battle_eye_live *:before', '-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;')
+        this.addCSSRule('#battle_eye_live *,#battle_eye_live *:after,#battle_eye_live *:before',
+            '-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;');
         this.addCSSRule(".bel-value", "background-color: #ecf0f1;padding: 2px 10px;border-radius: 4px;margin: 0 2px;");
         this.addCSSRule(".text-center", "text-align:center;");
         this.addCSSRule(".text-left", "text-align:left;");
         this.addCSSRule(".text-right", "text-align:right;");
         this.addCSSRule('.bel-version', 'background-color: #34495e;color:#ecf0f1;padding: 3px 8px;border-radius:4px;margin-right:4px;');
-        this.addCSSRule('.bel-title', 'background-color: #ecf0f1;margin-bottom:2px;margin-top:5px;')
+        this.addCSSRule('.bel-title', 'background-color: #ecf0f1;margin-bottom:2px;margin-top:5px;');
         //Grids
         this.addCSSRule('.bel-grid:after', 'content: "";display: table;clear: both;');
-        this.addCSSRule("[class*='bel-col-']", 'float: left;')
+        this.addCSSRule("[class*='bel-col-']", 'float: left;');
         this.addCSSRule('.bel-col-1-1', 'width: 100%;');
         this.addCSSRule('.bel-col-1-2', 'width: 50%;');
         this.addCSSRule('.bel-col-1-4', 'width: 25%;');
@@ -40,37 +41,7 @@ class Stylesheet{
 
         //Modal
         this.addCSSRule('.bel-modal', `
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0,0,0); /* Fallback color */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-        `);
-
-        this.addCSSRule('.bel-modal-content', `
-            background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
-        `);
-
-        this.addCSSRule('.bel-close', `
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        `);
-
-        this.addCSSRule('.bel-close:hover, .bel-close:focus', `
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
+            z-index: 999;
         `);
 
         //Button
@@ -155,7 +126,7 @@ class Stylesheet{
     }
 
     load(){
-        GM_addStyle(GM_getResourceText('simplemodal'));
+        GM_addStyle(GM_getResourceText('modals'));
         GM_addStyle(this.sheet);
     }
 }

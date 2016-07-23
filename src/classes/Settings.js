@@ -58,7 +58,7 @@ class Settings{
 
         for(var i in self.fields){
             var f = self.fields[i];
-            object[f] = self.get(f);
+            object[f] = {field: f, value: self.get(f)};
         }
 
         return object;

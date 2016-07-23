@@ -7,6 +7,7 @@ class DivisionStats extends DpsHandler{
     }
 
     handle(data){
+
         if(data.division != this.division){
             return;
         }
@@ -14,6 +15,7 @@ class DivisionStats extends DpsHandler{
         this.addHit(data.msg.damage);
         this.hits++;
         this.damage += data.msg.damage;
+
     }
 
     toObject(){
