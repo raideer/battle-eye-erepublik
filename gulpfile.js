@@ -4,7 +4,7 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var sequence = require('gulp-sequence');
 
-var sync = "/Users/kristofersozolins/Library/Application Support/Firefox/Profiles/d8luf1t1.default/gm_scripts/Battle_Eye_Live";
+var sync = "C:\\Users\\Raideer\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\novzk6sa.default-1439382728599\\gm_scripts\\Battle_Eye_Live";
 
 gulp.task('default', ['scripts']);
 

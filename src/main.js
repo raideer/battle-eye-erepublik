@@ -9,7 +9,13 @@ var battleEyeLive = {
             return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
         }
 
-        storage.define('reduceLoad', false);
+        storage.define('hideOtherDivs', false, "Hide other divisions");
+        storage.define('reduceLoad', false, "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance");
+        storage.define('highlightDivision', true, "Highlight current division");
+        storage.define('showAverageDamage', false, "Show average damage dealt");
+        storage.define('showKills', true, "Show kills done by each division");
+        storage.define('showDpsBar', true, "Show DPS bar");
+        storage.define('showDamageBar', false, "Show Damage bar");
 
         self.settings = storage.getAll();
 
@@ -26,6 +32,15 @@ var battleEyeLive = {
             'teamBName': this.teamBName,
             'version': GM_info.script.version
         }, {'all': self.settings});
+
+        [].forEach.call(document.querySelectorAll('.bel-settings-field'), function(div){
+            div.addEventListener('change', function(event){
+                var input = event.target;
+                var value = input.checked;
+                self.settingsStorage.set(input.name, input.checked);
+                self.settings[input.name].value = input.checked
+            });
+        });
 
         self.runTicker();
         self.handleEvents();
@@ -87,7 +102,7 @@ var battleEyeLive = {
 
         self.teamA.handle(data);
         self.teamB.handle(data);
-        if(!self.settings.reduceLoad){
+        if(!self.settings.reduceLoad.value){
             self.layout.update(self.getTeamStats());
         }
     }

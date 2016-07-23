@@ -27,6 +27,13 @@ class Stylesheet{
         this.addCSSRule(".text-right", "text-align:right;");
         this.addCSSRule('.bel-version', 'background-color: #34495e;color:#ecf0f1;padding: 3px 8px;border-radius:4px;margin-right:4px;');
         this.addCSSRule('.bel-title', 'background-color: #ecf0f1;margin-bottom:2px;margin-top:5px;');
+        this.addCSSRule('.bel-highlight-title', `
+            background-color: #9b59b6;
+            color: #fff;
+        `);
+        this.addCSSRule('.bel-highlight', `
+            color: #8e44ad;
+        `);
         //Grids
         this.addCSSRule('.bel-grid:after', 'content: "";display: table;clear: both;');
         this.addCSSRule("[class*='bel-col-']", 'float: left;');
@@ -39,10 +46,35 @@ class Stylesheet{
         this.addCSSRule('.list-unstyled', 'list-style: outside none none;padding-left: 0;');
         this.addCSSRule('.list-inline li', 'display: inline-block;');
 
-        //Modal
-        this.addCSSRule('.bel-modal', `
-            z-index: 999;
+        //Settings
+        this.addCSSRule('.bel-settings', `
+            z-index: 100;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.95;
+            top: 0;
+            left: 0;
+            background-color: #ffffff;
+            padding: 14px;
+            text-align: left;
+            overflow-y: scroll;
         `);
+
+        this.addCSSRule('.bel-field-description', `
+            font-size: 12px;
+            color: #95a5a6;
+        `);
+
+        this.addCSSRule('.bel-checkbox', `
+            padding-bottom: 5px;
+            padding-top: 5px;
+            border-bottom: 1px solid #ecf0f1;
+        `);
+
+        this.addCSSRule('.bel-hidden',`
+            display: none;
+        `)
 
         //Button
         this.addCSSRule('.bel-btn', `

@@ -6,12 +6,13 @@ class Settings{
         }
 
         self.prepend = "battle_eye_";
-        self.fields = [];
+        self.fields = {};
     }
 
     set(field, value){
         var self = this;
         localStorage.setItem(`${self.prepend}${field}`, value);
+        console.log(`${self.prepend}${field} = ${value}`);
     }
 
     get(field){
@@ -39,11 +40,13 @@ class Settings{
         return false;
     }
 
-    define(field, value){
+    define(field, value, name, desc){
         var self = this;
 
-        if(self.fields.indexOf(field) == -1){
-            self.fields.push(field);
+        if(self.fields[field] === undefined){
+            self.fields[field] = {
+                field, name, desc
+            }
         }
 
         if(!self.has(field)){
@@ -58,7 +61,7 @@ class Settings{
 
         for(var i in self.fields){
             var f = self.fields[i];
-            object[f] = {field: f, value: self.get(f)};
+            object[i] = {field: f, value: self.get(f.field)};
         }
 
         return object;
