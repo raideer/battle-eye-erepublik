@@ -103,11 +103,12 @@ class Layout{
     createSettingsModal(){
         return `
             <div id="bel-settings-modal" class="bel-settings bel-hidden">
-                <button id="bel-close-modal" class="bel-btn bel-btn-default" style="margin-top: -3px;float:right;">Close</button>
                 <div class="bel-grid">
-                    <div class="bel-col-1-2">
+                    <button id="bel-close-modal" class="bel-btn bel-btn-default" style="margin-top: -3px;float:right;">Close</button>
+                </div>
+                <div class="bel-grid">
                         {{#each all}}
-                            <div class="bel-checkbox">
+                            <div class="bel-checkbox bel-col-1-2" style="padding: 3px;">
                                 <input type="checkbox" class="bel-settings-field"
                                 {{#if value}}
                                     checked
@@ -121,7 +122,6 @@ class Layout{
                                 </div>
                             </div>
                         {{/each}}
-                    </div>
                 </div>
             </div>
         `;

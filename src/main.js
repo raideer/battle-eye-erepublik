@@ -25,6 +25,29 @@ var battleEyeLive = {
         self.teamB = new Stats(self.window.SERVER_DATA.rightBattleId);
         self.teamBName = this.window.SERVER_DATA.countries[self.window.SERVER_DATA.rightBattleId];
 
+        self.getBattleDamageStats(function(left, right){
+            for(var div = 1; div < 4; div++){
+                var leftDmg = 0;
+                var rightDmg = 0;
+
+                for(var i in left['div' + div]){
+                    var hit = left['div' + div][i];
+                    leftDmg += Number(hit.value.replace(/[,\.]/g,''));
+                }
+
+                for(var i in right['div' + div]){
+                    var hit = right['div' + div][i];
+                    rightDmg += Number(hit.value.replace(/[,\.]/g,''));
+                }
+
+                console.log(leftDmg);
+                console.log(self.teamA.divisions.get('div' + div));
+
+                self.teamA.divisions.get('div' + div).damage += leftDmg;
+                self.teamB.divisions.get('div' + div).damage += rightDmg;
+            }
+        });
+
         self.overridePomelo();
 
         self.layout = new Layout(new Stylesheet(), {
@@ -53,6 +76,78 @@ var battleEyeLive = {
         };
     },
 
+    getBattleDamageStats: function(callback){
+        var self = this;
+        var token = document.querySelector('input[name="_token"]').value;
+        var battleId = self.window.SERVER_DATA.battleId;
+        var division = self.window.SERVER_DATA.division;
+        var attacker = self.window.SERVER_DATA.leftBattleId;
+        var defender = self.window.SERVER_DATA.rightBattleId;
+        var round = Number(document.querySelector('#round_number').innerHTML.match(/\d/)[0]);
+
+        var attackerData = {
+            div1: [],div2: [],div3: [],div4: []
+        };
+        var defenderData = {
+            div1: [],div2: [],div3: [],div4: []
+        };
+
+        var request = function(div,pageLeft,pageRight,cb) {
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: "http://www.erepublik.com/en/military/battle-console",
+                data: '_token='+token+'&action=battleStatistics&battleId='+battleId+'&division='+div+'&leftPage='+pageLeft+'&rightPage='+pageRight+'&round='+round+'&type=damage&zoneId=1',
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                onload: function(response) {
+                    var data = JSON.parse(response.responseText);
+                    console.log(data);
+                    cb(data);
+                }
+            });
+        }
+
+        var handler = function(div, cb){
+            var page = 1;
+            var maxPage = 1;
+
+            async.doWhilst(function(whileCb){
+                request(div,page,page,function(data) {
+                    console.log(page);
+                    saveFighterData(data, div);
+                    maxPage = Math.max(data[attacker].pages, data[defender].pages);
+                    page++;
+
+                    whileCb();
+                });
+            },function(){
+                return page < maxPage;
+            },function() {
+                // console.log('do while ended')
+                cb();
+            });
+        };
+
+        var saveFighterData = function(data, div) {
+            // console.log('saving data');
+            for(var i in data[attacker].fighterData){
+                attackerData['div'+div].push(data[attacker].fighterData[i]);
+            }
+
+            for(var i in data[defender].fighterData){
+                defenderData['div'+div].push(data[defender].fighterData[i]);
+            }
+        }
+
+        async.each([1,2,3,4], handler.bind(self), function(){
+            if(typeof callback == 'function'){
+                callback(attackerData, defenderData);
+            }
+        });
+
+    },
+
     runTicker: function(){
         var self = this;
         var second = 0;
@@ -68,6 +163,7 @@ var battleEyeLive = {
 
         self.interval = setInterval(ticker, 1000);
     },
+
     handleEvents: function(){
         var self = this;
         self.events.on('tick', function(timeData) {
@@ -76,6 +172,7 @@ var battleEyeLive = {
             self.layout.update(self.getTeamStats());
         });
     },
+
     overridePomelo: function(){
         var self = this;
 
