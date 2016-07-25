@@ -2,6 +2,22 @@ class Stylesheet{
     constructor(){
         this.sheet = "";
 
+        this.sheet += `
+            @keyframes bel-pulse {
+                0% {
+                    border-color: #27ae60;
+                }
+
+                10% {
+                    border-color: #2ecc71;
+                }
+
+                100% {
+                    border-color: #27ae60;
+                }
+            }
+        `;
+
         //General
         this.addCSSRule("#battle_eye_live", `
             width: 100%;
@@ -21,7 +37,18 @@ class Stylesheet{
 
         this.addCSSRule('#battle_eye_live *,#battle_eye_live *:after,#battle_eye_live *:before',
             '-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;');
-        this.addCSSRule(".bel-value", "background-color: #ecf0f1;padding: 2px 10px;border-radius: 4px;margin: 0 2px;");
+        this.addCSSRule(".bel-value", `
+            display: inline-block;
+            line-height: 1.2;
+            background-color: #ecf0f1;
+            padding: 2px 10px;
+            border-radius: 4px;
+            margin: 0 2px 2px 2px;
+        `);
+        this.addCSSRule(".bel-value-hl", `
+            animation: bel-pulse 5s infinite;
+            border: 1px solid #27ae60;
+        `);
         this.addCSSRule(".text-center", "text-align:center;");
         this.addCSSRule(".text-left", "text-align:left;");
         this.addCSSRule(".text-right", "text-align:right;");

@@ -24,7 +24,7 @@ class DivisionStats extends DpsHandler{
             'id': this.id,
             'dps': this.dps,
             'hits': this.hits,
-            'avgHit': Math.round(this.damage/this.hits)
+            'avgHit': Math.round(this.damage/this.hits) | 0
         };
     }
 }

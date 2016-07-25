@@ -16,18 +16,34 @@ class Layout{
         });
 
         Handlebars.registerHelper('number', function(number) {
-          return parseFloat(number).toLocaleString();
+            return parseFloat(number).toLocaleString();
+        });
+
+        Handlebars.registerHelper('value', function(a,b,text) {
+            if(typeof text != 'string'){
+                text = "";
+            }
+            var hl = "";
+            if(a>b){
+                hl ="bel-value-hl";
+            }
+            return `<span class="bel-value ${hl}">${parseFloat(a).toLocaleString()} ${text}</span>`;
         });
 
         Handlebars.registerHelper('forEachDiv', function(left, right, options) {
-            var divs = ['air', 'div1', 'div2', 'div3', 'div4'];
-            var divInfo = [[11,'Air'], [1,'Division 1'], [2,'Division 2'], [3,'Division 3'], [4,'Division 4']];
+            if(unsafeWindow.SERVER_DATA.division == 11){
+                var divs = ['div11'];
+                var divInfo = [[11,'Air']];
+            }else{
+                var divs = ['div1', 'div2', 'div3', 'div4'];
+                var divInfo = [[1,'Division 1'], [2,'Division 2'], [3,'Division 3'], [4,'Division 4']];
+            }
 
             var showAverage = self.settings.all.showAverageDamage.value;
             var showKills = self.settings.all.showKills.value;
             var showDpsBar = self.settings.all.showDpsBar.value;
             var showDamageBar = self.settings.all.showDamageBar.value;
-            var hideOtherDivs = self.settings.all.hideOtherDivs.value;
+            var showOtherDivs = self.settings.all.showOtherDivs.value;
             var highlightDivision = settings.all.highlightDivision.value;
 
             var str = '';
@@ -35,7 +51,7 @@ class Layout{
                 var div = divs[i];
                 var highlight = false;
 
-                if(hideOtherDivs){
+                if(!showOtherDivs){
                     if(divInfo[i][0] != unsafeWindow.SERVER_DATA.division){
                         continue;
                     }
@@ -167,16 +183,20 @@ class Layout{
                         <ul class="list-unstyled">
                             <li>
                                 {{#if showKills}}
-                                    <span class="bel-value">{{number left.hits}} kills</span>
+                                    {{{value left.hits right.hits "kills"}}}
                                 {{/if}}
-                                <span class="bel-value">{{number left.damage}}</span>
+                                {{{value left.damage right.damage}}}
                             </li>
 
                             {{#if showAverage}}
-                                <li><span class="bel-value">{{number left.avgHit}}</span></li>
+                                <li>
+                                    {{{value left.avgHit right.avgHit}}}
+                                </li>
                             {{/if}}
 
-                            <li><span class="bel-value">{{number left.dps}}</span></li>
+                            <li>
+                                {{{value left.dps right.dps}}}
+                            </li>
                         </ul>
                     </div>
                     <div class="bel-col-1-3 text-center">
@@ -195,19 +215,24 @@ class Layout{
                     <div class="bel-col-1-3 text-left">
                         <ul class="list-unstyled">
                             <li>
-                                <span class="bel-value">{{number right.damage}}</span>
+                                {{{value right.damage left.damage}}}
                                 {{#if showKills}}
-                                    <span class="bel-value">{{number right.hits}} kills</span>
+                                    {{{value right.hits left.hits "kills"}}}
                                 {{/if}}
                             </li>
                             {{#if showAverage}}
-                                <li><span class="bel-value">{{number right.avgHit}}</span></li>
+                                <li>
+                                    {{{value right.avgHit left.avgHit}}}
+                                </li>
                             {{/if}}
-                            <li><span class="bel-value">{{number right.dps}}</span></li>
+                            <li>
+                                {{{value right.dps left.dps}}}
+                            </li>
                         </ul>
                     </div>
                     <div class="bel-col-1-1">
                         {{#if showDamageBar}}
+                            <div style="font-size:10px;" class="text-left">DAMAGE</div>
                             <div class="bel-progress">
                                 <div class="bel-progress-center-marker"></div>
                                 {{#percentage left.damage right.damage}}
@@ -225,6 +250,7 @@ class Layout{
                                 {{/percentage}}
 
                             </div>
+                            <div style="font-size:10px;" class="text-left">DPS</div>
                         {{/if}}
                     </div>
                 {{/forEachDiv}}

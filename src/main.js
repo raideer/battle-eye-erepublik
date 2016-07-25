@@ -9,13 +9,14 @@ var battleEyeLive = {
             return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
         }
 
-        storage.define('hideOtherDivs', false, "Hide other divisions");
+        storage.define('showOtherDivs', true, "Show other divisions");
         storage.define('reduceLoad', false, "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance");
         storage.define('highlightDivision', true, "Highlight current division");
         storage.define('showAverageDamage', false, "Show average damage dealt");
         storage.define('showKills', true, "Show kills done by each division");
         storage.define('showDpsBar', true, "Show DPS bar");
-        storage.define('showDamageBar', false, "Show Damage bar");
+        storage.define('showDamageBar', true, "Show Damage bar");
+        storage.define('gatherBattleStats', true, "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time.");
 
         self.settings = storage.getAll();
 
@@ -25,28 +26,44 @@ var battleEyeLive = {
         self.teamB = new Stats(self.window.SERVER_DATA.rightBattleId);
         self.teamBName = this.window.SERVER_DATA.countries[self.window.SERVER_DATA.rightBattleId];
 
-        self.getBattleDamageStats(function(left, right){
-            for(var div = 1; div < 4; div++){
-                var leftDmg = 0;
-                var rightDmg = 0;
+        if(self.settings.gatherBattleStats.value){
+            self.getBattleStats(function(leftDamage, rightDamage, leftKills, rightKills){
+                var divs = [1,2,3,4,11];
 
-                for(var i in left['div' + div]){
-                    var hit = left['div' + div][i];
-                    leftDmg += Number(hit.value.replace(/[,\.]/g,''));
+                for(var d in divs){
+                    var div = divs[d];
+                    var leftDmg = 0;
+                    var rightDmg = 0;
+                    var leftKl = 0;
+                    var rightKl = 0;
+
+                    for(var i in leftDamage['div' + div]){
+                        var hit = leftDamage['div' + div][i];
+                        leftDmg += Number(hit.value.replace(/[,\.]/g,''));
+                    }
+
+                    for(var i in rightDamage['div' + div]){
+                        var hit = rightDamage['div' + div][i];
+                        rightDmg += Number(hit.value.replace(/[,\.]/g,''));
+                    }
+
+                    for(var i in leftKills['div' + div]){
+                        var hit = leftKills['div' + div][i];
+                        leftKl += Number(hit.value.replace(/[,\.]/g,''));
+                    }
+
+                    for(var i in rightKills['div' + div]){
+                        var hit = rightKills['div' + div][i];
+                        rightKl += Number(hit.value.replace(/[,\.]/g,''));
+                    }
+
+                    self.teamA.divisions.get('div' + div).damage += leftDmg;
+                    self.teamB.divisions.get('div' + div).damage += rightDmg;
+                    self.teamA.divisions.get('div' + div).hits += leftKl;
+                    self.teamB.divisions.get('div' + div).hits += rightKl;
                 }
-
-                for(var i in right['div' + div]){
-                    var hit = right['div' + div][i];
-                    rightDmg += Number(hit.value.replace(/[,\.]/g,''));
-                }
-
-                console.log(leftDmg);
-                console.log(self.teamA.divisions.get('div' + div));
-
-                self.teamA.divisions.get('div' + div).damage += leftDmg;
-                self.teamB.divisions.get('div' + div).damage += rightDmg;
-            }
-        });
+            });
+        }
 
         self.overridePomelo();
 
@@ -76,7 +93,7 @@ var battleEyeLive = {
         };
     },
 
-    getBattleDamageStats: function(callback){
+    getBattleStats: function(callback){
         var self = this;
         var token = document.querySelector('input[name="_token"]').value;
         var battleId = self.window.SERVER_DATA.battleId;
@@ -85,65 +102,88 @@ var battleEyeLive = {
         var defender = self.window.SERVER_DATA.rightBattleId;
         var round = Number(document.querySelector('#round_number').innerHTML.match(/\d/)[0]);
 
-        var attackerData = {
-            div1: [],div2: [],div3: [],div4: []
-        };
-        var defenderData = {
-            div1: [],div2: [],div3: [],div4: []
-        };
+        var attackerData = {div1: [], div2: [], div3: [], div4: [], div11: []};
+        var defenderData = {div1: [], div2: [], div3: [], div4: [], div11: []};;
+        var attackerKillData = {div1: [], div2: [], div3: [], div4: [], div11: []};;
+        var defenderKillData = {div1: [], div2: [], div3: [], div4: [], div11: []};;
 
-        var request = function(div,pageLeft,pageRight,cb) {
+        var request = function(div,pageLeft,pageRight,cb,type) {
+            if(type == undefined){
+                type = 'damage';
+            }
             GM_xmlhttpRequest({
                 method: "POST",
                 url: "http://www.erepublik.com/en/military/battle-console",
-                data: '_token='+token+'&action=battleStatistics&battleId='+battleId+'&division='+div+'&leftPage='+pageLeft+'&rightPage='+pageRight+'&round='+round+'&type=damage&zoneId=1',
+                data: '_token='+token+'&action=battleStatistics&battleId='+battleId+'&division='+div+'&leftPage='+pageLeft+'&rightPage='+pageRight+'&round='+round+'&type='+type+'&zoneId=1',
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded"
                 },
                 onload: function(response) {
                     var data = JSON.parse(response.responseText);
-                    console.log(data);
                     cb(data);
                 }
             });
         }
 
-        var handler = function(div, cb){
+        var damageHandler = function(div, cb){
             var page = 1;
             var maxPage = 1;
 
             async.doWhilst(function(whileCb){
                 request(div,page,page,function(data) {
-                    console.log(page);
-                    saveFighterData(data, div);
+
+                    for(var i in data[attacker].fighterData){
+                        attackerData['div'+div].push(data[attacker].fighterData[i]);
+                    }
+                    for(var i in data[defender].fighterData){
+                        defenderData['div'+div].push(data[defender].fighterData[i]);
+                    }
+
                     maxPage = Math.max(data[attacker].pages, data[defender].pages);
                     page++;
-
                     whileCb();
-                });
+                }, 'damage');
+
             },function(){
                 return page < maxPage;
             },function() {
-                // console.log('do while ended')
                 cb();
             });
         };
 
-        var saveFighterData = function(data, div) {
-            // console.log('saving data');
-            for(var i in data[attacker].fighterData){
-                attackerData['div'+div].push(data[attacker].fighterData[i]);
-            }
+        var killsHandler = function(div, cb){
+            var page = 1;
+            var maxPage = 1;
 
-            for(var i in data[defender].fighterData){
-                defenderData['div'+div].push(data[defender].fighterData[i]);
-            }
-        }
+            async.doWhilst(function(whileCb){
+                request(div,page,page,function(data) {
 
-        async.each([1,2,3,4], handler.bind(self), function(){
-            if(typeof callback == 'function'){
-                callback(attackerData, defenderData);
-            }
+                    for(var i in data[attacker].fighterData){
+                        attackerKillData['div'+div].push(data[attacker].fighterData[i]);
+                    }
+
+                    for(var i in data[defender].fighterData){
+                        defenderKillData['div'+div].push(data[defender].fighterData[i]);
+                    }
+
+                    maxPage = Math.max(data[attacker].pages, data[defender].pages);
+                    page++;
+
+                    whileCb();
+                }, 'kills');
+            },function(){
+                return page < maxPage;
+            },function() {
+                cb();
+            });
+        };
+
+        var divRange = (division == 11)?[11]:[1,2,3,4];
+
+        async.each(divRange, damageHandler.bind(self), function(){
+            async.each(divRange, killsHandler.bind(self), function(){
+                callback(attackerData, defenderData, attackerKillData, defenderKillData);
+            });
         });
 
     },

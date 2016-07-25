@@ -15,7 +15,7 @@ class Stats extends DpsHandler{
         this.divisions.create('div2', 2);
         this.divisions.create('div3', 3);
         this.divisions.create('div4', 4);
-        this.divisions.create('air', 11);
+        this.divisions.create('div11', 11);
     }
 
     isSide(side){
