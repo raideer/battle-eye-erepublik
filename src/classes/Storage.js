@@ -1,4 +1,4 @@
-class Settings{
+class Storage{
     constructor(){
         var self = this;
         if(!self.checkIfStorageAvailable()){
@@ -9,15 +9,15 @@ class Settings{
         self.fields = {};
     }
 
-    set(field, value){
+    set(id, value){
         var self = this;
-        localStorage.setItem(`${self.prepend}${field}`, value);
-        console.log(`${self.prepend}${field} = ${value}`);
+        localStorage.setItem(`${self.prepend}${id}`, value);
+        console.log(`${self.prepend}${id} = ${value}`);
     }
 
-    get(field){
+    get(id){
         var self = this;
-        var val = localStorage.getItem(`${self.prepend}${field}`);
+        var val = localStorage.getItem(`${self.prepend}${id}`);
 
         switch(val){
             case 'true':
@@ -40,17 +40,17 @@ class Settings{
         return false;
     }
 
-    define(field, value, name, desc){
+    define(id, value, group, name, desc){
         var self = this;
 
-        if(self.fields[field] === undefined){
-            self.fields[field] = {
-                field, name, desc
+        if(self.fields[id] === undefined){
+            self.fields[id] = {
+                id, name, desc, group
             }
         }
 
-        if(!self.has(field)){
-            self.set(field, value);
+        if(!self.has(id)){
+            self.set(id, value);
         }
     }
 
@@ -61,7 +61,8 @@ class Settings{
 
         for(var i in self.fields){
             var f = self.fields[i];
-            object[i] = {field: f, value: self.get(f.field)};
+
+            object[i] = {field: f, value: self.get(f.id)};
         }
 
         return object;

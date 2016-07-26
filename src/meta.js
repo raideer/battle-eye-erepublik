@@ -5,8 +5,9 @@
 // @homepage    https://github.com/raideer
 // @description LIVE battlefield statistics
 // @include     http*://www.erepublik.com/*/military/battlefield-new/*
-// @version     1.1.7-a
-// @require     https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js
+// @version     1.1.10-a
+// @require     https://fb.me/react-15.2.1.min.js
+// @require     https://fb.me/react-dom-15.2.1.min.js
 // @require     https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/modals.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.0.1/async.min.js
 // @resource    modals https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/modals.min.css

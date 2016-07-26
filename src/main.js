@@ -4,19 +4,21 @@ var battleEyeLive = {
         console.log('Battle Eye INIT');
         self.window = unsafeWindow;
 
-        var storage = self.settingsStorage = new Settings();
+        var storage = self.settingsStorage = new Storage();
         if(storage === false){
             return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
         }
 
-        storage.define('showOtherDivs', true, "Show other divisions");
-        storage.define('reduceLoad', false, "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance");
-        storage.define('highlightDivision', true, "Highlight current division");
-        storage.define('showAverageDamage', false, "Show average damage dealt");
-        storage.define('showKills', true, "Show kills done by each division");
-        storage.define('showDpsBar', true, "Show DPS bar");
-        storage.define('showDamageBar', true, "Show Damage bar");
-        storage.define('gatherBattleStats', true, "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time.");
+        storage.define('showOtherDivs', true, 'Structure', "Show other divisions");
+        storage.define('reduceLoad', false, 'Performance', "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance");
+        storage.define('highlightDivision', true, 'Visual', "Highlight current division");
+        storage.define('highlightValue', true, 'Visual', "Highlight winning side");
+        storage.define('showAverageDamage', false, 'Structure', "Show average damage dealt");
+        storage.define('showKills', false, 'Structure', "Show kills done by each division");
+        storage.define('showDpsBar', true, 'Bars', "Show DPS bar");
+        storage.define('showDamagePerc', true, 'Structure', "Show Damage percentages");
+        storage.define('showDamageBar', true, 'Bars', "Show Damage bar");
+        storage.define('gatherBattleStats', true, 'Performance', "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time.");
 
         self.settings = storage.getAll();
 
@@ -65,25 +67,46 @@ var battleEyeLive = {
             });
         }
 
-        self.overridePomelo();
-
         self.layout = new Layout(new Stylesheet(), {
             'teamAName': this.teamAName,
             'teamBName': this.teamBName,
             'version': GM_info.script.version
-        }, {'all': self.settings});
+        });
+
+        self.layout.update(self.getTeamStats(), self.settings);
+
+        self.window.pomelo.disconnect = exportFunction(function() {
+        }, self.window);
+
+        self.checkForUpdates();
 
         [].forEach.call(document.querySelectorAll('.bel-settings-field'), function(div){
             div.addEventListener('change', function(event){
                 var input = event.target;
                 var value = input.checked;
                 self.settingsStorage.set(input.name, input.checked);
-                self.settings[input.name].value = input.checked
+                self.settings[input.name].value = input.checked;
             });
         });
 
         self.runTicker();
         self.handleEvents();
+    },
+
+    checkForUpdates: function() {
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/data.json",
+            onload: function(response) {
+                var data = JSON.parse(response.responseText);
+                var version = parseInt(data.version.replace(/\D/g,""));
+                var currentVersion = parseInt(GM_info.script.version.replace(/\D/g,""));
+                if(currentVersion != version){
+                    document.querySelector('.bel-version').classList.add('bel-version-outdated');
+                    document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/battle-eye-live.user.js">Update</a>';
+                }
+            }
+        });
     },
 
     getTeamStats: function(){
@@ -100,7 +123,7 @@ var battleEyeLive = {
         var division = self.window.SERVER_DATA.division;
         var attacker = self.window.SERVER_DATA.leftBattleId;
         var defender = self.window.SERVER_DATA.rightBattleId;
-        var round = Number(document.querySelector('#round_number').innerHTML.match(/\d/)[0]);
+        var round = self.window.SERVER_DATA.zoneId;
 
         var attackerData = {div1: [], div2: [], div3: [], div4: [], div11: []};
         var defenderData = {div1: [], div2: [], div3: [], div4: [], div11: []};;
@@ -209,13 +232,12 @@ var battleEyeLive = {
         self.events.on('tick', function(timeData) {
             self.teamA.updateDps(timeData);
             self.teamB.updateDps(timeData);
-            self.layout.update(self.getTeamStats());
+            self.layout.update(self.getTeamStats(), self.settings);
         });
     },
 
     overridePomelo: function(){
         var self = this;
-
 
         var handler = function(data) {
 			if(self.window.currentPlayerDisplayRateValue !== "Maximum") {
@@ -229,7 +251,6 @@ var battleEyeLive = {
             self.handle(data);
 		};
 
-
         self.window.pomelo.on('onMessage', exportFunction(handler, unsafeWindow));
     },
     handle: function(data){
@@ -240,13 +261,14 @@ var battleEyeLive = {
         self.teamA.handle(data);
         self.teamB.handle(data);
         if(!self.settings.reduceLoad.value){
-            self.layout.update(self.getTeamStats());
+            self.layout.update(self.getTeamStats(), self.settings);
         }
     }
 };
 
+battleEyeLive.init();
 setTimeout(function(){
-    battleEyeLive.init();
+    battleEyeLive.overridePomelo();
     //Removing that annoying cometchat background
     var waitForCometchat = setInterval(fixCometchat, 500);
     function fixCometchat(){

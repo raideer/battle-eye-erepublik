@@ -1,4 +1,5 @@
 var gulp = require('gulp');
+var gutil = require('gulp-util');
 var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
@@ -13,12 +14,13 @@ gulp.task('scripts', sequence('scripts1', 'scripts2'));
 gulp.task('scripts1', function() {
     return gulp.src([
         './src/classes/DpsHandler.js',
+        './src/classes/components/*.js',
         './src/classes/*.js',
         './src/main.js'
     ])
     .pipe(concat('battle-eye-live.user.js'))
     .pipe(babel({
-        presets: ['es2015']
+        presets: ['react','es2015']
     }))
     .pipe(uglify())
     .pipe(gulp.dest('dist'))
@@ -40,13 +42,15 @@ gulp.task('scriptsRaw', function() {
     return gulp.src([
         './src/meta.js',
         './src/classes/DpsHandler.js',
+        './src/classes/components/*.js',
         './src/classes/*.js',
         './src/main.js'
     ])
     .pipe(concat('battle-eye-live.user.js'))
     .pipe(babel({
-        presets: ['es2015']
+        presets: ['react','es2015']
     }))
+    .on('error', gutil.log)
     .pipe(gulp.dest('dist'))
     .pipe(gulp.dest(sync))
     ;

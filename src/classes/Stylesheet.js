@@ -18,6 +18,12 @@ class Stylesheet{
             }
         `;
 
+        this.addCSSRule('.clearfix:after', `
+            content: "";
+            display: table;
+            clear: both;
+        `);
+
         //General
         this.addCSSRule("#battle_eye_live", `
             width: 100%;
@@ -29,11 +35,15 @@ class Stylesheet{
             background-color: #ffffff;
             color: #34495e;
             font-size:14px;
-            font-family: "Lato",
-            Helvetica,Arial,sans-serif;
+            font-family: "Lato",Helvetica,Arial,sans-serif;
             text-align: center;
             line-height: 1.7;
         `);
+
+        this.addCSSRule('.color-silver', 'color: #bdc3c7');
+
+        this.addCSSRule('.pull-left', 'float:left;');
+        this.addCSSRule('.pull-right', 'float:right;');
 
         this.addCSSRule('#battle_eye_live *,#battle_eye_live *:after,#battle_eye_live *:before',
             '-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;');
@@ -53,13 +63,18 @@ class Stylesheet{
         this.addCSSRule(".text-left", "text-align:left;");
         this.addCSSRule(".text-right", "text-align:right;");
         this.addCSSRule('.bel-version', 'background-color: #34495e;color:#ecf0f1;padding: 3px 8px;border-radius:4px;margin-right:4px;');
+        this.addCSSRule('.bel-version-outdated', 'background-color: #e74c3c;');
         this.addCSSRule('.bel-title', 'background-color: #ecf0f1;margin-bottom:2px;margin-top:5px;');
+        this.addCSSRule('.bel-titles', `
+            font-weight: 700;
+        `);
+        this.addCSSRule('.bel-text-tiny', 'font-size:10px;');
         this.addCSSRule('.bel-highlight-title', `
-            background-color: #9b59b6;
+            background-color: #34495e;
             color: #fff;
         `);
         this.addCSSRule('.bel-highlight', `
-            color: #8e44ad;
+            color: #34495e;
         `);
         //Grids
         this.addCSSRule('.bel-grid:after', 'content: "";display: table;clear: both;');
@@ -86,6 +101,21 @@ class Stylesheet{
             padding: 14px;
             text-align: left;
             overflow-y: scroll;
+
+        `);
+
+        this.addCSSRule('.bel-settings-group', `
+            background-color: #34495e;
+            color: #ecf0f1;
+            padding-left: 10px;
+        `);
+
+        this.addCSSRule('.bel-settings-container', `
+            padding-left: 5px;
+        `);
+
+        this.addCSSRule('.bel-settings-field', `
+            margin-right: 3px;
         `);
 
         this.addCSSRule('.bel-field-description', `
@@ -94,8 +124,7 @@ class Stylesheet{
         `);
 
         this.addCSSRule('.bel-checkbox', `
-            padding-bottom: 5px;
-            padding-top: 5px;
+            padding: 5px 3px;
             border-bottom: 1px solid #ecf0f1;
         `);
 
@@ -105,17 +134,24 @@ class Stylesheet{
 
         //Button
         this.addCSSRule('.bel-btn', `
+            -webkit-user-select: none;
             -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
             background-image: none;
-            border: medium none;
+            border: none !important;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: normal;
             margin-bottom: 0;
             text-align: center;
             border-radius: 4px;
-            font-size: 12px;
             padding: 3px 8px;
+            font-family: "Lato",Helvetica,Arial,sans-serif;
+        `);
+
+        this.addCSSRule('a.bel-btn', `
+            padding: 4px 8px;
         `);
 
         this.addCSSRule('.bel-btn-default', `
@@ -125,12 +161,46 @@ class Stylesheet{
 
         this.addCSSRule('.bel-btn-default:hover', `
             background-color: #16a085;
+        `);
+
+        this.addCSSRule('.bel-btn-danger', `
+            background-color: #e74c3c;
             color: #ffffff;
         `);
+
+        this.addCSSRule('.bel-btn-danger:hover', `
+            background-color: #c0392b;
+        `);
+
+        this.addCSSRule('.bel-btn-inverse', `
+            background-color: #2c3e50;
+            color: #ffffff;
+        `);
+
+        this.addCSSRule('.bel-btn-inverse:hover', `
+            background-color: #34495e;
+        `);
+
+        this.addCSSRule('.bel-btn-info', `
+            background-color: #2980b9;
+            color: #ffffff;
+        `);
+
+        this.addCSSRule('.bel-btn-info:hover', `
+            background-color: #3498db;
+        `);
+
 
         //Header menu
         this.addCSSRule('.bel-header-menu', 'margin-bottom: 10px;');
         this.addCSSRule('.bel-header-menu li', 'padding: 0 5px;');
+
+        //Team colors
+        this.addCSSRule('.bel-teama', 'background-color: #27ae60;');
+        this.addCSSRule('.bel-teamb', 'background-color: #c0392b;');
+        this.addCSSRule('.bel-teama-color', 'color: #27ae60;');
+        this.addCSSRule('.bel-teamb-color', 'color: #c0392b;');
+
         //Progress bars
         this.addCSSRule('.bel-progress', `
             height: 4px;
@@ -141,9 +211,6 @@ class Stylesheet{
             margin-top: 2px;
             overflow: hidden;
         `);
-
-        this.addCSSRule('.bel-teama', 'background-color: #27ae60;');
-        this.addCSSRule('.bel-teamb', 'background-color: #c0392b;');
 
         this.addCSSRule('.bel-progress-bar', `
             box-shadow: none;
