@@ -1,6 +1,6 @@
 class FeedProgressBar extends React.Component{
     render(){
-        var aPerc, bPerc = 0;
+        var aPerc = 0, bPerc = 0;
 
         if(this.props.a+this.props.b !== 0){
             aPerc = Math.round((this.props.a * 100 / (this.props.a+this.props.b)));

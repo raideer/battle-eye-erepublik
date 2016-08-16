@@ -13,22 +13,17 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // ==UserScript==
 // @name        Battle Eye Live
 // @namespace   battle-eye-live
-// @author      Industrials / Raideer
-// @homepage    https://github.com/raideer
+// @author      Industrials
+// @homepage    https://docs.google.com/spreadsheets/d/1Ebqp5Hb8KmGvX6X0FXmALO30Fv-IyfJHUGPkjKey8tg
 // @description LIVE battlefield statistics
 // @include     http*://www.erepublik.com/*/military/battlefield-new/*
-// @version     1.1.10-a
+// @version     1.2.1
 // @require     https://fb.me/react-15.2.1.min.js
 // @require     https://fb.me/react-dom-15.2.1.min.js
-// @require     https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/modals.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.0.1/async.min.js
-// @resource    modals https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/modals.min.css
 // @run-at      document-idle
-// @grant       unsafeWindow
-// @grant       GM_info
-// @grant       GM_addStyle
-// @grant       GM_getResourceText
-// @grant       GM_xmlhttpRequest
+// @grant       none
+// @noframes
 // ==/UserScript==
 
 var DpsHandler = function () {
@@ -85,7 +80,7 @@ var Feed = function (_React$Component) {
 
             var divs = [];
 
-            if (unsafeWindow.SERVER_DATA.division == 11) {
+            if (SERVER_DATA.division == 11) {
                 var divInfo = [[11, 'Air Division']];
             } else {
                 var divInfo = [[1, 'Division 1'], [2, 'Division 2'], [3, 'Division 3'], [4, 'Division 4']];
@@ -94,7 +89,7 @@ var Feed = function (_React$Component) {
             for (var d in divInfo) {
                 var info = divInfo[d];
                 if (!this.props.settings.showOtherDivs.value) {
-                    if (info[0] != unsafeWindow.SERVER_DATA.division) {
+                    if (info[0] != SERVER_DATA.division) {
                         continue;
                     }
                 }
@@ -148,7 +143,7 @@ var FeedDivision = function (_React$Component2) {
             var right = this.props.data.right;
             var settings = this.props.settings;
             var highlightDivision = false;
-            if (settings.highlightDivision.value && unsafeWindow.SERVER_DATA.division == this.props.div[0]) {
+            if (settings.highlightDivision.value && SERVER_DATA.division == this.props.div[0]) {
                 highlightDivision = true;
             }
             return React.createElement(
@@ -326,7 +321,7 @@ var FeedProgressBar = function (_React$Component3) {
     _createClass(FeedProgressBar, [{
         key: 'render',
         value: function render() {
-            var aPerc,
+            var aPerc = 0,
                 bPerc = 0;
 
             if (this.props.a + this.props.b !== 0) {
@@ -430,10 +425,11 @@ var Header = function (_React$Component6) {
             };
         }
     }, {
-        key: 'getSettingsButtonStyle',
-        value: function getSettingsButtonStyle() {
+        key: 'getFlagStyle',
+        value: function getFlagStyle(c) {
             return {
-                marginTop: "-3px"
+                backgroundImage: 'url(\'/images/flags_png/L/' + c + '.png\')',
+                backgroundPosition: "-4px -4px"
             };
         }
     }, {
@@ -453,7 +449,7 @@ var Header = function (_React$Component6) {
                             { className: 'bel-version' },
                             this.props.data.version
                         ),
-                        ' BATTLE EYE LIVE'
+                        ' BATTLE EYE'
                     ),
                     React.createElement(
                         'li',
@@ -488,12 +484,16 @@ var Header = function (_React$Component6) {
                     React.createElement(
                         'div',
                         { className: 'bel-col-1-2 text-left bel-teama-color', style: this.getTeamElementStyle() },
+                        React.createElement('div', { style: this.getFlagStyle(this.props.data.teamAName), className: 'bel-country' }),
+                        ' ',
                         this.props.data.teamAName
                     ),
                     React.createElement(
                         'div',
                         { className: 'bel-col-1-2 text-right bel-teamb-color', style: this.getTeamElementStyle() },
-                        this.props.data.teamBName
+                        this.props.data.teamBName,
+                        ' ',
+                        React.createElement('div', { style: this.getFlagStyle(this.props.data.teamBName), className: 'bel-country' })
                     )
                 )
             );
@@ -540,20 +540,46 @@ var SettingsField = function (_React$Component8) {
     }
 
     _createClass(SettingsField, [{
+        key: 'getInput',
+        value: function getInput() {
+            var setting = this.props.setting;
+            // console.log(setting.value);
+            if (typeof setting.value == "boolean") {
+                return React.createElement(
+                    'div',
+                    null,
+                    React.createElement('input', { type: 'checkbox', defaultChecked: setting.value, className: 'bel-settings-field', id: setting.field.id, name: setting.field.id }),
+                    React.createElement(
+                        'label',
+                        { htmlFor: setting.field.id },
+                        setting.field.name
+                    )
+                );
+            } else {
+                return React.createElement(
+                    'div',
+                    null,
+                    React.createElement(
+                        'label',
+                        { htmlFor: setting.field.id },
+                        setting.field.name
+                    ),
+                    React.createElement(
+                        'div',
+                        null,
+                        React.createElement('input', { type: 'text', defaultValue: setting.value, className: 'bel-settings-field', id: setting.field.id, name: setting.field.id })
+                    )
+                );
+            }
+        }
+    }, {
         key: 'render',
         value: function render() {
             var setting = this.props.setting;
             return React.createElement(
                 'div',
                 { className: 'bel-checkbox' },
-                React.createElement('input', { type: 'checkbox', defaultChecked: setting.value, className: 'bel-settings-field', id: setting.field.id, name: setting.field.id }),
-                React.createElement(
-                    'label',
-                    { htmlFor: setting.field.id },
-                    setting.field.name,
-                    ' ',
-                    setting.value
-                ),
+                this.getInput(),
                 React.createElement(
                     'div',
                     { className: 'bel-field-description' },
@@ -644,6 +670,13 @@ var SettingsModal = function (_React$Component10) {
             return components;
         }
     }, {
+        key: 'resetSettings',
+        value: function resetSettings() {
+            battleEyeLive.resetSettings();
+            this.forceUpdate();
+            alert('Settings reset');
+        }
+    }, {
         key: 'render',
         value: function render() {
             return React.createElement(
@@ -660,6 +693,15 @@ var SettingsModal = function (_React$Component10) {
                             null,
                             React.createElement(
                                 'a',
+                                { onClick: this.resetSettings, href: 'javascript:void(0);', className: 'bel-btn bel-btn-inverse bel-btn-alert-success' },
+                                'Reset to defaults'
+                            )
+                        ),
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(
+                                'a',
                                 { href: 'https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/battle-eye-live.user.js', className: 'bel-btn bel-btn-inverse' },
                                 'Update'
                             )
@@ -669,7 +711,7 @@ var SettingsModal = function (_React$Component10) {
                             null,
                             React.createElement(
                                 'button',
-                                { id: 'bel-close-modal', onClick: this.props.closeModal, className: 'bel-btn bel-btn-default' },
+                                { id: 'bel-close-modal', onClick: this.props.closeModal, className: 'bel-btn bel-btn-danger' },
                                 'Close'
                             )
                         )
@@ -733,6 +775,178 @@ var Template = function (_React$Component11) {
     return Template;
 }(React.Component);
 
+var Module = function () {
+    function Module(name, description) {
+        _classCallCheck(this, Module);
+
+        var self = this;
+        self.name = name;
+        self.desc = description;
+    }
+
+    _createClass(Module, [{
+        key: 'defineSettings',
+        value: function defineSettings() {
+            return [];
+        }
+    }, {
+        key: 'run',
+        value: function run(settings) {
+            return null;
+        }
+    }]);
+
+    return Module;
+}();
+
+var AutoShooter = function (_Module) {
+    _inherits(AutoShooter, _Module);
+
+    function AutoShooter() {
+        _classCallCheck(this, AutoShooter);
+
+        return _possibleConstructorReturn(this, Object.getPrototypeOf(AutoShooter).call(this, 'AutoShooter', 'Automatically shoots, when the FIGHT button is held'));
+    }
+
+    _createClass(AutoShooter, [{
+        key: 'defineSettings',
+        value: function defineSettings() {
+            return [['autoShooterEnabled', false, "Enable AutoShooter", "Automatically shoots, when the FIGHT button is held"], ['autoShooterDelay', 1500, "Delay between shots (in ms)"]];
+        }
+    }, {
+        key: 'run',
+        value: function run() {
+            var tid;
+
+            function format(str) {
+                return ("" + str).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+
+            document.getElementById("fight_btn").addEventListener("mousedown", function () {
+                if (!settings.autoShooterEnabled.value) {
+                    return;
+                }
+                var action = function action() {
+                    $j.post("/" + erepublik.settings.culture + "/military/fight-shoo" + (SERVER_DATA.onAirforceBattlefield ? "oo" : "o") + "t/" + SERVER_DATA.battleId, {
+                        sideId: SERVER_DATA.countryId,
+                        battleId: SERVER_DATA.battleId,
+                        _token: SERVER_DATA.csrfToken
+                    }, function (data) {
+                        console.log("Request sent. Received: " + data.message);
+                        if (data.message == "ENEMY_KILLED") {
+
+                            $j("#rank_min").text(format(data.rank.points) + " Rank Points");
+                            $j("#rank_status_gained").css("width", data.rank.percentage + "%");
+                            window.totalPrestigePoints += data.hits;
+                            $j("#prestige_value").text(format(window.totalPrestigePoints));
+                            $j("#side_bar_currency_account_value").text(format(data.details.currency));
+                            $j(".left_player .energy_progress").css("width", data.details.current_energy_ratio + "%");
+                            $j(".right_player .energy_progress").css("width", data.enemy.energyRatio + "%");
+                            $j(".weapon_no").text(data.user.weaponQuantity);
+                            globalNS.updateSideBar(data.details);
+                        } else if (data.message == "ENEMY_ATTACKED" || data.message == "LOW_HEALTH") {
+                            // alert("Low health. AutoShooter stopped");
+                            if (tid) clearInterval(tid);
+                        } else if (data.message == "ZONE_INACTIVE") {
+                            // alert("Zone is inactive. AutoShooter stopped");
+                            if (tid) clearInterval(tid);
+                        }
+                    });
+                };
+
+                // action();
+                tid = setInterval(action, Number(settings.autoShooterDelay.value));
+                console.log("AutoShooter started");
+            });
+
+            document.addEventListener("mouseup", function () {
+                if (tid) clearInterval(tid);
+            });
+
+            // alert("Auto shooter is ready");
+        }
+    }]);
+
+    return AutoShooter;
+}(Module);
+
+var ModuleLoader = function () {
+    function ModuleLoader(storage) {
+        _classCallCheck(this, ModuleLoader);
+
+        this.modules = {};
+        this.storage = storage;
+    }
+
+    _createClass(ModuleLoader, [{
+        key: 'load',
+        value: function load(module) {
+            if (module instanceof Module) {
+                this.modules[module.name] = module;
+                var settings = module.defineSettings();
+                for (var i in settings) {
+                    var s = settings[i];
+                    this.storage.define(s[0], s[1], module.name, s[2], s[3]);
+                }
+            }
+        }
+    }, {
+        key: 'get',
+        value: function get(name) {
+            return this.modules[name];
+        }
+    }, {
+        key: 'run',
+        value: function run() {
+            for (var i in this.modules) {
+                try {
+                    this.modules[i].run();
+                } catch (e) {
+                    console.error('Failed to run module ' + i + '!: ' + e);
+                }
+            }
+        }
+    }]);
+
+    return ModuleLoader;
+}();
+
+var Other = function (_Module2) {
+    _inherits(Other, _Module2);
+
+    function Other() {
+        _classCallCheck(this, Other);
+
+        return _possibleConstructorReturn(this, Object.getPrototypeOf(Other).call(this, 'Other', 'Other miscellaneous enhancements'));
+    }
+
+    _createClass(Other, [{
+        key: 'defineSettings',
+        value: function defineSettings() {
+            return [['otherFixCometchat', true, "Cometchat fix", "Removes the fading, clickblocking line from the bottom of the screen. (Requires a page refresh)"]];
+        }
+    }, {
+        key: 'run',
+        value: function run() {
+            if (settings.otherFixCometchat.value) {
+                var fixCometchat = function fixCometchat() {
+                    var cometchat = document.getElementById('cometchat_base');
+                    if (cometchat !== null) {
+                        var style = "width:auto;position:aboslute;right:0;background:none;";
+                        cometchat.setAttribute('style', style);
+                        clearInterval(waitForCometchat);
+                    }
+                };
+
+                //Removing that annoying cometchat background
+                var waitForCometchat = setInterval(fixCometchat, 500);
+            }
+        }
+    }]);
+
+    return Other;
+}(Module);
+
 var Divisions = function () {
     function Divisions() {
         _classCallCheck(this, Divisions);
@@ -787,12 +1001,12 @@ var DivisionStats = function (_DpsHandler) {
     function DivisionStats(division) {
         _classCallCheck(this, DivisionStats);
 
-        var _this12 = _possibleConstructorReturn(this, Object.getPrototypeOf(DivisionStats).call(this, 10));
+        var _this14 = _possibleConstructorReturn(this, Object.getPrototypeOf(DivisionStats).call(this, 10));
 
-        _this12.division = division;
-        _this12.hits = 0;
-        _this12.damage = 0;
-        return _this12;
+        _this14.division = division;
+        _this14.hits = 0;
+        _this14.damage = 0;
+        return _this14;
     }
 
     _createClass(DivisionStats, [{
@@ -930,7 +1144,7 @@ var Layout = function () {
 
     _createClass(Layout, [{
         key: 'update',
-        value: function update(feedData, settings) {
+        value: function update(feedData) {
             ReactDOM.render(React.createElement(Template, { settings: settings, feedData: feedData, headerData: this.headerData }), document.getElementById('battle_eye_live'));
         }
     }]);
@@ -944,13 +1158,13 @@ var Stats = function (_DpsHandler2) {
     function Stats(id) {
         _classCallCheck(this, Stats);
 
-        var _this13 = _possibleConstructorReturn(this, Object.getPrototypeOf(Stats).call(this, 10));
+        var _this15 = _possibleConstructorReturn(this, Object.getPrototypeOf(Stats).call(this, 10));
 
-        _this13.id = id;
-        _this13.damage = 0;
-        _this13.hits = 0;
-        _this13.constructDivisions();
-        return _this13;
+        _this15.id = id;
+        _this15.damage = 0;
+        _this15.hits = 0;
+        _this15.constructDivisions();
+        return _this15;
     }
 
     _createClass(Stats, [{
@@ -1016,6 +1230,7 @@ var Storage = function () {
 
         self.prepend = "battle_eye_";
         self.fields = {};
+        self.defaults = {};
     }
 
     _createClass(Storage, [{
@@ -1023,7 +1238,9 @@ var Storage = function () {
         value: function set(id, value) {
             var self = this;
             localStorage.setItem('' + self.prepend + id, value);
+            // if(settings.enableLogging.value){
             console.log('' + self.prepend + id + ' = ' + value);
+            // }
         }
     }, {
         key: 'get',
@@ -1057,14 +1274,39 @@ var Storage = function () {
         value: function define(id, value, group, name, desc) {
             var self = this;
 
-            if (self.fields[id] === undefined) {
-                self.fields[id] = {
-                    id: id, name: name, desc: desc, group: group
-                };
-            }
+            self.defaults[id] = {
+                id: id, name: name, desc: desc, group: group, value: value
+            };
+        }
+    }, {
+        key: 'loadSettings',
+        value: function loadSettings() {
+            var self = this;
 
-            if (!self.has(id)) {
-                self.set(id, value);
+            for (var i in self.defaults) {
+                var field = self.defaults[i];
+
+                if (self.fields[i] === undefined) {
+                    self.fields[i] = {
+                        id: field.id,
+                        name: field.name,
+                        desc: field.desc,
+                        group: field.group
+                    };
+                }
+
+                if (!self.has(i)) {
+                    self.set(i, field.value);
+                }
+            }
+        }
+    }, {
+        key: 'loadDefaults',
+        value: function loadDefaults() {
+            var self = this;
+
+            for (var i in self.defaults) {
+                self.set(i, self.defaults[i].value);
             }
         }
     }, {
@@ -1103,6 +1345,8 @@ var Stylesheet = function () {
         this.addCSSRule('.clearfix:after', '\n            content: "";\n            display: table;\n            clear: both;\n        ');
 
         //General
+        this.addCSSRule('.bel-country', '\n            width: 28px;\n            height: 25px;\n            margin-bottom: -5px;\n            margin-left: 5px;\n            margin-right: 5px;\n            display: inline-block;\n        ');
+
         this.addCSSRule("#battle_eye_live", '\n            width: 100%;\n            position:relative;\n            float:left;\n            padding:10px;\n            box-sizing: border-box;\n            border-radius:0px 0px 20px 20px;\n            background-color: #ffffff;\n            color: #34495e;\n            font-size:14px;\n            font-family: "Lato",Helvetica,Arial,sans-serif;\n            text-align: center;\n            line-height: 1.7;\n        ');
 
         this.addCSSRule('.color-silver', 'color: #bdc3c7');
@@ -1136,7 +1380,7 @@ var Stylesheet = function () {
         this.addCSSRule('.list-inline li', 'display: inline-block;');
 
         //Settings
-        this.addCSSRule('.bel-settings', '\n            z-index: 100;\n            position: absolute;\n            width: 100%;\n            height: 100%;\n            opacity: 0.95;\n            top: 0;\n            left: 0;\n            background-color: #ffffff;\n            padding: 14px;\n            text-align: left;\n            overflow-y: scroll;\n\n        ');
+        this.addCSSRule('.bel-settings', '\n            z-index: 100;\n            position: absolute;\n            width: 100%;\n            opacity: 0.95;\n            top: 0;\n            left: 0;\n            background-color: #ffffff;\n            padding: 14px;\n            text-align: left;\n            overflow-y: scroll;\n            height: 100%;\n            min-height: 500px;\n\n        ');
 
         this.addCSSRule('.bel-settings-group', '\n            background-color: #34495e;\n            color: #ecf0f1;\n            padding-left: 10px;\n        ');
 
@@ -1152,6 +1396,26 @@ var Stylesheet = function () {
 
         //Button
         this.addCSSRule('.bel-btn', '\n            -webkit-user-select: none;\n            -moz-user-select: none;\n            -ms-user-select: none;\n            user-select: none;\n            background-image: none;\n            border: none !important;\n            cursor: pointer;\n            font-size: 13px;\n            font-weight: normal;\n            margin-bottom: 0;\n            text-align: center;\n            border-radius: 4px;\n            padding: 3px 8px;\n            font-family: "Lato",Helvetica,Arial,sans-serif;\n        ');
+        //
+        // this.addCSSRule('.bel-btn-alert-success', `
+        //     position: relative;
+        //     overflow: hidden;
+        // `);
+        //
+        // this.addCSSRule('.bel-btn-alert-success:after', `
+        //     content: " ";
+        //     position: absolute;
+        //     width: 100%;
+        //     height: 100%;
+        //     top: -100%;
+        //     left: 0;
+        //     transition: top 1s;
+        //     background-color: #27ae60;
+        // `);
+        //
+        // this.addCSSRule('.bel-btn-alert-success.active:after', `
+        //     top: 0;
+        // `);
 
         this.addCSSRule('a.bel-btn', '\n            padding: 4px 8px;\n        ');
 
@@ -1199,8 +1463,7 @@ var Stylesheet = function () {
     }, {
         key: 'load',
         value: function load() {
-            GM_addStyle(GM_getResourceText('modals'));
-            GM_addStyle(this.sheet);
+            $j('head').append('<style>' + this.sheet + '</style>');
         }
     }]);
 
@@ -1224,17 +1487,20 @@ var Utils = function () {
 
 var UTILS = new Utils();
 
+var settings = {};
+var modules = null;
+var storage = null;
 var battleEyeLive = {
     init: function init() {
         var self = this;
         console.log('Battle Eye INIT');
-        self.window = unsafeWindow;
 
-        var storage = self.settingsStorage = new Storage();
+        storage = self.settingsStorage = new Storage();
         if (storage === false) {
             return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
         }
 
+        //Defining default settings
         storage.define('showOtherDivs', true, 'Structure', "Show other divisions");
         storage.define('reduceLoad', false, 'Performance', "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance");
         storage.define('highlightDivision', true, 'Visual', "Highlight current division");
@@ -1245,16 +1511,24 @@ var battleEyeLive = {
         storage.define('showDamagePerc', true, 'Structure', "Show Damage percentages");
         storage.define('showDamageBar', true, 'Bars', "Show Damage bar");
         storage.define('gatherBattleStats', true, 'Performance', "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time.");
+        storage.define('enableLogging', false, 'Other', "Enable logging to console");
 
-        self.settings = storage.getAll();
+        modules = new ModuleLoader(self.settingsStorage);
+        modules.load(new AutoShooter());
+        modules.load(new Other());
+        //
+        //Loading settings
+        storage.loadSettings();
+        settings = storage.getAll();
+        //
 
         self.events = new EventHandler();
-        self.teamA = new Stats(self.window.SERVER_DATA.leftBattleId);
-        self.teamAName = this.window.SERVER_DATA.countries[self.window.SERVER_DATA.leftBattleId];
-        self.teamB = new Stats(self.window.SERVER_DATA.rightBattleId);
-        self.teamBName = this.window.SERVER_DATA.countries[self.window.SERVER_DATA.rightBattleId];
+        self.teamA = new Stats(SERVER_DATA.leftBattleId);
+        self.teamAName = SERVER_DATA.countries[SERVER_DATA.leftBattleId];
+        self.teamB = new Stats(SERVER_DATA.rightBattleId);
+        self.teamBName = SERVER_DATA.countries[SERVER_DATA.rightBattleId];
 
-        if (self.settings.gatherBattleStats.value) {
+        if (settings.gatherBattleStats.value) {
             self.getBattleStats(function (leftDamage, rightDamage, leftKills, rightKills) {
                 var divs = [1, 2, 3, 4, 11];
 
@@ -1299,37 +1573,43 @@ var battleEyeLive = {
             'version': GM_info.script.version
         });
 
-        self.layout.update(self.getTeamStats(), self.settings);
+        self.layout.update(self.getTeamStats());
 
-        self.window.pomelo.disconnect = exportFunction(function () {}, self.window);
+        pomelo.disconnect = function () {};
 
         self.checkForUpdates();
 
         [].forEach.call(document.querySelectorAll('.bel-settings-field'), function (div) {
             div.addEventListener('change', function (event) {
                 var input = event.target;
-                var value = input.checked;
-                self.settingsStorage.set(input.name, input.checked);
-                self.settings[input.name].value = input.checked;
+
+                if (input.type == "checkbox") {
+                    var value = input.checked;
+                } else {
+                    var value = input.value;
+                }
+                self.settingsStorage.set(input.name, value);
+                settings[input.name].value = value;
             });
         });
 
         self.runTicker();
         self.handleEvents();
+        modules.run();
+    },
+
+    resetSettings: function resetSettings() {
+        storage.loadDefaults();
+        settings = storage.getAll();
     },
 
     checkForUpdates: function checkForUpdates() {
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: "https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/data.json",
-            onload: function onload(response) {
-                var data = JSON.parse(response.responseText);
-                var version = parseInt(data.version.replace(/\D/g, ""));
-                var currentVersion = parseInt(GM_info.script.version.replace(/\D/g, ""));
-                if (currentVersion != version) {
-                    document.querySelector('.bel-version').classList.add('bel-version-outdated');
-                    document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/battle-eye-live.user.js">Update</a>';
-                }
+        $j.get('https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/data.json', function (data) {
+            var version = parseInt(data.version.replace(/\D/g, ""));
+            var currentVersion = parseInt(GM_info.script.version.replace(/\D/g, ""));
+            if (currentVersion != version) {
+                document.querySelector('.bel-version').classList.add('bel-version-outdated');
+                document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/battle-eye-live.user.js">Update</a>';
             }
         });
     },
@@ -1343,33 +1623,32 @@ var battleEyeLive = {
 
     getBattleStats: function getBattleStats(callback) {
         var self = this;
-        var token = document.querySelector('input[name="_token"]').value;
-        var battleId = self.window.SERVER_DATA.battleId;
-        var division = self.window.SERVER_DATA.division;
-        var attacker = self.window.SERVER_DATA.leftBattleId;
-        var defender = self.window.SERVER_DATA.rightBattleId;
-        var round = self.window.SERVER_DATA.zoneId;
+        var token = csrfToken;
+        var attacker = SERVER_DATA.leftBattleId;
+        var defender = SERVER_DATA.rightBattleId;
 
-        var attackerData = { div1: [], div2: [], div3: [], div4: [], div11: [] };
-        var defenderData = { div1: [], div2: [], div3: [], div4: [], div11: [] };;
-        var attackerKillData = { div1: [], div2: [], div3: [], div4: [], div11: [] };;
-        var defenderKillData = { div1: [], div2: [], div3: [], div4: [], div11: [] };;
+        var attackerData = { div1: [], div2: [], div3: [], div4: [], div11: [] },
+            defenderData = { div1: [], div2: [], div3: [], div4: [], div11: [] },
+            attackerKillData = { div1: [], div2: [], div3: [], div4: [], div11: [] },
+            defenderKillData = { div1: [], div2: [], div3: [], div4: [], div11: [] };
 
         var request = function request(div, pageLeft, pageRight, cb, type) {
             if (type == undefined) {
                 type = 'damage';
             }
-            GM_xmlhttpRequest({
-                method: "POST",
-                url: "http://www.erepublik.com/en/military/battle-console",
-                data: '_token=' + token + '&action=battleStatistics&battleId=' + battleId + '&division=' + div + '&leftPage=' + pageLeft + '&rightPage=' + pageRight + '&round=' + round + '&type=' + type + '&zoneId=1',
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                onload: function onload(response) {
-                    var data = JSON.parse(response.responseText);
-                    cb(data);
-                }
+
+            $j.post('http://www.erepublik.com/en/military/battle-console', {
+                _token: window.csrfToken,
+                action: 'battleStatistics',
+                battleId: SERVER_DATA.battleId,
+                division: div,
+                leftPage: pageLeft,
+                rightPage: pageRight,
+                round: SERVER_DATA.zoneId,
+                type: type,
+                zoneId: 1
+            }, function (data) {
+                cb(data);
             });
         };
 
@@ -1425,7 +1704,7 @@ var battleEyeLive = {
             });
         };
 
-        var divRange = division == 11 ? [11] : [1, 2, 3, 4];
+        var divRange = SERVER_DATA.division == 11 ? [11] : [1, 2, 3, 4];
 
         async.each(divRange, damageHandler.bind(self), function () {
             async.each(divRange, killsHandler.bind(self), function () {
@@ -1455,7 +1734,7 @@ var battleEyeLive = {
         self.events.on('tick', function (timeData) {
             self.teamA.updateDps(timeData);
             self.teamB.updateDps(timeData);
-            self.layout.update(self.getTeamStats(), self.settings);
+            self.layout.update(self.getTeamStats());
         });
     },
 
@@ -1463,18 +1742,18 @@ var battleEyeLive = {
         var self = this;
 
         var handler = function handler(data) {
-            if (self.window.currentPlayerDisplayRateValue !== "Maximum") {
-                if (self.window.battleFX.checkPlayerDisplayRate(self.window.currentPlayerDisplayRateValue)) {
-                    self.window.battleFX.populatePlayerData(data);
+            if (currentPlayerDisplayRateValue !== "Maximum") {
+                if (battleFX.checkPlayerDisplayRate(currentPlayerDisplayRateValue)) {
+                    battleFX.populatePlayerData(data);
                 }
             } else {
-                self.window.battleFX.populatePlayerData(data);
+                battleFX.populatePlayerData(data);
             }
 
             self.handle(data);
         };
 
-        self.window.pomelo.on('onMessage', exportFunction(handler, unsafeWindow));
+        pomelo.on('onMessage', handler);
     },
     handle: function handle(data) {
         var self = this;
@@ -1483,8 +1762,8 @@ var battleEyeLive = {
 
         self.teamA.handle(data);
         self.teamB.handle(data);
-        if (!self.settings.reduceLoad.value) {
-            self.layout.update(self.getTeamStats(), self.settings);
+        if (!settings.reduceLoad.value) {
+            self.layout.update(self.getTeamStats());
         }
     }
 };
@@ -1492,14 +1771,4 @@ var battleEyeLive = {
 battleEyeLive.init();
 setTimeout(function () {
     battleEyeLive.overridePomelo();
-    //Removing that annoying cometchat background
-    var waitForCometchat = setInterval(fixCometchat, 500);
-    function fixCometchat() {
-        var cometchat = document.getElementById('cometchat_base');
-        if (cometchat !== null) {
-            var style = "width:auto;position:aboslute;right:0;background:none;";
-            cometchat.setAttribute('style', style);
-            clearInterval(waitForCometchat);
-        }
-    }
 }, 2000);

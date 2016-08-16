@@ -9,11 +9,11 @@ class Layout{
         document.getElementById('content').appendChild(battleEye);
 
         style.load();
-        // 
+        //
         // this.update(null);
     }
 
-    update(feedData, settings){
+    update(feedData){
         ReactDOM.render(<Template settings={settings} feedData={feedData} headerData={this.headerData} />, document.getElementById('battle_eye_live'));
     }
 }

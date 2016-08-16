@@ -13,7 +13,7 @@ class FeedDivision extends React.Component{
         var right = this.props.data.right;
         var settings = this.props.settings;
         var highlightDivision = false;
-        if(settings.highlightDivision.value && unsafeWindow.SERVER_DATA.division == this.props.div[0]){
+        if(settings.highlightDivision.value && SERVER_DATA.division == this.props.div[0]){
             highlightDivision = true;
         }
         return (

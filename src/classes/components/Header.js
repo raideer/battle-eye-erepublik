@@ -13,9 +13,10 @@ class Header extends React.Component{
         };
     }
 
-    getSettingsButtonStyle(){
+    getFlagStyle(c){
         return {
-            marginTop: "-3px"
+            backgroundImage: `url('/images/flags_png/L/${c}.png')`,
+            backgroundPosition: "-4px -4px"
         };
     }
 
@@ -24,7 +25,7 @@ class Header extends React.Component{
             <div id="battle_eye_header">
                 <ul className="list-unstyled list-inline text-left bel-header-menu" style={this.getHeaderListStyle()}>
                     <li id="bel-version">
-                        <span className="bel-version">{this.props.data.version}</span> BATTLE EYE LIVE
+                        <span className="bel-version">{this.props.data.version}</span> BATTLE EYE
                     </li>
 
                     <li className="pull-right">
@@ -37,10 +38,10 @@ class Header extends React.Component{
 
                 <div className="bel-grid">
                     <div className="bel-col-1-2 text-left bel-teama-color" style={this.getTeamElementStyle()}>
-                        {this.props.data.teamAName}
+                        <div style={this.getFlagStyle(this.props.data.teamAName)} className="bel-country"></div> {this.props.data.teamAName}
                     </div>
                     <div className="bel-col-1-2 text-right bel-teamb-color" style={this.getTeamElementStyle()}>
-                        {this.props.data.teamBName}
+                        {this.props.data.teamBName} <div style={this.getFlagStyle(this.props.data.teamBName)} className="bel-country"></div>
                     </div>
                 </div>
             </div>

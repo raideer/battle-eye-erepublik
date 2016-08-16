@@ -25,6 +25,15 @@ class Stylesheet{
         `);
 
         //General
+        this.addCSSRule('.bel-country', `
+            width: 28px;
+            height: 25px;
+            margin-bottom: -5px;
+            margin-left: 5px;
+            margin-right: 5px;
+            display: inline-block;
+        `);
+
         this.addCSSRule("#battle_eye_live", `
             width: 100%;
             position:relative;
@@ -93,7 +102,6 @@ class Stylesheet{
             z-index: 100;
             position: absolute;
             width: 100%;
-            height: 100%;
             opacity: 0.95;
             top: 0;
             left: 0;
@@ -101,6 +109,8 @@ class Stylesheet{
             padding: 14px;
             text-align: left;
             overflow-y: scroll;
+            height: 100%;
+            min-height: 500px;
 
         `);
 
@@ -149,6 +159,26 @@ class Stylesheet{
             padding: 3px 8px;
             font-family: "Lato",Helvetica,Arial,sans-serif;
         `);
+        //
+        // this.addCSSRule('.bel-btn-alert-success', `
+        //     position: relative;
+        //     overflow: hidden;
+        // `);
+        //
+        // this.addCSSRule('.bel-btn-alert-success:after', `
+        //     content: " ";
+        //     position: absolute;
+        //     width: 100%;
+        //     height: 100%;
+        //     top: -100%;
+        //     left: 0;
+        //     transition: top 1s;
+        //     background-color: #27ae60;
+        // `);
+        //
+        // this.addCSSRule('.bel-btn-alert-success.active:after', `
+        //     top: 0;
+        // `);
 
         this.addCSSRule('a.bel-btn', `
             padding: 4px 8px;
@@ -252,7 +282,6 @@ class Stylesheet{
     }
 
     load(){
-        GM_addStyle(GM_getResourceText('modals'));
-        GM_addStyle(this.sheet);
+        $j('head').append(`<style>${this.sheet}</style>`);
     }
 }

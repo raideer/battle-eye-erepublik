@@ -7,12 +7,15 @@ class Storage{
 
         self.prepend = "battle_eye_";
         self.fields = {};
+        self.defaults = {};
     }
 
     set(id, value){
         var self = this;
         localStorage.setItem(`${self.prepend}${id}`, value);
-        console.log(`${self.prepend}${id} = ${value}`);
+        // if(settings.enableLogging.value){
+            console.log(`${self.prepend}${id} = ${value}`);
+        // }
     }
 
     get(id){
@@ -43,14 +46,37 @@ class Storage{
     define(id, value, group, name, desc){
         var self = this;
 
-        if(self.fields[id] === undefined){
-            self.fields[id] = {
-                id, name, desc, group
+        self.defaults[id] = {
+            id, name, desc, group, value
+        }
+    }
+
+    loadSettings(){
+        var self = this;
+
+        for(var i in self.defaults){
+            var field = self.defaults[i];
+
+            if(self.fields[i] === undefined){
+                self.fields[i] = {
+                    id: field.id,
+                    name: field.name,
+                    desc: field.desc,
+                    group: field.group
+                };
+            }
+
+            if(!self.has(i)){
+                self.set(i, field.value);
             }
         }
+    }
 
-        if(!self.has(id)){
-            self.set(id, value);
+    loadDefaults(){
+        var self = this;
+
+        for(var i in self.defaults){
+            self.set(i, self.defaults[i].value);
         }
     }
 

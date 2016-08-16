@@ -15,6 +15,8 @@ gulp.task('scripts1', function() {
     return gulp.src([
         './src/classes/DpsHandler.js',
         './src/classes/components/*.js',
+        './src/classes/modules/Module.js',
+        './src/classes/modules/*.js',
         './src/classes/*.js',
         './src/main.js'
     ])
@@ -43,6 +45,8 @@ gulp.task('scriptsRaw', function() {
         './src/meta.js',
         './src/classes/DpsHandler.js',
         './src/classes/components/*.js',
+        './src/classes/modules/Module.js',
+        './src/classes/modules/*.js',
         './src/classes/*.js',
         './src/main.js'
     ])
