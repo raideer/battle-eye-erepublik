@@ -90,18 +90,18 @@ var battleEyeLive = {
 
         self.checkForUpdates();
 
-        [].forEach.call(document.querySelectorAll('.bel-settings-field'), function(div){
-            div.addEventListener('change', function(event){
-                var input = event.target;
+        $j('.bel-settings-field').on('change', function(event) {
+            var input = event.target;
 
-                if(input.type == "checkbox"){
-                    var value = input.checked;
-                }else{
-                    var value = input.value;
-                }
-                self.settingsStorage.set(input.name, value);
-                settings[input.name].value = value;
-            });
+            if(input.type == "checkbox"){
+                var value = input.checked;
+            }else{
+                var value = input.value;
+            }
+            self.settingsStorage.set(input.name, value);
+            settings[input.name].value = value;
+
+            $j(this).notify("Saved", 'success');
         });
 
         self.runTicker();
@@ -134,7 +134,6 @@ var battleEyeLive = {
 
     getBattleStats: function(callback){
         var self = this;
-        var token = csrfToken;
         var attacker = SERVER_DATA.leftBattleId;
         var defender = SERVER_DATA.rightBattleId;
 
@@ -149,7 +148,7 @@ var battleEyeLive = {
             }
 
             $j.post('http://www.erepublik.com/en/military/battle-console',{
-                _token: window.csrfToken,
+                _token: SERVER_DATA.csrfToken,
                 action: 'battleStatistics',
                 battleId: SERVER_DATA.battleId,
                 division: div,

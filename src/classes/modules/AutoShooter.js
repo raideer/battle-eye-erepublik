@@ -6,6 +6,7 @@ class AutoShooter extends Module{
     defineSettings(){
         return [
             ['autoShooterEnabled', false, "Enable AutoShooter", "Automatically shoots, when the FIGHT button is held"],
+            ['autoShooterStart', false, "Start AutoShooter immediately after the button is pressed.", "Otherwise, AutoShooter will start after the shot delay"],
             ['autoShooterDelay', 1500, "Delay between shots (in ms)"]
         ];
     }
@@ -27,30 +28,44 @@ class AutoShooter extends Module{
                     battleId: SERVER_DATA.battleId,
                     _token: SERVER_DATA.csrfToken
                 }, function(data){
-                    console.log("Request sent. Received: " + data.message);
+                    if(settings.enableLogging.value){
+                        console.log("Request sent. Received: " + data.message);
+                    }
+
     				if(data.message == "ENEMY_KILLED"){
 
+                        console.log(data);
+                        window.totalPrestigePoints += data.hits;
+                        globalNS.updateSideBar(data.details);
                         $j("#rank_min").text(format(data.rank.points) + " Rank Points");
-    					$j("#rank_status_gained").css("width", data.rank.percentage + "%");
-    					window.totalPrestigePoints += data.hits;
-    					$j("#prestige_value").text(format(window.totalPrestigePoints));
-    					$j("#side_bar_currency_account_value").text(format(data.details.currency));
-    					$j(".left_player .energy_progress").css("width", data.details.current_energy_ratio + "%");
-    					$j(".right_player .energy_progress").css("width", data.enemy.energyRatio + "%");
-    					$j(".weapon_no").text(data.user.weaponQuantity);
-    					globalNS.updateSideBar(data.details);
+                        $j("#rank_status_gained").css("width", data.rank.percentage + "%");
+
+                        $j("#prestige_value").text(format(window.totalPrestigePoints));
+                        $j("#side_bar_currency_account_value").text(format(data.details.currency));
+                        $j(".left_player .energy_progress").css("width", data.details.current_energy_ratio + "%");
+                        $j(".right_player .energy_progress").css("width", data.enemy.energyRatio + "%");
+                        $j(".weapon_no").text(data.user.weaponQuantity);
+
+                        if($j('#eRS_options').length <= 0){
+                            var td = parseFloat($j('#total_damage strong').text().replace(',', ''));
+                            console.log(td);
+                            // $j('#total_damage strong').text(format(td + data.user.givenDamage));
+                        }
+
 
     				}else if(data.message == "ENEMY_ATTACKED" || data.message == "LOW_HEALTH"){
-    					// alert("Low health. AutoShooter stopped");
+                        $j('#fight_btn').notify('Low health. AutoShooter stopped', {position: "top center", className: "info"});
     					if (tid) clearInterval(tid);
     				}else if(data.message == "ZONE_INACTIVE"){
-    					// alert("Zone is inactive. AutoShooter stopped");
+                        $j('#fight_btn').notify('Zone is inactive. AutoShooter stopped', {position: "top center", className: "info"});
     					if (tid) clearInterval(tid);
     				}
                 });
             }
 
-    		// action();
+            if(settings.autoShooterStart.value){
+                action();
+            }
     		tid=setInterval(action, Number(settings.autoShooterDelay.value));
     		console.log("AutoShooter started");
     	});

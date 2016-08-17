@@ -17,10 +17,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // @homepage    https://docs.google.com/spreadsheets/d/1Ebqp5Hb8KmGvX6X0FXmALO30Fv-IyfJHUGPkjKey8tg
 // @description LIVE battlefield statistics
 // @include     http*://www.erepublik.com/*/military/battlefield-new/*
-// @version     1.2.1
+// @version     1.2.2
 // @require     https://fb.me/react-15.2.1.min.js
 // @require     https://fb.me/react-dom-15.2.1.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.0.1/async.min.js
+// @require     https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/notify.js
 // @run-at      document-idle
 // @grant       none
 // @noframes
@@ -449,7 +450,12 @@ var Header = function (_React$Component6) {
                             { className: 'bel-version' },
                             this.props.data.version
                         ),
-                        ' BATTLE EYE'
+                        ' ',
+                        React.createElement(
+                            'a',
+                            { href: 'https://goo.gl/sY1Kc8', target: '_blank' },
+                            'BATTLE EYE'
+                        )
                     ),
                     React.createElement(
                         'li',
@@ -673,8 +679,7 @@ var SettingsModal = function (_React$Component10) {
         key: 'resetSettings',
         value: function resetSettings() {
             battleEyeLive.resetSettings();
-            this.forceUpdate();
-            alert('Settings reset');
+            $j('#bel-reset-settings').notify('Settings reset', 'info');
         }
     }, {
         key: 'render',
@@ -693,7 +698,7 @@ var SettingsModal = function (_React$Component10) {
                             null,
                             React.createElement(
                                 'a',
-                                { onClick: this.resetSettings, href: 'javascript:void(0);', className: 'bel-btn bel-btn-inverse bel-btn-alert-success' },
+                                { id: 'bel-reset-settings', onClick: this.resetSettings, href: 'javascript:void(0);', className: 'bel-btn bel-btn-inverse bel-btn-alert-success' },
                                 'Reset to defaults'
                             )
                         ),
@@ -811,7 +816,7 @@ var AutoShooter = function (_Module) {
     _createClass(AutoShooter, [{
         key: 'defineSettings',
         value: function defineSettings() {
-            return [['autoShooterEnabled', false, "Enable AutoShooter", "Automatically shoots, when the FIGHT button is held"], ['autoShooterDelay', 1500, "Delay between shots (in ms)"]];
+            return [['autoShooterEnabled', false, "Enable AutoShooter", "Automatically shoots, when the FIGHT button is held"], ['autoShooterStart', false, "Start AutoShooter immediately after the button is pressed.", "Otherwise, AutoShooter will start after the shot delay"], ['autoShooterDelay', 1500, "Delay between shots (in ms)"]];
         }
     }, {
         key: 'run',
@@ -832,29 +837,42 @@ var AutoShooter = function (_Module) {
                         battleId: SERVER_DATA.battleId,
                         _token: SERVER_DATA.csrfToken
                     }, function (data) {
-                        console.log("Request sent. Received: " + data.message);
+                        if (settings.enableLogging.value) {
+                            console.log("Request sent. Received: " + data.message);
+                        }
+
                         if (data.message == "ENEMY_KILLED") {
 
+                            console.log(data);
+                            window.totalPrestigePoints += data.hits;
+                            globalNS.updateSideBar(data.details);
                             $j("#rank_min").text(format(data.rank.points) + " Rank Points");
                             $j("#rank_status_gained").css("width", data.rank.percentage + "%");
-                            window.totalPrestigePoints += data.hits;
+
                             $j("#prestige_value").text(format(window.totalPrestigePoints));
                             $j("#side_bar_currency_account_value").text(format(data.details.currency));
                             $j(".left_player .energy_progress").css("width", data.details.current_energy_ratio + "%");
                             $j(".right_player .energy_progress").css("width", data.enemy.energyRatio + "%");
                             $j(".weapon_no").text(data.user.weaponQuantity);
-                            globalNS.updateSideBar(data.details);
+
+                            if ($j('#eRS_options').length <= 0) {
+                                var td = parseFloat($j('#total_damage strong').text().replace(',', ''));
+                                console.log(td);
+                                // $j('#total_damage strong').text(format(td + data.user.givenDamage));
+                            }
                         } else if (data.message == "ENEMY_ATTACKED" || data.message == "LOW_HEALTH") {
-                            // alert("Low health. AutoShooter stopped");
-                            if (tid) clearInterval(tid);
-                        } else if (data.message == "ZONE_INACTIVE") {
-                            // alert("Zone is inactive. AutoShooter stopped");
-                            if (tid) clearInterval(tid);
-                        }
+                                $j('#fight_btn').notify('Low health. AutoShooter stopped', { position: "top center", className: "info" });
+                                if (tid) clearInterval(tid);
+                            } else if (data.message == "ZONE_INACTIVE") {
+                                $j('#fight_btn').notify('Zone is inactive. AutoShooter stopped', { position: "top center", className: "info" });
+                                if (tid) clearInterval(tid);
+                            }
                     });
                 };
 
-                // action();
+                if (settings.autoShooterStart.value) {
+                    action();
+                }
                 tid = setInterval(action, Number(settings.autoShooterDelay.value));
                 console.log("AutoShooter started");
             });
@@ -1579,18 +1597,18 @@ var battleEyeLive = {
 
         self.checkForUpdates();
 
-        [].forEach.call(document.querySelectorAll('.bel-settings-field'), function (div) {
-            div.addEventListener('change', function (event) {
-                var input = event.target;
+        $j('.bel-settings-field').on('change', function (event) {
+            var input = event.target;
 
-                if (input.type == "checkbox") {
-                    var value = input.checked;
-                } else {
-                    var value = input.value;
-                }
-                self.settingsStorage.set(input.name, value);
-                settings[input.name].value = value;
-            });
+            if (input.type == "checkbox") {
+                var value = input.checked;
+            } else {
+                var value = input.value;
+            }
+            self.settingsStorage.set(input.name, value);
+            settings[input.name].value = value;
+
+            $j(this).notify("Saved", 'success');
         });
 
         self.runTicker();
@@ -1623,7 +1641,6 @@ var battleEyeLive = {
 
     getBattleStats: function getBattleStats(callback) {
         var self = this;
-        var token = csrfToken;
         var attacker = SERVER_DATA.leftBattleId;
         var defender = SERVER_DATA.rightBattleId;
 
@@ -1638,7 +1655,7 @@ var battleEyeLive = {
             }
 
             $j.post('http://www.erepublik.com/en/military/battle-console', {
-                _token: window.csrfToken,
+                _token: SERVER_DATA.csrfToken,
                 action: 'battleStatistics',
                 battleId: SERVER_DATA.battleId,
                 division: div,

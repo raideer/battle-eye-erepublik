@@ -25,7 +25,7 @@ class Header extends React.Component{
             <div id="battle_eye_header">
                 <ul className="list-unstyled list-inline text-left bel-header-menu" style={this.getHeaderListStyle()}>
                     <li id="bel-version">
-                        <span className="bel-version">{this.props.data.version}</span> BATTLE EYE
+                        <span className="bel-version">{this.props.data.version}</span> <a href="https://goo.gl/sY1Kc8" target="_blank">BATTLE EYE</a>
                     </li>
 
                     <li className="pull-right">
