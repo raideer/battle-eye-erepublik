@@ -25,12 +25,22 @@ class Header extends React.Component{
             <div id="battle_eye_header">
                 <ul className="list-unstyled list-inline text-left bel-header-menu" style={this.getHeaderListStyle()}>
                     <li id="bel-version">
-                        <span className="bel-version">{this.props.data.version}</span> <a href="https://goo.gl/sY1Kc8" target="_blank">BATTLE EYE</a>
+                        <span className="bel-version">{this.props.data.version}</span> <a href="http://bit.ly/BattleEye" target="_blank">BATTLE EYE</a>
+                    </li>
+
+                    <li id="bel-loading">
+                        <div className="bel-spinner">
+                            <div className="rect1"></div>
+                            <div className="rect2"></div>
+                            <div className="rect3"></div>
+                            <div className="rect4"></div>
+                            <div className="rect5"></div>
+                        </div>
                     </li>
 
                     <li className="pull-right">
                         <ul className="list-unstyled list-inline">
-                            <li><a className="bel-btn bel-btn-inverse" target="_blank" href="http://www.erepublik.com/en/citizen/profile/8075739">Contact</a></li>
+                            <li><a className="bel-btn bel-btn-inverse" target="_blank" href="http://www.erepublik.com/en/citizen/profile/8075739">Contact/Donate</a></li>
                             <li><button id="battle-eye-settings" onClick={this.props.openModal} className="bel-btn bel-btn-default">Settings</button></li>
                         </ul>
                     </li>

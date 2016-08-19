@@ -14,10 +14,27 @@ class Feed extends React.Component{
 
         for(var d in divInfo){
             var info = divInfo[d];
+
             if(!this.props.settings.showOtherDivs.value){
                 if(info[0] != SERVER_DATA.division){
                     continue;
                 }
+            }
+
+            if(!this.props.settings.showDiv1.value && info[0] == 1){
+                continue;
+            }
+
+            if(!this.props.settings.showDiv2.value && info[0] == 2){
+                continue;
+            }
+
+            if(!this.props.settings.showDiv3.value && info[0] == 3){
+                continue;
+            }
+
+            if(!this.props.settings.showDiv4.value && info[0] == 4){
+                continue;
             }
 
             var divData = {};

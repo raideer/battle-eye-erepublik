@@ -15,8 +15,13 @@ class FeedProgressBar extends React.Component{
             width: bPerc + "%"
         };
 
+        var progressStyle = {};
+        if(settings.largerBars.value){
+            progressStyle.height = "8px";
+        }
+
         return (
-            <div className="bel-progress">
+            <div className="bel-progress" style={progressStyle}>
                 <div className="bel-progress-center-marker"></div>
                 <div className="bel-progress-bar bel-teama" style={teamA}></div>
                 <div className="bel-progress-bar bel-teamb" style={teamB}></div>

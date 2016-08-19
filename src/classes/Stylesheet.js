@@ -16,6 +16,63 @@ class Stylesheet{
                     border-color: #27ae60;
                 }
             }
+
+            .bel-spinner {
+              width: 50px;
+              height: 20px;
+              text-align: center;
+              font-size: 10px;
+              padding-top: 8px;
+            }
+
+            .bel-spinner > div {
+              background-color: #2980b9;
+              height: 100%;
+              width: 6px;
+              display: inline-block;
+
+              -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;
+              animation: sk-stretchdelay 1.2s infinite ease-in-out;
+            }
+
+            .bel-spinner .rect2 {
+              -webkit-animation-delay: -1.1s;
+              animation-delay: -1.1s;
+              background-color: #3498db;
+            }
+
+            .bel-spinner .rect3 {
+              -webkit-animation-delay: -1.0s;
+              animation-delay: -1.0s;
+              background-color: #2980b9;
+            }
+
+            .bel-spinner .rect4 {
+              -webkit-animation-delay: -0.9s;
+              animation-delay: -0.9s;
+              background-color: #3498db;
+            }
+
+            .bel-spinner .rect5 {
+              -webkit-animation-delay: -0.8s;
+              animation-delay: -0.8s;
+              background-color: #2980b9;
+            }
+
+            @-webkit-keyframes sk-stretchdelay {
+              0%, 40%, 100% { -webkit-transform: scaleY(0.4) }
+              20% { -webkit-transform: scaleY(1.0) }
+            }
+
+            @keyframes sk-stretchdelay {
+              0%, 40%, 100% {
+                transform: scaleY(0.4);
+                -webkit-transform: scaleY(0.4);
+              }  20% {
+                transform: scaleY(1.0);
+                -webkit-transform: scaleY(1.0);
+              }
+            }
         `;
 
         this.addCSSRule('.clearfix:after', `
@@ -110,8 +167,6 @@ class Stylesheet{
             text-align: left;
             overflow-y: scroll;
             height: 100%;
-            min-height: 500px;
-
         `);
 
         this.addCSSRule('.bel-settings-group', `
@@ -159,26 +214,6 @@ class Stylesheet{
             padding: 3px 8px;
             font-family: "Lato",Helvetica,Arial,sans-serif;
         `);
-        //
-        // this.addCSSRule('.bel-btn-alert-success', `
-        //     position: relative;
-        //     overflow: hidden;
-        // `);
-        //
-        // this.addCSSRule('.bel-btn-alert-success:after', `
-        //     content: " ";
-        //     position: absolute;
-        //     width: 100%;
-        //     height: 100%;
-        //     top: -100%;
-        //     left: 0;
-        //     transition: top 1s;
-        //     background-color: #27ae60;
-        // `);
-        //
-        // this.addCSSRule('.bel-btn-alert-success.active:after', `
-        //     top: 0;
-        // `);
 
         this.addCSSRule('a.bel-btn', `
             padding: 4px 8px;

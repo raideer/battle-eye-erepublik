@@ -6,11 +6,13 @@ class Layout{
         var battleEye = document.createElement('div');
             battleEye.setAttribute('id', 'battle_eye_live');
 
-        document.getElementById('content').appendChild(battleEye);
+        if(settings.moveToTop.value){
+            $j('#content').prepend(battleEye);
+        }else{
+            $j('#content').append(battleEye);
+        }
 
         style.load();
-        //
-        // this.update(null);
     }
 
     update(feedData){

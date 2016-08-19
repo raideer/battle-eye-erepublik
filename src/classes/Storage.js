@@ -14,7 +14,7 @@ class Storage{
         var self = this;
         localStorage.setItem(`${self.prepend}${id}`, value);
         // if(settings.enableLogging.value){
-            console.log(`${self.prepend}${id} = ${value}`);
+            console.log(`[BATTLEEYE] ${self.prepend}${id} = ${value}`);
         // }
     }
 

@@ -1,10 +1,11 @@
 var settings = {};
+var contributors = [];
 var modules = null;
 var storage = null;
 var battleEyeLive = {
     init: function(){
         var self = this;
-        console.log('Battle Eye INIT');
+        console.log('[BATTLEEYE] Initialisation');
 
         storage = self.settingsStorage = new Storage();
         if(storage === false){
@@ -12,17 +13,28 @@ var battleEyeLive = {
         }
 
         //Defining default settings
-        storage.define('showOtherDivs', true, 'Structure', "Show other divisions");
-        storage.define('reduceLoad', false, 'Performance', "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance");
-        storage.define('highlightDivision', true, 'Visual', "Highlight current division");
-        storage.define('highlightValue', true, 'Visual', "Highlight winning side");
+        storage.define('showOtherDivs', true, 'Structure', "Show other divisions", "You can select what divisions you want to see with the settings below.");
+        storage.define('showDiv1', true, 'Structure', "Show DIV 1");
+        storage.define('showDiv2', true, 'Structure', "Show DIV 2");
+        storage.define('showDiv3', true, 'Structure', "Show DIV 3");
+        storage.define('showDiv4', true, 'Structure', "Show DIV 4");
         storage.define('showAverageDamage', false, 'Structure', "Show average damage dealt");
         storage.define('showKills', false, 'Structure', "Show kills done by each division");
-        storage.define('showDpsBar', true, 'Bars', "Show DPS bar");
         storage.define('showDamagePerc', true, 'Structure', "Show Damage percentages");
-        storage.define('showDamageBar', true, 'Bars', "Show Damage bar");
+        storage.define('moveToTop', false, 'Structure', "Display BattleEye above the battlefield", '*Requires a page refresh');
+
+        storage.define('reduceLoad', false, 'Performance', "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance");
         storage.define('gatherBattleStats', true, 'Performance', "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time.");
+
+        storage.define('highlightDivision', true, 'Visual', "Highlight current division");
+        storage.define('highlightValue', true, 'Visual', "Highlight winning side");
+
+        storage.define('showDpsBar', true, 'Bars', "Show DPS bar");
+        storage.define('showDamageBar', true, 'Bars', "Show Damage bar");
+        storage.define('largerBars', false, 'Bars', "Larger bars");
+
         storage.define('enableLogging', false, 'Other', "Enable logging to console");
+
 
         modules = new ModuleLoader(self.settingsStorage);
         modules.load(new AutoShooter());
@@ -72,9 +84,15 @@ var battleEyeLive = {
 
                     self.teamA.divisions.get('div' + div).damage += leftDmg;
                     self.teamB.divisions.get('div' + div).damage += rightDmg;
+                    self.teamA.damage += leftDmg;
+                    self.teamB.damage += rightDmg;
                     self.teamA.divisions.get('div' + div).hits += leftKl;
                     self.teamB.divisions.get('div' + div).hits += rightKl;
+                    self.teamA.hits += leftKl;
+                    self.teamB.hits += rightKl;
                 }
+
+                $j('#bel-loading').hide();
             });
         }
 
@@ -101,7 +119,9 @@ var battleEyeLive = {
             self.settingsStorage.set(input.name, value);
             settings[input.name].value = value;
 
-            $j(this).notify("Saved", 'success');
+            var targetAtt = $j(this).attr('id');
+
+            $j("label[for=\""+targetAtt+"\"]").notify("Saved", {position: "right middle", className: "success"});
         });
 
         self.runTicker();
@@ -115,7 +135,10 @@ var battleEyeLive = {
     },
 
     checkForUpdates: function() {
+        var self = this;
         $j.get('https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/data.json', function(data) {
+            contributors = data.contributors;
+            self.displayContributors();
             var version = parseInt(data.version.replace(/\D/g,""));
             var currentVersion = parseInt(GM_info.script.version.replace(/\D/g,""));
             if(currentVersion != version){
@@ -123,6 +146,27 @@ var battleEyeLive = {
                 document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/battle-eye-live.user.js">Update</a>';
             }
         });
+    },
+
+    displayContributors: function() {
+        for(var color in contributors){
+            var players = contributors[color];
+            for(var j in players){
+                var cId = players[j];
+                if(erepublik.citizen.citizenId == cId){
+                    $j('#battleConsole .left_player .player_name').css({
+                        textShadow: " 0 0 10px " + color,
+                        color: color
+                    }).attr('original-title', "BattleEye contributor").tipsy();
+                }else if($j('li[data-citizen-id="'+cId+'"] .player_name').length > 0){
+                    $j('li[data-citizen-id="'+cId+'"] .player_name').css({
+                        textShadow: " 0 0 10px " + color,
+                        color: color
+                    }).attr('original-title', "BattleEye contributor").tipsy();
+                }
+            }
+
+        }
     },
 
     getTeamStats: function(){
@@ -147,7 +191,7 @@ var battleEyeLive = {
                 type = 'damage';
             }
 
-            $j.post('http://www.erepublik.com/en/military/battle-console',{
+            $j.post('https://www.erepublik.com/en/military/battle-console',{
                 _token: SERVER_DATA.csrfToken,
                 action: 'battleStatistics',
                 battleId: SERVER_DATA.battleId,
@@ -158,6 +202,9 @@ var battleEyeLive = {
                 type: type,
                 zoneId: 1
             }, function(data) {
+                if(settings.enableLogging.value){
+                    console.log('[BATTLEEYE] Gathered div'+div+' stats; page '+pageLeft+'|'+pageRight);
+                }
                 cb(data);
             });
         }
@@ -262,6 +309,7 @@ var battleEyeLive = {
 				battleFX.populatePlayerData(data);
 			}
 
+            self.displayContributors();
             self.handle(data);
 		};
 
@@ -269,9 +317,6 @@ var battleEyeLive = {
     },
     handle: function(data){
         var self = this;
-
-        // console.log(data);
-
         self.teamA.handle(data);
         self.teamB.handle(data);
         if(!settings.reduceLoad.value){
