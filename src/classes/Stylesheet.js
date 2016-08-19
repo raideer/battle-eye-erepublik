@@ -82,6 +82,24 @@ class Stylesheet{
         `);
 
         //General
+        //
+
+        this.addCSSRule('.bel-tabs', `
+            margin: 5px 0;
+        `);
+
+        this.addCSSRule('.bel-tabs button', `
+            border-radius: 0px;
+        `);
+
+        this.addCSSRule('.bel-tabs button:first-child', `
+            border-radius: 4px 0 0 4px;
+        `);
+
+        this.addCSSRule('.bel-tabs button:last-child', `
+            border-radius: 0 4px 4px 0;
+        `);
+
         this.addCSSRule('.bel-country', `
             width: 28px;
             height: 25px;
@@ -213,6 +231,7 @@ class Stylesheet{
             border-radius: 4px;
             padding: 3px 8px;
             font-family: "Lato",Helvetica,Arial,sans-serif;
+            transition: background-color 0.5s;
         `);
 
         this.addCSSRule('a.bel-btn', `
@@ -226,6 +245,15 @@ class Stylesheet{
 
         this.addCSSRule('.bel-btn-default:hover', `
             background-color: #16a085;
+        `);
+
+        this.addCSSRule('.bel-btn-grey', `
+            background-color: #ecf0f1;
+            color: #34495e;
+        `);
+
+        this.addCSSRule('.bel-btn-grey:hover', `
+            background-color: #CED3D6;
         `);
 
         this.addCSSRule('.bel-btn-danger', `

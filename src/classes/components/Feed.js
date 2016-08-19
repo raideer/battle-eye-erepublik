@@ -46,10 +46,29 @@ class Feed extends React.Component{
 
         return divs;
     }
+
+    printOverall(){
+        var data = {};
+        data.left = this.props.data.left;
+        data.right = this.props.data.right;
+
+        return (
+            <FeedOverall data={data} settings={this.props.settings} />
+        );
+    }
+
+    getContent(){
+        if(this.props.tab == 'div'){
+            return this.printDivisions();
+        }else if(this.props.tab = 'overall'){
+            return this.printOverall();
+        }
+    }
+
     render(){
         return (
             <div className="bel-grid">
-                {this.printDivisions()}
+                {this.getContent()}
             </div>
         );
     }

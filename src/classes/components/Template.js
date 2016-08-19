@@ -2,7 +2,8 @@ class Template extends React.Component{
     constructor(){
         super();
         this.state = {
-            modalHidden: true
+            modalHidden: true,
+            tab: 'div'
         };
     }
 
@@ -18,13 +19,19 @@ class Template extends React.Component{
         });
     }
 
+    changeTab(tab){
+        this.setState({
+            'tab': tab
+        });
+    }
+
     render(){
-        // console.log(this.props);
         return (
             <div>
                 <SettingsModal closeModal={this.closeModal.bind(this)} hidden={this.state.modalHidden} settings={this.props.settings}/>
                 <Header openModal={this.openModal.bind(this)} data={this.props.headerData}/>
-                <Feed data={this.props.feedData} settings={this.props.settings}/>
+                <TabSelector changeTab={this.changeTab.bind(this)} tab={this.state.tab} />
+                <Feed data={this.props.feedData} settings={this.props.settings} tab={this.state.tab} />
                 <Footer />
             </div>
         );
