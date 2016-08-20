@@ -57,11 +57,23 @@ class Feed extends React.Component{
         );
     }
 
+    printCountries(){
+        var data = {};
+        data.left = this.props.data.left;
+        data.right = this.props.data.right;
+
+        return (
+            <FeedCountries data={data} settings={this.props.settings} />
+        );
+    }
+
     getContent(){
         if(this.props.tab == 'div'){
             return this.printDivisions();
-        }else if(this.props.tab = 'overall'){
+        }else if(this.props.tab == 'overall'){
             return this.printOverall();
+        }else if(this.props.tab == 'countries'){
+            return this.printCountries();
         }
     }
 

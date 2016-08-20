@@ -12,7 +12,8 @@ class TabSelector extends React.Component{
         return (
             <div className="bel-tabs">
                 <button onClick={this.props.changeTab.bind(this, 'div')} className={this.getStyle('div')}>Divisions</button>
-                <button onClick={this.props.changeTab.bind(this, 'overall')} className={this.getStyle('overall')}>Overall</button>
+                <button onClick={this.props.changeTab.bind(this, 'overall')} className={this.getStyle('overall')}>Total</button>
+                <button onClick={this.props.changeTab.bind(this, 'countries')} className={this.getStyle('countries')}>Countries</button>
             </div>
         );
     }

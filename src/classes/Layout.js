@@ -12,10 +12,14 @@ class Layout{
             $j('#content').append(battleEye);
         }
 
+        $j('#battleConsole').append('<div id="bel-minimonitor"></div>')
+
         style.load();
     }
 
     update(feedData){
         ReactDOM.render(<Template settings={settings} feedData={feedData} headerData={this.headerData} />, document.getElementById('battle_eye_live'));
+
+        ReactDOM.render(<MiniMonitor settings={settings} feedData={feedData} />, document.getElementById('bel-minimonitor'));
     }
 }

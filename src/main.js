@@ -19,6 +19,7 @@ var battleEyeLive = {
         storage.define('showDiv3', true, 'Structure', "Show DIV 3");
         storage.define('showDiv4', true, 'Structure', "Show DIV 4");
         storage.define('showAverageDamage', false, 'Structure', "Show average damage dealt");
+        storage.define('showMiniMonitor', true, 'Structure', "Display a small division monitor on the battlefield");
         storage.define('showKills', false, 'Structure', "Show kills done by each division");
         storage.define('showDamagePerc', true, 'Structure', "Show Damage percentages");
         storage.define('moveToTop', false, 'Structure', "Display BattleEye above the battlefield", '*Requires a page refresh');
@@ -39,7 +40,7 @@ var battleEyeLive = {
         modules = new ModuleLoader(self.settingsStorage);
         modules.load(new AutoShooter());
         modules.load(new Other());
-        //
+
         //Loading settings
         storage.loadSettings();
         settings = storage.getAll();
@@ -51,6 +52,43 @@ var battleEyeLive = {
         self.teamB = new Stats(SERVER_DATA.rightBattleId);
         self.teamBName = SERVER_DATA.countries[SERVER_DATA.rightBattleId];
 
+        self.layout = new Layout(new Stylesheet(), {
+            'teamAName': this.teamAName,
+            'teamBName': this.teamBName,
+            'version': GM_info.script.version
+        });
+
+        self.layout.update(self.getTeamStats());
+
+        pomelo.disconnect = function() {}
+
+        self.checkForUpdates();
+
+        self.loadBattleStats();
+
+        $j('.bel-settings-field').on('change', function(event) {
+            var input = event.target;
+
+            if(input.type == "checkbox"){
+                var value = input.checked;
+            }else{
+                var value = input.value;
+            }
+            self.settingsStorage.set(input.name, value);
+            settings[input.name].value = value;
+
+            var targetAtt = $j(this).attr('id');
+
+            $j("label[for=\""+targetAtt+"\"]").notify("Saved", {position: "right middle", className: "success"});
+        });
+
+        self.runTicker();
+        self.handleEvents();
+        modules.run();
+    },
+
+    loadBattleStats: function() {
+        var self = this;
         if(settings.gatherBattleStats.value){
             self.getBattleStats(function(leftDamage, rightDamage, leftKills, rightKills){
                 var divs = [1,2,3,4,11];
@@ -64,12 +102,24 @@ var battleEyeLive = {
 
                     for(var i in leftDamage['div' + div]){
                         var hit = leftDamage['div' + div][i];
-                        leftDmg += Number(hit.value.replace(/[,\.]/g,''));
+                        var dmg = Number(hit.value.replace(/[,\.]/g,''));
+                        leftDmg += dmg;
+
+                        self.teamA.countries.handleBare({
+                            damage: dmg,
+                            permalink: hit.country_permalink
+                        });
                     }
 
                     for(var i in rightDamage['div' + div]){
                         var hit = rightDamage['div' + div][i];
-                        rightDmg += Number(hit.value.replace(/[,\.]/g,''));
+                        var dmg = Number(hit.value.replace(/[,\.]/g,''));
+                        rightDmg += dmg;
+
+                        self.teamB.countries.handleBare({
+                            damage: dmg,
+                            permalink: hit.country_permalink
+                        });
                     }
 
                     for(var i in leftKills['div' + div]){
@@ -95,38 +145,6 @@ var battleEyeLive = {
                 $j('#bel-loading').hide();
             });
         }
-
-        self.layout = new Layout(new Stylesheet(), {
-            'teamAName': this.teamAName,
-            'teamBName': this.teamBName,
-            'version': GM_info.script.version
-        });
-
-        self.layout.update(self.getTeamStats());
-
-        pomelo.disconnect = function() {}
-
-        self.checkForUpdates();
-
-        $j('.bel-settings-field').on('change', function(event) {
-            var input = event.target;
-
-            if(input.type == "checkbox"){
-                var value = input.checked;
-            }else{
-                var value = input.value;
-            }
-            self.settingsStorage.set(input.name, value);
-            settings[input.name].value = value;
-
-            var targetAtt = $j(this).attr('id');
-
-            $j("label[for=\""+targetAtt+"\"]").notify("Saved", {position: "right middle", className: "success"});
-        });
-
-        self.runTicker();
-        self.handleEvents();
-        modules.run();
     },
 
     resetSettings: function() {
@@ -136,19 +154,26 @@ var battleEyeLive = {
 
     checkForUpdates: function() {
         var self = this;
-        $j.get('https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/data.json', function(data) {
+        $j.get('https://dl.dropboxusercontent.com/u/86379644/data.json', function(data) {
+            data = JSON.parse(data);
             contributors = data.contributors;
             self.displayContributors();
             var version = parseInt(data.version.replace(/\D/g,""));
             var currentVersion = parseInt(GM_info.script.version.replace(/\D/g,""));
             if(currentVersion != version){
                 document.querySelector('.bel-version').classList.add('bel-version-outdated');
-                document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/battle-eye-live.user.js">Update</a>';
+                document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="'+data.updateUrl+'">Update</a>';
             }
         });
     },
 
     displayContributors: function() {
+        $j('.bel-contributor').each(function() {
+            $j(this).removeClass('bel-contributor')
+                   .removeAttr('style')
+                   .removeAttr('original-title');
+        });
+
         for(var color in contributors){
             var players = contributors[color];
             for(var j in players){
@@ -162,7 +187,7 @@ var battleEyeLive = {
                     $j('li[data-citizen-id="'+cId+'"] .player_name').css({
                         textShadow: " 0 0 10px " + color,
                         color: color
-                    }).attr('original-title', "BattleEye contributor").tipsy();
+                    }).attr('original-title', "BattleEye contributor").addClass('bel-contributor').tipsy();
                 }
             }
 
@@ -202,9 +227,6 @@ var battleEyeLive = {
                 type: type,
                 zoneId: 1
             }, function(data) {
-                if(settings.enableLogging.value){
-                    console.log('[BATTLEEYE] Gathered div'+div+' stats; page '+pageLeft+'|'+pageRight);
-                }
                 cb(data);
             });
         }
@@ -215,7 +237,6 @@ var battleEyeLive = {
 
             async.doWhilst(function(whileCb){
                 request(div,page,page,function(data) {
-
                     for(var i in data[attacker].fighterData){
                         attackerData['div'+div].push(data[attacker].fighterData[i]);
                     }
@@ -224,12 +245,15 @@ var battleEyeLive = {
                     }
 
                     maxPage = Math.max(data[attacker].pages, data[defender].pages);
+                    if(settings.enableLogging.value){
+                        console.log('[BATTLEEYE] Finished damage page '+page+"/"+maxPage);
+                    }
                     page++;
                     whileCb();
                 }, 'damage');
 
             },function(){
-                return page < maxPage;
+                return page <= maxPage;
             },function() {
                 cb();
             });
@@ -251,12 +275,15 @@ var battleEyeLive = {
                     }
 
                     maxPage = Math.max(data[attacker].pages, data[defender].pages);
+                    if(settings.enableLogging.value){
+                        console.log('[BATTLEEYE] Finished kill page '+page+"/"+maxPage);
+                    }
                     page++;
 
                     whileCb();
                 }, 'kills');
             },function(){
-                return page < maxPage;
+                return page <= maxPage;
             },function() {
                 cb();
             });

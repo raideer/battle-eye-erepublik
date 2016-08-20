@@ -2,6 +2,7 @@ class Stats extends DpsHandler{
     constructor(id){
         super(10);
 
+        this.countries = new CountryStats();
         this.id = id;
         this.damage = 0;
         this.hits = 0;
@@ -37,6 +38,7 @@ class Stats extends DpsHandler{
         this.addHit(data.msg.damage);
         this.hits++;
         this.damage += data.msg.damage;
+        this.countries.handle(data);
     }
 
     toObject(){
@@ -46,7 +48,8 @@ class Stats extends DpsHandler{
             'dps': this.dps,
             'hits': this.hits,
             'avgHit': Math.round(this.damage/this.hits),
-            'divisions': this.divisions.toObject()
+            'divisions': this.divisions.toObject(),
+            'countries': this.countries.getAll()
         };
     }
 }

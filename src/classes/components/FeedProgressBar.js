@@ -3,8 +3,8 @@ class FeedProgressBar extends React.Component{
         var aPerc = 0, bPerc = 0;
 
         if(this.props.a+this.props.b !== 0){
-            aPerc = Math.round((this.props.a * 100 / (this.props.a+this.props.b)));
-            bPerc = Math.round((this.props.b * 100 / (this.props.a+this.props.b)));
+            aPerc = Math.round((this.props.a * 10000 / (this.props.a+this.props.b)))/100;
+            bPerc = Math.round((this.props.b * 10000 / (this.props.a+this.props.b)))/100;
         }
 
         var teamA = {

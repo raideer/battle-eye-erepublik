@@ -4,10 +4,10 @@ class DivisionStats extends DpsHandler{
         this.division = division;
         this.hits = 0;
         this.damage = 0;
+        this.countries = new CountryStats();
     }
 
     handle(data){
-
         if(data.division != this.division){
             return;
         }
@@ -15,7 +15,7 @@ class DivisionStats extends DpsHandler{
         this.addHit(data.msg.damage);
         this.hits++;
         this.damage += data.msg.damage;
-
+        this.countries.handle(data);
     }
 
     toObject(){
@@ -24,7 +24,8 @@ class DivisionStats extends DpsHandler{
             'id': this.id,
             'dps': this.dps,
             'hits': this.hits,
-            'avgHit': Math.round(this.damage/this.hits) | 0
+            'avgHit': Math.round(this.damage/this.hits) | 0,
+            'countries': this.countries.countries
         };
     }
 }

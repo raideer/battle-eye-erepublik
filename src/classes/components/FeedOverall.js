@@ -22,24 +22,24 @@ class FeedOverall extends React.Component{
                     <ul className="list-unstyled">
                         <li>
                             <If test={settings.showKills.value}>
-                                <FeedValue a={left.hits} b={right.hits} highlight={settings.highlightValue.value} text={"kills"}/>
+                                <FeedValue green={true} a={left.hits} b={right.hits} highlight={settings.highlightValue.value} text={"kills"}/>
                             </If>
 
                             <If test={settings.showDamagePerc.value}>
-                                <FeedValue a={this.getPerc(left.damage, right.damage)} b={this.getPerc(right.damage, left.damage)} highlight={settings.highlightValue.value} text={"%"}/>
+                                <FeedValue green={true} a={this.getPerc(left.damage, right.damage)} b={this.getPerc(right.damage, left.damage)} highlight={settings.highlightValue.value} text={"%"}/>
                             </If>
 
-                            <FeedValue a={left.damage} b={right.damage} highlight={settings.highlightValue.value}/>
+                            <FeedValue green={true} a={left.damage} b={right.damage} highlight={settings.highlightValue.value}/>
                         </li>
 
                         <If test={settings.showAverageDamage.value}>
                             <li>
-                                <FeedValue a={left.avgHit} b={right.avgHit} highlight={settings.highlightValue.value}/>
+                                <FeedValue green={true} a={left.avgHit} b={right.avgHit} highlight={settings.highlightValue.value}/>
                             </li>
                         </If>
 
                         <li>
-                            <FeedValue a={left.dps} b={right.dps} highlight={settings.highlightValue.value}/>
+                            <FeedValue green={true} a={left.dps} b={right.dps} highlight={settings.highlightValue.value}/>
                         </li>
                     </ul>
                 </div>
