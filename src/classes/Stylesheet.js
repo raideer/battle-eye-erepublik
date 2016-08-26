@@ -239,7 +239,7 @@ class Stylesheet{
         `);
         //Grids
         this.addCSSRule('.bel-grid:after', 'content: "";display: table;clear: both;');
-        this.addCSSRule("[class*='bel-col-']", 'float: left;');
+        this.addCSSRule("[class*='bel-col-']", 'float: left;min-height: 1px;');
         this.addCSSRule('.bel-col-1-1', 'width: 100%;');
         this.addCSSRule('.bel-col-1-2', 'width: 50%;');
         this.addCSSRule('.bel-col-1-4', 'width: 25%;');
@@ -248,6 +248,27 @@ class Stylesheet{
         //Lists
         this.addCSSRule('.list-unstyled', 'list-style: outside none none;padding-left: 0;');
         this.addCSSRule('.list-inline li', 'display: inline-block;');
+
+        this.addCSSRule('.bel-closed', `
+            z-index: 100;
+            position: absolute;
+            width: 100%;
+            opacity: 0.95;
+            top: 0;
+            left: 0;
+            background-color: #2c3e50;
+            text-shadow: 0 0 2px #363636;
+            color: #ffffff;
+            font-size: 20px;
+            padding: 14px;
+            text-align: center;
+            overflow: hidden;
+            height: 100%;
+            display: none;
+        `);
+        this.addCSSRule('.bel-closed p', `
+            font-size: 12px;
+        `);
 
         //Settings
         this.addCSSRule('.bel-settings', `

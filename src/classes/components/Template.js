@@ -25,12 +25,21 @@ class Template extends React.Component{
         });
     }
 
+    getTabButtons(){
+        return [
+            ['div', 'Divisions'],
+            ['overall', 'Total'],
+            ['countries', 'Countries']
+        ];
+    }
+
     render(){
         return (
             <div>
+                <CloseAlert />
                 <SettingsModal closeModal={this.closeModal.bind(this)} hidden={this.state.modalHidden} settings={this.props.settings}/>
                 <Header openModal={this.openModal.bind(this)} data={this.props.headerData}/>
-                <TabSelector changeTab={this.changeTab.bind(this)} tab={this.state.tab} />
+                <TabSelector changeTab={this.changeTab.bind(this)} tab={this.state.tab} buttons={this.getTabButtons()} />
                 <Feed data={this.props.feedData} settings={this.props.settings} tab={this.state.tab} />
                 <Footer />
             </div>

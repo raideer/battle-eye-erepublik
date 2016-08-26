@@ -1,4 +1,14 @@
 class TabSelector extends React.Component{
+    getButtons(){
+        var buttons = [];
+
+        for(var i in this.props.buttons){
+            var a = this.props.buttons[i];
+            buttons.push(<button onClick={this.props.changeTab.bind(this, a[0])} className={this.getStyle(a[0])}>{a[1]}</button>);
+        }
+
+        return buttons;
+    }
 
     getStyle(tab){
         if(this.props.tab == tab){
@@ -11,9 +21,7 @@ class TabSelector extends React.Component{
     render(){
         return (
             <div className="bel-tabs">
-                <button onClick={this.props.changeTab.bind(this, 'div')} className={this.getStyle('div')}>Divisions</button>
-                <button onClick={this.props.changeTab.bind(this, 'overall')} className={this.getStyle('overall')}>Total</button>
-                <button onClick={this.props.changeTab.bind(this, 'countries')} className={this.getStyle('countries')}>Countries</button>
+                {this.getButtons()}
             </div>
         );
     }

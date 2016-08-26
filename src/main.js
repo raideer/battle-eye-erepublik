@@ -3,6 +3,7 @@ var contributors = [];
 var modules = null;
 var storage = null;
 var battleEyeLive = {
+    closed: false,
     init: function(){
         var self = this;
         console.log('[BATTLEEYE] Initialisation');
@@ -105,10 +106,13 @@ var battleEyeLive = {
                         var dmg = Number(hit.value.replace(/[,\.]/g,''));
                         leftDmg += dmg;
 
-                        self.teamA.countries.handleBare({
+                        var bareData = {
                             damage: dmg,
                             permalink: hit.country_permalink
-                        });
+                        }
+
+                        self.teamA.countries.handleBare(bareData);
+                        self.teamA.divisions.get('div' + div).countries.handleBare(bareData);
                     }
 
                     for(var i in rightDamage['div' + div]){
@@ -116,10 +120,13 @@ var battleEyeLive = {
                         var dmg = Number(hit.value.replace(/[,\.]/g,''));
                         rightDmg += dmg;
 
-                        self.teamB.countries.handleBare({
+                        var bareData = {
                             damage: dmg,
                             permalink: hit.country_permalink
-                        });
+                        };
+
+                        self.teamB.countries.handleBare(bareData);
+                        self.teamB.divisions.get('div' + div).countries.handleBare(bareData);
                     }
 
                     for(var i in leftKills['div' + div]){
@@ -236,7 +243,7 @@ var battleEyeLive = {
             var maxPage = 1;
 
             async.doWhilst(function(whileCb){
-                request(div,page,page,function(data) {
+                request(div, page, page, function(data) {
                     for(var i in data[attacker].fighterData){
                         attackerData['div'+div].push(data[attacker].fighterData[i]);
                     }
@@ -245,13 +252,13 @@ var battleEyeLive = {
                     }
 
                     maxPage = Math.max(data[attacker].pages, data[defender].pages);
+
                     if(settings.enableLogging.value){
-                        console.log('[BATTLEEYE] Finished damage page '+page+"/"+maxPage);
+                        console.log('[BATTLEEYE] Finished damage page '+page+"/"+maxPage+" div"+div);
                     }
                     page++;
                     whileCb();
                 }, 'damage');
-
             },function(){
                 return page <= maxPage;
             },function() {
@@ -276,7 +283,7 @@ var battleEyeLive = {
 
                     maxPage = Math.max(data[attacker].pages, data[defender].pages);
                     if(settings.enableLogging.value){
-                        console.log('[BATTLEEYE] Finished kill page '+page+"/"+maxPage);
+                        console.log('[BATTLEEYE] Finished kill page '+page+"/"+maxPage+" div"+div);
                     }
                     page++;
 
@@ -341,6 +348,12 @@ var battleEyeLive = {
 		};
 
         pomelo.on('onMessage', handler);
+        pomelo.on('close', function(data){
+            console.log('[BATTLEEYE] Socket closed ['+data.reason+']');
+            self.closed = true;
+            $j('#belClosed').show();
+            clearTimeout(self.interval);
+        });
     },
     handle: function(data){
         var self = this;
