@@ -45,15 +45,29 @@ class Header extends React.Component{
                         </ul>
                     </li>
                 </ul>
-
-                <div className="bel-grid">
-                    <div className="bel-col-1-2 text-left bel-teama-color" style={this.getTeamElementStyle()}>
-                        <div style={this.getFlagStyle(this.props.data.teamAName)} className="bel-country"></div> {this.props.data.teamAName}
+                <If test={SERVER_DATA.isCivilWar}>
+                    <div className="bel-grid">
+                        <div className="bel-col-1-3 text-left bel-teama-color" style={this.getTeamElementStyle()}>
+                            <div style={this.getFlagStyle(this.props.data.revolutionCountry)} className="bel-country"></div> {this.props.data.teamAName}
+                        </div>
+                        <div className="bel-col-1-3 text-center" style={this.getTeamElementStyle()}>
+                            CIVIL WAR
+                        </div>
+                        <div className="bel-col-1-3 text-right bel-teamb-color" style={this.getTeamElementStyle()}>
+                            <div style={this.getFlagStyle(this.props.data.revolutionCountry)} className="bel-country"></div> {this.props.data.teamBName}
+                        </div>
                     </div>
-                    <div className="bel-col-1-2 text-right bel-teamb-color" style={this.getTeamElementStyle()}>
-                        {this.props.data.teamBName} <div style={this.getFlagStyle(this.props.data.teamBName)} className="bel-country"></div>
+                </If>
+                <If test={!SERVER_DATA.isCivilWar}>
+                    <div className="bel-grid">
+                        <div className="bel-col-1-2 text-left bel-teama-color" style={this.getTeamElementStyle()}>
+                            <div style={this.getFlagStyle(this.props.data.teamAName)} className="bel-country"></div> {this.props.data.teamAName}
+                        </div>
+                        <div className="bel-col-1-2 text-right bel-teamb-color" style={this.getTeamElementStyle()}>
+                            {this.props.data.teamBName} <div style={this.getFlagStyle(this.props.data.teamBName)} className="bel-country"></div>
+                        </div>
                     </div>
-                </div>
+                </If>
             </div>
         );
     }

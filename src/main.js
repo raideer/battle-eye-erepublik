@@ -1,3 +1,10 @@
+function log(data, desc){
+    if(desc === undefined){
+        desc = '';
+    }
+    console.log("[BATTLEEYE] "+desc + ": " + data);
+}
+
 var settings = {};
 var contributors = [];
 var modules = null;
@@ -8,6 +15,7 @@ var battleEyeLive = {
         var self = this;
         console.log('[BATTLEEYE] Initialisation');
 
+        //Setting up the Storage class, that handles localStorage stuff
         storage = self.settingsStorage = new Storage();
         if(storage === false){
             return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
@@ -41,6 +49,7 @@ var battleEyeLive = {
         modules = new ModuleLoader(self.settingsStorage);
         modules.load(new AutoShooter());
         modules.load(new Other());
+        // modules.load(new PercentageFixer());
 
         //Loading settings
         storage.loadSettings();
@@ -48,25 +57,46 @@ var battleEyeLive = {
         //
 
         self.events = new EventHandler();
+
+        //Defining Stats classes for both sides
         self.teamA = new Stats(SERVER_DATA.leftBattleId);
         self.teamAName = SERVER_DATA.countries[SERVER_DATA.leftBattleId];
         self.teamB = new Stats(SERVER_DATA.rightBattleId);
         self.teamBName = SERVER_DATA.countries[SERVER_DATA.rightBattleId];
 
+        var revolCountry = null;
+        if(SERVER_DATA.isCivilWar){
+            if(SERVER_DATA.invaderId == SERVER_DATA.leftBattleId){
+                self.teamA.revolution = true;
+                self.teamAName = self.teamBName + " Revolution";
+                revolCountry = self.teamBName;
+            }else{
+                self.teamB.revolution = true;
+                self.teamBName = self.teamAName + " Revolution";
+                revolCountry = self.teamAName;
+            }
+        }
+
         self.layout = new Layout(new Stylesheet(), {
             'teamAName': this.teamAName,
             'teamBName': this.teamBName,
-            'version': GM_info.script.version
+            'version': GM_info.script.version,
+            'revolutionCountry': revolCountry
         });
 
+        //Rendering the layout
         self.layout.update(self.getTeamStats());
 
+        //Overriding pomelo's disconnect to avoid interruptions by 3rd parties
         pomelo.disconnect = function() {}
 
+        //Updates data from data.json
         self.checkForUpdates();
 
+        //Loads stats from erepublik's battle console
         self.loadBattleStats();
 
+        //Listens to setting changes
         $j('.bel-settings-field').on('change', function(event) {
             var input = event.target;
 
@@ -87,71 +117,73 @@ var battleEyeLive = {
         self.handleEvents();
         modules.run();
     },
-
+    //Loads stats from erepublik's battle console
     loadBattleStats: function() {
         var self = this;
-        if(settings.gatherBattleStats.value){
-            self.getBattleStats(function(leftDamage, rightDamage, leftKills, rightKills){
-                var divs = [1,2,3,4,11];
+        if(!settings.gatherBattleStats.value){
+            return;
+        }
 
-                for(var d in divs){
-                    var div = divs[d];
-                    var leftDmg = 0;
-                    var rightDmg = 0;
-                    var leftKl = 0;
-                    var rightKl = 0;
+        self.getBattleStats(function(leftDamage, rightDamage, leftKills, rightKills){
+            var divs = [1,2,3,4,11];
 
-                    for(var i in leftDamage['div' + div]){
-                        var hit = leftDamage['div' + div][i];
-                        var dmg = Number(hit.value.replace(/[,\.]/g,''));
-                        leftDmg += dmg;
+            for(var d in divs){
+                var div = divs[d];
+                var leftDmg = 0;
+                var rightDmg = 0;
+                var leftKl = 0;
+                var rightKl = 0;
 
-                        var bareData = {
-                            damage: dmg,
-                            permalink: hit.country_permalink
-                        }
+                for(var i in leftDamage['div' + div]){
+                    var hit = leftDamage['div' + div][i];
+                    var dmg = (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
+                    leftDmg += dmg;
 
-                        self.teamA.countries.handleBare(bareData);
-                        self.teamA.divisions.get('div' + div).countries.handleBare(bareData);
+                    var bareData = {
+                        damage: dmg,
+                        permalink: hit.country_permalink
                     }
 
-                    for(var i in rightDamage['div' + div]){
-                        var hit = rightDamage['div' + div][i];
-                        var dmg = Number(hit.value.replace(/[,\.]/g,''));
-                        rightDmg += dmg;
-
-                        var bareData = {
-                            damage: dmg,
-                            permalink: hit.country_permalink
-                        };
-
-                        self.teamB.countries.handleBare(bareData);
-                        self.teamB.divisions.get('div' + div).countries.handleBare(bareData);
-                    }
-
-                    for(var i in leftKills['div' + div]){
-                        var hit = leftKills['div' + div][i];
-                        leftKl += Number(hit.value.replace(/[,\.]/g,''));
-                    }
-
-                    for(var i in rightKills['div' + div]){
-                        var hit = rightKills['div' + div][i];
-                        rightKl += Number(hit.value.replace(/[,\.]/g,''));
-                    }
-
-                    self.teamA.divisions.get('div' + div).damage += leftDmg;
-                    self.teamB.divisions.get('div' + div).damage += rightDmg;
-                    self.teamA.damage += leftDmg;
-                    self.teamB.damage += rightDmg;
-                    self.teamA.divisions.get('div' + div).hits += leftKl;
-                    self.teamB.divisions.get('div' + div).hits += rightKl;
-                    self.teamA.hits += leftKl;
-                    self.teamB.hits += rightKl;
+                    self.teamA.countries.handleBare(bareData);
+                    self.teamA.divisions.get('div' + div).countries.handleBare(bareData);
                 }
 
-                $j('#bel-loading').hide();
-            });
-        }
+                for(var i in rightDamage['div' + div]){
+                    var hit = rightDamage['div' + div][i];
+                    var dmg = (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
+                    rightDmg += dmg;
+
+                    var bareData = {
+                        damage: dmg,
+                        permalink: hit.country_permalink
+                    };
+
+                    self.teamB.countries.handleBare(bareData);
+                    self.teamB.divisions.get('div' + div).countries.handleBare(bareData);
+                }
+
+                for(var i in leftKills['div' + div]){
+                    var hit = leftKills['div' + div][i];
+                    leftKl += (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
+                }
+
+                for(var i in rightKills['div' + div]){
+                    var hit = rightKills['div' + div][i];
+                    rightKl += (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
+                }
+
+                self.teamA.divisions.get('div' + div).damage += leftDmg;
+                self.teamB.divisions.get('div' + div).damage += rightDmg;
+                self.teamA.damage += leftDmg;
+                self.teamB.damage += rightDmg;
+                self.teamA.divisions.get('div' + div).hits += leftKl;
+                self.teamB.divisions.get('div' + div).hits += rightKl;
+                self.teamA.hits += leftKl;
+                self.teamB.hits += rightKl;
+            }
+
+            $j('#bel-loading').hide();
+        });
     },
 
     resetSettings: function() {
@@ -197,7 +229,6 @@ var battleEyeLive = {
                     }).attr('original-title', "BattleEye contributor").addClass('bel-contributor').tipsy();
                 }
             }
-
         }
     },
 
@@ -232,7 +263,7 @@ var battleEyeLive = {
                 rightPage: pageRight,
                 round: SERVER_DATA.zoneId,
                 type: type,
-                zoneId: 1
+                zoneId: parseInt(SERVER_DATA.zoneId, 10)
             }, function(data) {
                 cb(data);
             });
@@ -301,6 +332,7 @@ var battleEyeLive = {
         async.each(divRange, damageHandler.bind(self), function(){
             async.each(divRange, killsHandler.bind(self), function(){
                 callback(attackerData, defenderData, attackerKillData, defenderKillData);
+                self.events.emit('battleConsoleLoaded', null);
             });
         });
 
@@ -335,13 +367,13 @@ var battleEyeLive = {
         var self = this;
 
         var handler = function(data) {
-			if(currentPlayerDisplayRateValue !== "Maximum") {
-				if(battleFX.checkPlayerDisplayRate(currentPlayerDisplayRateValue)) {
-					battleFX.populatePlayerData(data);
-				}
-			} else {
-				battleFX.populatePlayerData(data);
-			}
+			// if(currentPlayerDisplayRateValue !== "Maximum") {
+			// 	if(battleFX.checkPlayerDisplayRate(currentPlayerDisplayRateValue)) {
+			// 		battleFX.populatePlayerData(data);
+			// 	}
+			// } else {
+			// 	battleFX.populatePlayerData(data);
+			// }
 
             self.displayContributors();
             self.handle(data);

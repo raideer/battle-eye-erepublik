@@ -22,7 +22,9 @@ class ModuleLoader{
     run(){
         for(var i in this.modules){
             try{
-                this.modules[i].run();
+                if(this.modules[i].autoload){
+                    this.modules[i].run();
+                }
             }catch(e){
                 console.error(`Failed to run module ${i}!: ${e}`);
             }

@@ -7,6 +7,7 @@ class Stats extends DpsHandler{
         this.damage = 0;
         this.hits = 0;
         this.constructDivisions();
+        this.revolution = false;
     }
 
     constructDivisions(){
@@ -49,7 +50,8 @@ class Stats extends DpsHandler{
             'hits': this.hits,
             'avgHit': Math.round(this.damage/this.hits),
             'divisions': this.divisions.toObject(),
-            'countries': this.countries.getAll()
+            'countries': this.countries.getAll(),
+            'revolution': this.revolution
         };
     }
 }

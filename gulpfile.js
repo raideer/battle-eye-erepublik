@@ -4,8 +4,9 @@ var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var sequence = require('gulp-sequence');
+// var sourcemaps = require('gulp-sourcemaps');
 
-var sync = "C:\\Users\\Raideer\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\novzk6sa.default-1439382728599\\gm_scripts\\Battle_Eye_Live";
+var sync = "C:\\Users\\Raideer\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\novzk6sa.default-1439382728599\\gm_scripts\\Battle_Eye_Live-1";
 
 gulp.task('default', ['scripts']);
 
@@ -50,11 +51,13 @@ gulp.task('scriptsRaw', function() {
         './src/classes/*.js',
         './src/main.js'
     ])
+    // .pipe(sourcemaps.init())
     .pipe(concat('battle-eye-live.user.js'))
     .pipe(babel({
-        presets: ['react','es2015']
+        presets: ['react','es2017']
     }))
     .on('error', gutil.log)
+    // .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('dist'))
     .pipe(gulp.dest(sync))
     ;

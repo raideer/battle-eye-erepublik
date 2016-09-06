@@ -1,15 +1,3 @@
-"use strict";
-
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 // ==UserScript==
 // @name        Battle Eye Live
 // @namespace   battle-eye-live
@@ -17,7 +5,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // @homepage    https://docs.google.com/spreadsheets/d/1Ebqp5Hb8KmGvX6X0FXmALO30Fv-IyfJHUGPkjKey8tg
 // @description LIVE battlefield statistics
 // @include     http*://www.erepublik.com/*/military/battlefield-new/*
-// @version     1.3.3
+// @version     1.4.0
 // @require     https://fb.me/react-15.2.1.min.js
 // @require     https://fb.me/react-dom-15.2.1.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.0.1/async.min.js
@@ -27,10 +15,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // @noframes
 // ==/UserScript==
 
-var DpsHandler = function () {
-    function DpsHandler(rem) {
-        _classCallCheck(this, DpsHandler);
-
+class DpsHandler {
+    constructor(rem) {
         this.rememberDpsFor = rem;
         this.hitHistory = new HitHistory(rem * 1000);
         this.hitStreakSeconds = 0;
@@ -38,1746 +24,1541 @@ var DpsHandler = function () {
         this.dps = 0;
     }
 
-    _createClass(DpsHandler, [{
-        key: "addHit",
-        value: function addHit(damage) {
-            this.lastHit = new Date().getTime();
-            this.hitHistory.add(damage);
-        }
-    }, {
-        key: "updateDps",
-        value: function updateDps(timeData) {
-            var recentDamage = this.hitHistory.getTotal();
-            if (this.hitStreakSeconds < this.rememberDpsFor) {
-                this.hitStreakSeconds++;
-            }
-
-            this.dps = Math.round(recentDamage / this.hitStreakSeconds);
-            if (timeData.time - this.lastHit >= 10000) {
-                this.hitHistory.clear();
-                this.hitStreakSeconds = 0;
-            }
-        }
-    }]);
-
-    return DpsHandler;
-}();
-
-var CloseAlert = function (_React$Component) {
-    _inherits(CloseAlert, _React$Component);
-
-    function CloseAlert() {
-        _classCallCheck(this, CloseAlert);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(CloseAlert).apply(this, arguments));
+    addHit(damage) {
+        this.lastHit = new Date().getTime();
+        this.hitHistory.add(damage);
     }
 
-    _createClass(CloseAlert, [{
-        key: "render",
-        value: function render() {
-            return React.createElement(
-                "div",
-                { id: "belClosed", className: "bel-closed" },
-                "Connection to the server was closed. Refresh the page to reconnect",
-                React.createElement(
-                    "p",
-                    null,
-                    "This has nothing to do with BattleEye. ",
-                    React.createElement(
-                        "i",
-                        null,
-                        "Maybe You opened another battle in a new tab?"
-                    )
-                )
-            );
+    updateDps(timeData) {
+        var recentDamage = this.hitHistory.getTotal();
+        if (this.hitStreakSeconds < this.rememberDpsFor) {
+            this.hitStreakSeconds++;
         }
-    }]);
 
-    return CloseAlert;
-}(React.Component);
+        this.dps = Math.round(recentDamage / this.hitStreakSeconds);
+        if (timeData.time - this.lastHit >= 10000) {
+            this.hitHistory.clear();
+            this.hitStreakSeconds = 0;
+        }
+    }
+}
 
-var Feed = function (_React$Component2) {
-    _inherits(Feed, _React$Component2);
+class CloseAlert extends React.Component {
+    render() {
+        return null;
+        // return (
+        //     <div id="belClosed" className="bel-closed">
+        //         Connection to the server was closed. Refresh the page to reconnect
+        //         <p>This has nothing to do with BattleEye. <i>Maybe You opened another battle in a new tab?</i></p>
+        //     </div>
+        // );
+    }
+}
 
-    function Feed() {
-        _classCallCheck(this, Feed);
+class Feed extends React.Component {
+    printDivisions() {
+        if (!this.props.data) {
+            return null;
+        }
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(Feed).apply(this, arguments));
+        var divs = [];
+
+        if (SERVER_DATA.division == 11) {
+            var divInfo = [[11, 'Air Division']];
+        } else {
+            var divInfo = [[1, 'Division 1'], [2, 'Division 2'], [3, 'Division 3'], [4, 'Division 4']];
+        }
+
+        for (var d in divInfo) {
+            var info = divInfo[d];
+
+            if (!this.props.settings.showOtherDivs.value) {
+                if (info[0] != SERVER_DATA.division) {
+                    continue;
+                }
+            }
+
+            if (!this.props.settings.showDiv1.value && info[0] == 1) {
+                continue;
+            }
+
+            if (!this.props.settings.showDiv2.value && info[0] == 2) {
+                continue;
+            }
+
+            if (!this.props.settings.showDiv3.value && info[0] == 3) {
+                continue;
+            }
+
+            if (!this.props.settings.showDiv4.value && info[0] == 4) {
+                continue;
+            }
+
+            var divData = {};
+            divData.left = this.props.data.left.divisions['div' + info[0]];
+            divData.right = this.props.data.right.divisions['div' + info[0]];
+
+            divs.push(React.createElement(FeedDivision, { data: divData, div: info, settings: this.props.settings }));
+        }
+
+        return divs;
     }
 
-    _createClass(Feed, [{
-        key: "printDivisions",
-        value: function printDivisions() {
-            if (!this.props.data) {
-                return null;
-            }
+    printOverall() {
+        var data = {};
+        data.left = this.props.data.left;
+        data.right = this.props.data.right;
 
-            var divs = [];
+        return React.createElement(FeedOverall, { data: data, settings: this.props.settings });
+    }
 
-            if (SERVER_DATA.division == 11) {
-                var divInfo = [[11, 'Air Division']];
-            } else {
-                var divInfo = [[1, 'Division 1'], [2, 'Division 2'], [3, 'Division 3'], [4, 'Division 4']];
-            }
+    printCountries() {
+        var data = {};
+        data.left = this.props.data.left;
+        data.right = this.props.data.right;
 
-            for (var d in divInfo) {
-                var info = divInfo[d];
+        return React.createElement(FeedCountries, { data: data, settings: this.props.settings });
+    }
 
-                if (!this.props.settings.showOtherDivs.value) {
-                    if (info[0] != SERVER_DATA.division) {
-                        continue;
-                    }
-                }
-
-                if (!this.props.settings.showDiv1.value && info[0] == 1) {
-                    continue;
-                }
-
-                if (!this.props.settings.showDiv2.value && info[0] == 2) {
-                    continue;
-                }
-
-                if (!this.props.settings.showDiv3.value && info[0] == 3) {
-                    continue;
-                }
-
-                if (!this.props.settings.showDiv4.value && info[0] == 4) {
-                    continue;
-                }
-
-                var divData = {};
-                divData.left = this.props.data.left.divisions['div' + info[0]];
-                divData.right = this.props.data.right.divisions['div' + info[0]];
-
-                divs.push(React.createElement(FeedDivision, { data: divData, div: info, settings: this.props.settings }));
-            }
-
-            return divs;
+    getContent() {
+        if (this.props.tab == 'div') {
+            return this.printDivisions();
+        } else if (this.props.tab == 'overall') {
+            return this.printOverall();
+        } else if (this.props.tab == 'countries') {
+            return this.printCountries();
         }
-    }, {
-        key: "printOverall",
-        value: function printOverall() {
-            var data = {};
-            data.left = this.props.data.left;
-            data.right = this.props.data.right;
+    }
 
-            return React.createElement(FeedOverall, { data: data, settings: this.props.settings });
-        }
-    }, {
-        key: "printCountries",
-        value: function printCountries() {
-            var data = {};
-            data.left = this.props.data.left;
-            data.right = this.props.data.right;
+    render() {
+        return React.createElement(
+            'div',
+            { className: 'bel-grid' },
+            this.getContent()
+        );
+    }
+}
 
-            return React.createElement(FeedCountries, { data: data, settings: this.props.settings });
-        }
-    }, {
-        key: "getContent",
-        value: function getContent() {
-            if (this.props.tab == 'div') {
-                return this.printDivisions();
-            } else if (this.props.tab == 'overall') {
-                return this.printOverall();
-            } else if (this.props.tab == 'countries') {
-                return this.printCountries();
-            }
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            return React.createElement(
-                "div",
-                { className: "bel-grid" },
-                this.getContent()
-            );
-        }
-    }]);
+class FeedCountries extends React.Component {
+    constructor() {
+        super();
 
-    return Feed;
-}(React.Component);
-
-var FeedCountries = function (_React$Component3) {
-    _inherits(FeedCountries, _React$Component3);
-
-    function FeedCountries() {
-        _classCallCheck(this, FeedCountries);
-
-        var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(FeedCountries).call(this));
-
-        _this3.state = {
+        this.state = {
             tab: 'overall'
         };
-        return _this3;
+    }
+    getFlagStyle(c) {
+        return {
+            backgroundImage: `url('/images/flags_png/L/${ c }.png')`,
+            backgroundPosition: "-4px -4px"
+        };
     }
 
-    _createClass(FeedCountries, [{
-        key: "getFlagStyle",
-        value: function getFlagStyle(c) {
-            return {
-                backgroundImage: "url('/images/flags_png/L/" + c + ".png')",
-                backgroundPosition: "-4px -4px"
-            };
+    getStats(side) {
+        var content = [];
+        if (this.state.tab == 'overall') {
+            var countries = this.props.data[side].countries;
+        } else {
+            var countries = this.props.data[side].divisions[this.state.tab].countries;
         }
-    }, {
-        key: "getStats",
-        value: function getStats(side) {
-            var content = [];
-            if (this.state.tab == 'overall') {
-                var countries = this.props.data[side].countries;
-            } else {
-                var countries = this.props.data[side].divisions[this.state.tab].countries;
-            }
 
-            for (var i in countries) {
-                var c = countries[i];
-                content.push(React.createElement(
-                    "div",
+        for (var i in countries) {
+            var c = countries[i];
+            content.push(React.createElement(
+                'div',
+                null,
+                React.createElement(
+                    If,
+                    { test: side == "right" },
+                    React.createElement('div', { style: this.getFlagStyle(i), className: 'bel-country' })
+                ),
+                React.createElement(
+                    'b',
                     null,
+                    i
+                ),
+                ': ',
+                c.damage.toLocaleString(),
+                React.createElement(
+                    If,
+                    { test: side == "left" },
+                    React.createElement('div', { style: this.getFlagStyle(i), className: 'bel-country' })
+                ),
+                React.createElement('hr', { className: 'bel' })
+            ));
+        }
+
+        return content;
+    }
+
+    getTabButtons() {
+        return [['overall', 'Total'], ['div1', 'DIV1'], ['div2', 'DIV2'], ['div3', 'DIV3'], ['div4', 'DIV4']];
+    }
+
+    changeTab(tab) {
+        this.setState({
+            'tab': tab
+        });
+    }
+
+    render() {
+        return React.createElement(
+            'div',
+            null,
+            React.createElement(TabSelector, { changeTab: this.changeTab.bind(this), tab: this.state.tab, buttons: this.getTabButtons() }),
+            React.createElement(
+                'div',
+                { id: 'bel-country-list' },
+                React.createElement(
+                    'div',
+                    { className: 'bel-col-1-2 text-right' },
+                    this.getStats('left')
+                ),
+                React.createElement(
+                    'div',
+                    { className: 'bel-col-1-2 text-left' },
+                    this.getStats('right')
+                )
+            )
+        );
+    }
+}
+
+class FeedDivision extends React.Component {
+    getPerc(a, b) {
+        var ap = 0;
+        if (a + b != 0) {
+            ap = Math.round(a * 1000 / (a + b)) / 10;
+        }
+
+        return ap;
+    }
+
+    render() {
+        var left = this.props.data.left;
+        var right = this.props.data.right;
+        var settings = this.props.settings;
+        var highlightDivision = false;
+        if (settings.highlightDivision.value && SERVER_DATA.division == this.props.div[0]) {
+            highlightDivision = true;
+        }
+        return React.createElement(
+            'div',
+            null,
+            React.createElement(
+                'div',
+                { className: "bel-col-1-1 text-center bel-title " + (highlightDivision ? "bel-highlight-title" : "") },
+                this.props.div[1]
+            ),
+            React.createElement(
+                'div',
+                { className: 'bel-col-1-3 text-right' },
+                React.createElement(
+                    'ul',
+                    { className: 'list-unstyled' },
                     React.createElement(
-                        If,
-                        { test: side == "right" },
-                        React.createElement("div", { style: this.getFlagStyle(i), className: "bel-country" })
-                    ),
-                    React.createElement(
-                        "b",
+                        'li',
                         null,
-                        i
+                        React.createElement(
+                            If,
+                            { test: settings.showKills.value },
+                            React.createElement(FeedValue, { green: true, a: left.hits, b: right.hits, highlight: settings.highlightValue.value, text: "kills" })
+                        ),
+                        React.createElement(
+                            If,
+                            { test: settings.showDamagePerc.value },
+                            React.createElement(FeedValue, { green: true, a: this.getPerc(left.damage, right.damage), b: this.getPerc(right.damage, left.damage), highlight: settings.highlightValue.value, text: "%" })
+                        ),
+                        React.createElement(FeedValue, { green: true, a: left.damage, b: right.damage, highlight: settings.highlightValue.value })
                     ),
-                    ": ",
-                    c.damage.toLocaleString(),
                     React.createElement(
                         If,
-                        { test: side == "left" },
-                        React.createElement("div", { style: this.getFlagStyle(i), className: "bel-country" })
-                    ),
-                    React.createElement("hr", { className: "bel" })
-                ));
-            }
-
-            return content;
-        }
-    }, {
-        key: "getTabButtons",
-        value: function getTabButtons() {
-            return [['overall', 'Total'], ['div1', 'DIV1'], ['div2', 'DIV2'], ['div3', 'DIV3'], ['div4', 'DIV4']];
-        }
-    }, {
-        key: "changeTab",
-        value: function changeTab(tab) {
-            this.setState({
-                'tab': tab
-            });
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            return React.createElement(
-                "div",
-                null,
-                React.createElement(TabSelector, { changeTab: this.changeTab.bind(this), tab: this.state.tab, buttons: this.getTabButtons() }),
-                React.createElement(
-                    "div",
-                    { id: "bel-country-list" },
-                    React.createElement(
-                        "div",
-                        { className: "bel-col-1-2 text-right" },
-                        this.getStats('left')
+                        { test: settings.showAverageDamage.value },
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(FeedValue, { green: true, a: left.avgHit, b: right.avgHit, highlight: settings.highlightValue.value })
+                        )
                     ),
                     React.createElement(
-                        "div",
-                        { className: "bel-col-1-2 text-left" },
-                        this.getStats('right')
+                        'li',
+                        null,
+                        React.createElement(FeedValue, { green: true, a: left.dps, b: right.dps, highlight: settings.highlightValue.value })
                     )
                 )
-            );
-        }
-    }]);
-
-    return FeedCountries;
-}(React.Component);
-
-var FeedDivision = function (_React$Component4) {
-    _inherits(FeedDivision, _React$Component4);
-
-    function FeedDivision() {
-        _classCallCheck(this, FeedDivision);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(FeedDivision).apply(this, arguments));
-    }
-
-    _createClass(FeedDivision, [{
-        key: "getPerc",
-        value: function getPerc(a, b) {
-            var ap = 0;
-            if (a + b != 0) {
-                ap = Math.round(a * 1000 / (a + b)) / 10;
-            }
-
-            return ap;
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            var left = this.props.data.left;
-            var right = this.props.data.right;
-            var settings = this.props.settings;
-            var highlightDivision = false;
-            if (settings.highlightDivision.value && SERVER_DATA.division == this.props.div[0]) {
-                highlightDivision = true;
-            }
-            return React.createElement(
-                "div",
-                null,
+            ),
+            React.createElement(
+                'div',
+                { className: 'bel-col-1-3 text-center' },
                 React.createElement(
-                    "div",
-                    { className: "bel-col-1-1 text-center bel-title " + (highlightDivision ? "bel-highlight-title" : "") },
-                    this.props.div[1]
-                ),
-                React.createElement(
-                    "div",
-                    { className: "bel-col-1-3 text-right" },
+                    'ul',
+                    { className: "list-unstyled bel-titles " + (highlightDivision ? "bel-highlight" : "") },
                     React.createElement(
-                        "ul",
-                        { className: "list-unstyled" },
-                        React.createElement(
-                            "li",
-                            null,
-                            React.createElement(
-                                If,
-                                { test: settings.showKills.value },
-                                React.createElement(FeedValue, { green: true, a: left.hits, b: right.hits, highlight: settings.highlightValue.value, text: "kills" })
-                            ),
-                            React.createElement(
-                                If,
-                                { test: settings.showDamagePerc.value },
-                                React.createElement(FeedValue, { green: true, a: this.getPerc(left.damage, right.damage), b: this.getPerc(right.damage, left.damage), highlight: settings.highlightValue.value, text: "%" })
-                            ),
-                            React.createElement(FeedValue, { green: true, a: left.damage, b: right.damage, highlight: settings.highlightValue.value })
-                        ),
-                        React.createElement(
-                            If,
-                            { test: settings.showAverageDamage.value },
-                            React.createElement(
-                                "li",
-                                null,
-                                React.createElement(FeedValue, { green: true, a: left.avgHit, b: right.avgHit, highlight: settings.highlightValue.value })
-                            )
-                        ),
-                        React.createElement(
-                            "li",
-                            null,
-                            React.createElement(FeedValue, { green: true, a: left.dps, b: right.dps, highlight: settings.highlightValue.value })
-                        )
-                    )
-                ),
-                React.createElement(
-                    "div",
-                    { className: "bel-col-1-3 text-center" },
-                    React.createElement(
-                        "ul",
-                        { className: "list-unstyled bel-titles " + (highlightDivision ? "bel-highlight" : "") },
-                        React.createElement(
-                            "li",
-                            null,
-                            "Total Damage"
-                        ),
-                        React.createElement(
-                            If,
-                            { test: settings.showAverageDamage.value },
-                            React.createElement(
-                                "li",
-                                null,
-                                "Average Damage"
-                            )
-                        ),
-                        React.createElement(
-                            "li",
-                            null,
-                            "DPS"
-                        )
-                    )
-                ),
-                React.createElement(
-                    "div",
-                    { className: "bel-col-1-3 text-left" },
-                    React.createElement(
-                        "ul",
-                        { className: "list-unstyled" },
-                        React.createElement(
-                            "li",
-                            null,
-                            React.createElement(FeedValue, { a: right.damage, b: left.damage, highlight: settings.highlightValue.value }),
-                            React.createElement(
-                                If,
-                                { test: settings.showDamagePerc.value },
-                                React.createElement(FeedValue, { b: this.getPerc(left.damage, right.damage), a: this.getPerc(right.damage, left.damage), highlight: settings.highlightValue.value, text: "%" })
-                            ),
-                            React.createElement(
-                                If,
-                                { test: settings.showKills.value },
-                                React.createElement(FeedValue, { a: right.hits, b: left.hits, text: "kills", highlight: settings.highlightValue.value })
-                            )
-                        ),
-                        React.createElement(
-                            If,
-                            { test: settings.showAverageDamage.value },
-                            React.createElement(
-                                "li",
-                                null,
-                                React.createElement(FeedValue, { a: right.avgHit, b: left.avgHit, highlight: settings.highlightValue.value })
-                            )
-                        ),
-                        React.createElement(
-                            "li",
-                            null,
-                            React.createElement(FeedValue, { a: right.dps, b: left.dps, highlight: settings.highlightValue.value })
-                        )
-                    )
-                ),
-                React.createElement(
-                    "div",
-                    { className: "bel-col-1-1" },
-                    React.createElement(
-                        If,
-                        { test: settings.showDamageBar.value },
-                        React.createElement(
-                            "div",
-                            { className: "text-left bel-text-tiny" },
-                            "DAMAGE ",
-                            React.createElement(
-                                "span",
-                                { className: "color-silver" },
-                                "(",
-                                React.createElement(
-                                    "strong",
-                                    null,
-                                    Math.abs(left.damage - right.damage).toLocaleString(),
-                                    " "
-                                ),
-                                " difference)"
-                            )
-                        ),
-                        React.createElement(FeedProgressBar, { a: left.damage, b: right.damage })
+                        'li',
+                        null,
+                        'Total Damage'
                     ),
                     React.createElement(
                         If,
-                        { test: settings.showDpsBar.value },
-                        React.createElement(FeedProgressBar, { a: left.dps, b: right.dps }),
+                        { test: settings.showAverageDamage.value },
                         React.createElement(
-                            "div",
-                            { className: "text-left bel-text-tiny" },
-                            "DPS ",
+                            'li',
+                            null,
+                            'Average Damage'
+                        )
+                    ),
+                    React.createElement(
+                        'li',
+                        null,
+                        'DPS'
+                    )
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'bel-col-1-3 text-left' },
+                React.createElement(
+                    'ul',
+                    { className: 'list-unstyled' },
+                    React.createElement(
+                        'li',
+                        null,
+                        React.createElement(FeedValue, { a: right.damage, b: left.damage, highlight: settings.highlightValue.value }),
+                        React.createElement(
+                            If,
+                            { test: settings.showDamagePerc.value },
+                            React.createElement(FeedValue, { b: this.getPerc(left.damage, right.damage), a: this.getPerc(right.damage, left.damage), highlight: settings.highlightValue.value, text: "%" })
+                        ),
+                        React.createElement(
+                            If,
+                            { test: settings.showKills.value },
+                            React.createElement(FeedValue, { a: right.hits, b: left.hits, text: "kills", highlight: settings.highlightValue.value })
+                        )
+                    ),
+                    React.createElement(
+                        If,
+                        { test: settings.showAverageDamage.value },
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(FeedValue, { a: right.avgHit, b: left.avgHit, highlight: settings.highlightValue.value })
+                        )
+                    ),
+                    React.createElement(
+                        'li',
+                        null,
+                        React.createElement(FeedValue, { a: right.dps, b: left.dps, highlight: settings.highlightValue.value })
+                    )
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'bel-col-1-1' },
+                React.createElement(
+                    If,
+                    { test: settings.showDamageBar.value },
+                    React.createElement(
+                        'div',
+                        { className: 'text-left bel-text-tiny' },
+                        'DAMAGE ',
+                        React.createElement(
+                            'span',
+                            { className: 'color-silver' },
+                            '(',
                             React.createElement(
-                                "span",
-                                { className: "color-silver" },
-                                "(",
-                                React.createElement(
-                                    "strong",
-                                    null,
-                                    Math.abs(left.dps - right.dps).toLocaleString()
-                                ),
-                                " difference)"
-                            )
+                                'strong',
+                                null,
+                                Math.abs(left.damage - right.damage).toLocaleString(),
+                                ' '
+                            ),
+                            ' difference)'
+                        )
+                    ),
+                    React.createElement(FeedProgressBar, { a: left.damage, b: right.damage })
+                ),
+                React.createElement(
+                    If,
+                    { test: settings.showDpsBar.value },
+                    React.createElement(FeedProgressBar, { a: left.dps, b: right.dps }),
+                    React.createElement(
+                        'div',
+                        { className: 'text-left bel-text-tiny' },
+                        'DPS ',
+                        React.createElement(
+                            'span',
+                            { className: 'color-silver' },
+                            '(',
+                            React.createElement(
+                                'strong',
+                                null,
+                                Math.abs(left.dps - right.dps).toLocaleString()
+                            ),
+                            ' difference)'
                         )
                     )
                 )
-            );
+            )
+        );
+    }
+}
+
+class FeedOverall extends React.Component {
+    getPerc(a, b) {
+        var ap = 0;
+        if (a + b != 0) {
+            ap = Math.round(a * 100 / (a + b));
         }
-    }]);
 
-    return FeedDivision;
-}(React.Component);
-
-var FeedOverall = function (_React$Component5) {
-    _inherits(FeedOverall, _React$Component5);
-
-    function FeedOverall() {
-        _classCallCheck(this, FeedOverall);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(FeedOverall).apply(this, arguments));
+        return ap;
     }
 
-    _createClass(FeedOverall, [{
-        key: "getPerc",
-        value: function getPerc(a, b) {
-            var ap = 0;
-            if (a + b != 0) {
-                ap = Math.round(a * 100 / (a + b));
-            }
+    render() {
+        var left = this.props.data.left;
+        var right = this.props.data.right;
+        var settings = this.props.settings;
 
-            return ap;
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            var left = this.props.data.left;
-            var right = this.props.data.right;
-            var settings = this.props.settings;
-
-            return React.createElement(
-                "div",
-                null,
+        return React.createElement(
+            'div',
+            null,
+            React.createElement(
+                'div',
+                { className: 'bel-col-1-1 text-center bel-title bel-highlight-title' },
+                'Overall stats'
+            ),
+            React.createElement(
+                'div',
+                { className: 'bel-col-1-3 text-right' },
                 React.createElement(
-                    "div",
-                    { className: "bel-col-1-1 text-center bel-title bel-highlight-title" },
-                    "Overall stats"
-                ),
-                React.createElement(
-                    "div",
-                    { className: "bel-col-1-3 text-right" },
+                    'ul',
+                    { className: 'list-unstyled' },
                     React.createElement(
-                        "ul",
-                        { className: "list-unstyled" },
+                        'li',
+                        null,
                         React.createElement(
-                            "li",
-                            null,
-                            React.createElement(
-                                If,
-                                { test: settings.showKills.value },
-                                React.createElement(FeedValue, { green: true, a: left.hits, b: right.hits, highlight: settings.highlightValue.value, text: "kills" })
-                            ),
-                            React.createElement(
-                                If,
-                                { test: settings.showDamagePerc.value },
-                                React.createElement(FeedValue, { green: true, a: this.getPerc(left.damage, right.damage), b: this.getPerc(right.damage, left.damage), highlight: settings.highlightValue.value, text: "%" })
-                            ),
-                            React.createElement(FeedValue, { green: true, a: left.damage, b: right.damage, highlight: settings.highlightValue.value })
+                            If,
+                            { test: settings.showKills.value },
+                            React.createElement(FeedValue, { green: true, a: left.hits, b: right.hits, highlight: settings.highlightValue.value, text: "kills" })
                         ),
                         React.createElement(
                             If,
-                            { test: settings.showAverageDamage.value },
-                            React.createElement(
-                                "li",
-                                null,
-                                React.createElement(FeedValue, { green: true, a: left.avgHit, b: right.avgHit, highlight: settings.highlightValue.value })
-                            )
+                            { test: settings.showDamagePerc.value },
+                            React.createElement(FeedValue, { green: true, a: this.getPerc(left.damage, right.damage), b: this.getPerc(right.damage, left.damage), highlight: settings.highlightValue.value, text: "%" })
                         ),
-                        React.createElement(
-                            "li",
-                            null,
-                            React.createElement(FeedValue, { green: true, a: left.dps, b: right.dps, highlight: settings.highlightValue.value })
-                        )
-                    )
-                ),
-                React.createElement(
-                    "div",
-                    { className: "bel-col-1-3 text-center" },
-                    React.createElement(
-                        "ul",
-                        { className: "list-unstyled bel-titles" },
-                        React.createElement(
-                            "li",
-                            null,
-                            "Total Damage"
-                        ),
-                        React.createElement(
-                            If,
-                            { test: settings.showAverageDamage.value },
-                            React.createElement(
-                                "li",
-                                null,
-                                "Average Damage"
-                            )
-                        ),
-                        React.createElement(
-                            "li",
-                            null,
-                            "DPS"
-                        )
-                    )
-                ),
-                React.createElement(
-                    "div",
-                    { className: "bel-col-1-3 text-left" },
-                    React.createElement(
-                        "ul",
-                        { className: "list-unstyled" },
-                        React.createElement(
-                            "li",
-                            null,
-                            React.createElement(FeedValue, { a: right.damage, b: left.damage, highlight: settings.highlightValue.value }),
-                            React.createElement(
-                                If,
-                                { test: settings.showDamagePerc.value },
-                                React.createElement(FeedValue, { b: this.getPerc(left.damage, right.damage), a: this.getPerc(right.damage, left.damage), highlight: settings.highlightValue.value, text: "%" })
-                            ),
-                            React.createElement(
-                                If,
-                                { test: settings.showKills.value },
-                                React.createElement(FeedValue, { a: right.hits, b: left.hits, text: "kills", highlight: settings.highlightValue.value })
-                            )
-                        ),
-                        React.createElement(
-                            If,
-                            { test: settings.showAverageDamage.value },
-                            React.createElement(
-                                "li",
-                                null,
-                                React.createElement(FeedValue, { a: right.avgHit, b: left.avgHit, highlight: settings.highlightValue.value })
-                            )
-                        ),
-                        React.createElement(
-                            "li",
-                            null,
-                            React.createElement(FeedValue, { a: right.dps, b: left.dps, highlight: settings.highlightValue.value })
-                        )
-                    )
-                ),
-                React.createElement(
-                    "div",
-                    { className: "bel-col-1-1" },
-                    React.createElement(
-                        If,
-                        { test: settings.showDamageBar.value },
-                        React.createElement(
-                            "div",
-                            { className: "text-left bel-text-tiny" },
-                            "DAMAGE ",
-                            React.createElement(
-                                "span",
-                                { className: "color-silver" },
-                                "(",
-                                React.createElement(
-                                    "strong",
-                                    null,
-                                    Math.abs(left.damage - right.damage).toLocaleString(),
-                                    " "
-                                ),
-                                " difference)"
-                            )
-                        ),
-                        React.createElement(FeedProgressBar, { a: left.damage, b: right.damage })
+                        React.createElement(FeedValue, { green: true, a: left.damage, b: right.damage, highlight: settings.highlightValue.value })
                     ),
                     React.createElement(
                         If,
-                        { test: settings.showDpsBar.value },
-                        React.createElement(FeedProgressBar, { a: left.dps, b: right.dps }),
+                        { test: settings.showAverageDamage.value },
                         React.createElement(
-                            "div",
-                            { className: "text-left bel-text-tiny" },
-                            "DPS ",
+                            'li',
+                            null,
+                            React.createElement(FeedValue, { green: true, a: left.avgHit, b: right.avgHit, highlight: settings.highlightValue.value })
+                        )
+                    ),
+                    React.createElement(
+                        'li',
+                        null,
+                        React.createElement(FeedValue, { green: true, a: left.dps, b: right.dps, highlight: settings.highlightValue.value })
+                    )
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'bel-col-1-3 text-center' },
+                React.createElement(
+                    'ul',
+                    { className: 'list-unstyled bel-titles' },
+                    React.createElement(
+                        'li',
+                        null,
+                        'Total Damage'
+                    ),
+                    React.createElement(
+                        If,
+                        { test: settings.showAverageDamage.value },
+                        React.createElement(
+                            'li',
+                            null,
+                            'Average Damage'
+                        )
+                    ),
+                    React.createElement(
+                        'li',
+                        null,
+                        'DPS'
+                    )
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'bel-col-1-3 text-left' },
+                React.createElement(
+                    'ul',
+                    { className: 'list-unstyled' },
+                    React.createElement(
+                        'li',
+                        null,
+                        React.createElement(FeedValue, { a: right.damage, b: left.damage, highlight: settings.highlightValue.value }),
+                        React.createElement(
+                            If,
+                            { test: settings.showDamagePerc.value },
+                            React.createElement(FeedValue, { b: this.getPerc(left.damage, right.damage), a: this.getPerc(right.damage, left.damage), highlight: settings.highlightValue.value, text: "%" })
+                        ),
+                        React.createElement(
+                            If,
+                            { test: settings.showKills.value },
+                            React.createElement(FeedValue, { a: right.hits, b: left.hits, text: "kills", highlight: settings.highlightValue.value })
+                        )
+                    ),
+                    React.createElement(
+                        If,
+                        { test: settings.showAverageDamage.value },
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(FeedValue, { a: right.avgHit, b: left.avgHit, highlight: settings.highlightValue.value })
+                        )
+                    ),
+                    React.createElement(
+                        'li',
+                        null,
+                        React.createElement(FeedValue, { a: right.dps, b: left.dps, highlight: settings.highlightValue.value })
+                    )
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'bel-col-1-1' },
+                React.createElement(
+                    If,
+                    { test: settings.showDamageBar.value },
+                    React.createElement(
+                        'div',
+                        { className: 'text-left bel-text-tiny' },
+                        'DAMAGE ',
+                        React.createElement(
+                            'span',
+                            { className: 'color-silver' },
+                            '(',
                             React.createElement(
-                                "span",
-                                { className: "color-silver" },
-                                "(",
-                                React.createElement(
-                                    "strong",
-                                    null,
-                                    Math.abs(left.dps - right.dps).toLocaleString()
-                                ),
-                                " difference)"
-                            )
+                                'strong',
+                                null,
+                                Math.abs(left.damage - right.damage).toLocaleString(),
+                                ' '
+                            ),
+                            ' difference)'
+                        )
+                    ),
+                    React.createElement(FeedProgressBar, { a: left.damage, b: right.damage })
+                ),
+                React.createElement(
+                    If,
+                    { test: settings.showDpsBar.value },
+                    React.createElement(FeedProgressBar, { a: left.dps, b: right.dps }),
+                    React.createElement(
+                        'div',
+                        { className: 'text-left bel-text-tiny' },
+                        'DPS ',
+                        React.createElement(
+                            'span',
+                            { className: 'color-silver' },
+                            '(',
+                            React.createElement(
+                                'strong',
+                                null,
+                                Math.abs(left.dps - right.dps).toLocaleString()
+                            ),
+                            ' difference)'
                         )
                     )
                 )
-            );
-        }
-    }]);
-
-    return FeedOverall;
-}(React.Component);
-
-var FeedProgressBar = function (_React$Component6) {
-    _inherits(FeedProgressBar, _React$Component6);
-
-    function FeedProgressBar() {
-        _classCallCheck(this, FeedProgressBar);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(FeedProgressBar).apply(this, arguments));
+            )
+        );
     }
 
-    _createClass(FeedProgressBar, [{
-        key: "render",
-        value: function render() {
-            var aPerc = 0,
-                bPerc = 0;
+}
 
-            if (this.props.a + this.props.b !== 0) {
-                aPerc = Math.round(this.props.a * 10000 / (this.props.a + this.props.b)) / 100;
-                bPerc = Math.round(this.props.b * 10000 / (this.props.a + this.props.b)) / 100;
-            }
+class FeedProgressBar extends React.Component {
+    render() {
+        var aPerc = 0,
+            bPerc = 0;
 
-            var teamA = {
-                width: aPerc + "%"
-            };
-
-            var teamB = {
-                width: bPerc + "%"
-            };
-
-            var progressStyle = {};
-            if (settings.largerBars.value) {
-                progressStyle.height = "8px";
-            }
-
-            return React.createElement(
-                "div",
-                { className: "bel-progress", style: progressStyle },
-                React.createElement("div", { className: "bel-progress-center-marker" }),
-                React.createElement("div", { className: "bel-progress-bar bel-teama", style: teamA }),
-                React.createElement("div", { className: "bel-progress-bar bel-teamb", style: teamB })
-            );
+        if (this.props.a + this.props.b !== 0) {
+            aPerc = Math.round(this.props.a * 10000 / (this.props.a + this.props.b)) / 100;
+            bPerc = Math.round(this.props.b * 10000 / (this.props.a + this.props.b)) / 100;
         }
-    }]);
 
-    return FeedProgressBar;
-}(React.Component);
+        var teamA = {
+            width: aPerc + "%"
+        };
 
-var FeedValue = function (_React$Component7) {
-    _inherits(FeedValue, _React$Component7);
+        var teamB = {
+            width: bPerc + "%"
+        };
 
-    function FeedValue() {
-        _classCallCheck(this, FeedValue);
+        var progressStyle = {};
+        if (settings.largerBars.value) {
+            progressStyle.height = "8px";
+        }
 
-        var _this7 = _possibleConstructorReturn(this, Object.getPrototypeOf(FeedValue).call(this));
+        return React.createElement(
+            'div',
+            { className: 'bel-progress', style: progressStyle },
+            React.createElement('div', { className: 'bel-progress-center-marker' }),
+            React.createElement('div', { className: 'bel-progress-bar bel-teama', style: teamA }),
+            React.createElement('div', { className: 'bel-progress-bar bel-teamb', style: teamB })
+        );
+    }
+}
 
-        _this7.props = {
+class FeedValue extends React.Component {
+    constructor() {
+        super();
+        this.props = {
             text: "",
             green: false
         };
-        return _this7;
     }
 
-    _createClass(FeedValue, [{
-        key: "render",
-        value: function render() {
-            return React.createElement(
-                "span",
-                { className: "bel-value " + (this.props.a > this.props.b && this.props.highlight ? this.props.green == true ? "bel-value-hl-w" : "bel-value-hl-l" : "") },
-                parseFloat(this.props.a).toLocaleString(),
-                " ",
-                this.props.text
-            );
-        }
-    }]);
+    render() {
+        return React.createElement(
+            'span',
+            { className: "bel-value " + (this.props.a > this.props.b && this.props.highlight ? this.props.green == true ? "bel-value-hl-w" : "bel-value-hl-l" : "") },
+            parseFloat(this.props.a).toLocaleString(),
+            ' ',
+            this.props.text
+        );
+    }
+}
 
-    return FeedValue;
-}(React.Component);
+class Footer extends React.Component {
+    render() {
+        return null;
+    }
+}
 
-var Footer = function (_React$Component8) {
-    _inherits(Footer, _React$Component8);
-
-    function Footer() {
-        _classCallCheck(this, Footer);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(Footer).apply(this, arguments));
+class Header extends React.Component {
+    getTeamElementStyle() {
+        return {
+            fontWeight: 700,
+            fontSize: '1.3em'
+        };
     }
 
-    _createClass(Footer, [{
-        key: "render",
-        value: function render() {
-            return null;
-        }
-    }]);
-
-    return Footer;
-}(React.Component);
-
-var Header = function (_React$Component9) {
-    _inherits(Header, _React$Component9);
-
-    function Header() {
-        _classCallCheck(this, Header);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(Header).apply(this, arguments));
+    getHeaderListStyle() {
+        return {
+            paddingBottom: "6px",
+            borderBottom: "1px solid #ecf0f1"
+        };
     }
 
-    _createClass(Header, [{
-        key: "getTeamElementStyle",
-        value: function getTeamElementStyle() {
-            return {
-                fontWeight: 700,
-                fontSize: '1.3em'
-            };
-        }
-    }, {
-        key: "getHeaderListStyle",
-        value: function getHeaderListStyle() {
-            return {
-                paddingBottom: "6px",
-                borderBottom: "1px solid #ecf0f1"
-            };
-        }
-    }, {
-        key: "getFlagStyle",
-        value: function getFlagStyle(c) {
-            return {
-                backgroundImage: "url('/images/flags_png/L/" + c + ".png')",
-                backgroundPosition: "-4px -4px"
-            };
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            return React.createElement(
-                "div",
-                { id: "battle_eye_header" },
+    getFlagStyle(c) {
+        return {
+            backgroundImage: `url('/images/flags_png/L/${ c }.png')`,
+            backgroundPosition: "-4px -4px"
+        };
+    }
+
+    render() {
+        return React.createElement(
+            'div',
+            { id: 'battle_eye_header' },
+            React.createElement(
+                'ul',
+                { className: 'list-unstyled list-inline text-left bel-header-menu', style: this.getHeaderListStyle() },
                 React.createElement(
-                    "ul",
-                    { className: "list-unstyled list-inline text-left bel-header-menu", style: this.getHeaderListStyle() },
+                    'li',
+                    { id: 'bel-version' },
                     React.createElement(
-                        "li",
-                        { id: "bel-version" },
-                        React.createElement(
-                            "span",
-                            { className: "bel-version" },
-                            this.props.data.version
-                        ),
-                        " ",
-                        React.createElement(
-                            "a",
-                            { href: "http://bit.ly/BattleEye", target: "_blank" },
-                            "BATTLE EYE"
-                        )
+                        'span',
+                        { className: 'bel-version' },
+                        this.props.data.version
                     ),
+                    ' ',
                     React.createElement(
-                        "li",
-                        { id: "bel-loading" },
-                        React.createElement(
-                            "div",
-                            { className: "bel-spinner" },
-                            React.createElement("div", { className: "rect1" }),
-                            React.createElement("div", { className: "rect2" }),
-                            React.createElement("div", { className: "rect3" }),
-                            React.createElement("div", { className: "rect4" }),
-                            React.createElement("div", { className: "rect5" })
-                        )
-                    ),
-                    React.createElement(
-                        "li",
-                        { className: "pull-right" },
-                        React.createElement(
-                            "ul",
-                            { className: "list-unstyled list-inline" },
-                            React.createElement(
-                                "li",
-                                null,
-                                React.createElement(
-                                    "a",
-                                    { className: "bel-btn bel-btn-inverse", target: "_blank", href: "http://www.erepublik.com/en/citizen/profile/8075739" },
-                                    "Contact/Donate"
-                                )
-                            ),
-                            React.createElement(
-                                "li",
-                                null,
-                                React.createElement(
-                                    "button",
-                                    { id: "battle-eye-settings", onClick: this.props.openModal, className: "bel-btn bel-btn-default" },
-                                    "Settings"
-                                )
-                            )
-                        )
+                        'a',
+                        { href: 'http://bit.ly/BattleEye', target: '_blank' },
+                        'BATTLE EYE'
                     )
                 ),
                 React.createElement(
-                    "div",
-                    { className: "bel-grid" },
+                    'li',
+                    { id: 'bel-loading' },
                     React.createElement(
-                        "div",
-                        { className: "bel-col-1-2 text-left bel-teama-color", style: this.getTeamElementStyle() },
-                        React.createElement("div", { style: this.getFlagStyle(this.props.data.teamAName), className: "bel-country" }),
-                        " ",
+                        'div',
+                        { className: 'bel-spinner' },
+                        React.createElement('div', { className: 'rect1' }),
+                        React.createElement('div', { className: 'rect2' }),
+                        React.createElement('div', { className: 'rect3' }),
+                        React.createElement('div', { className: 'rect4' }),
+                        React.createElement('div', { className: 'rect5' })
+                    )
+                ),
+                React.createElement(
+                    'li',
+                    { className: 'pull-right' },
+                    React.createElement(
+                        'ul',
+                        { className: 'list-unstyled list-inline' },
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(
+                                'a',
+                                { className: 'bel-btn bel-btn-inverse', target: '_blank', href: 'http://www.erepublik.com/en/citizen/profile/8075739' },
+                                'Contact/Donate'
+                            )
+                        ),
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(
+                                'button',
+                                { id: 'battle-eye-settings', onClick: this.props.openModal, className: 'bel-btn bel-btn-default' },
+                                'Settings'
+                            )
+                        )
+                    )
+                )
+            ),
+            React.createElement(
+                If,
+                { test: SERVER_DATA.isCivilWar },
+                React.createElement(
+                    'div',
+                    { className: 'bel-grid' },
+                    React.createElement(
+                        'div',
+                        { className: 'bel-col-1-3 text-left bel-teama-color', style: this.getTeamElementStyle() },
+                        React.createElement('div', { style: this.getFlagStyle(this.props.data.revolutionCountry), className: 'bel-country' }),
+                        ' ',
                         this.props.data.teamAName
                     ),
                     React.createElement(
-                        "div",
-                        { className: "bel-col-1-2 text-right bel-teamb-color", style: this.getTeamElementStyle() },
-                        this.props.data.teamBName,
-                        " ",
-                        React.createElement("div", { style: this.getFlagStyle(this.props.data.teamBName), className: "bel-country" })
-                    )
-                )
-            );
-        }
-    }]);
-
-    return Header;
-}(React.Component);
-
-var If = function (_React$Component10) {
-    _inherits(If, _React$Component10);
-
-    function If() {
-        _classCallCheck(this, If);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(If).apply(this, arguments));
-    }
-
-    _createClass(If, [{
-        key: "render",
-        value: function render() {
-            if (this.props.test) {
-                return React.createElement(
-                    "span",
-                    null,
-                    this.props.children
-                );
-            }
-
-            return null;
-        }
-    }]);
-
-    return If;
-}(React.Component);
-
-var MiniMonitor = function (_React$Component11) {
-    _inherits(MiniMonitor, _React$Component11);
-
-    function MiniMonitor() {
-        _classCallCheck(this, MiniMonitor);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(MiniMonitor).apply(this, arguments));
-    }
-
-    _createClass(MiniMonitor, [{
-        key: "getPerc",
-        value: function getPerc(a, b) {
-            var ap = 0;
-            if (a + b != 0) {
-                ap = Math.round(a * 1000 / (a + b)) / 10;
-            }
-
-            return ap;
-        }
-    }, {
-        key: "printDivisions",
-        value: function printDivisions() {
-            var data = [];
-            var left = this.props.feedData.left;
-            var right = this.props.feedData.right;
-            if (SERVER_DATA.division == 11) {
-                var divs = [11];
-            } else {
-                var divs = [1, 2, 3, 4];
-            }
-
-            for (var i in divs) {
-                var div = divs[i];
-                data.push(React.createElement(
-                    "div",
-                    null,
-                    React.createElement("div", { className: "bel-div bel-div" + div }),
-                    " ",
-                    this.getPerc(left.divisions['div' + div].damage, right.divisions['div' + div].damage),
-                    "% - ",
-                    this.getPerc(right.divisions['div' + div].damage, left.divisions['div' + div].damage),
-                    "%"
-                ));
-            }
-
-            return data;
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            if (!settings.showMiniMonitor.value) {
-                return null;
-            }
-
-            return React.createElement(
-                "div",
-                { className: "bel-minimonitor" },
-                this.printDivisions()
-            );
-        }
-    }]);
-
-    return MiniMonitor;
-}(React.Component);
-
-var SettingsField = function (_React$Component12) {
-    _inherits(SettingsField, _React$Component12);
-
-    function SettingsField() {
-        _classCallCheck(this, SettingsField);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(SettingsField).apply(this, arguments));
-    }
-
-    _createClass(SettingsField, [{
-        key: "getInput",
-        value: function getInput() {
-            var setting = this.props.setting;
-            // console.log(setting.value);
-            if (typeof setting.value == "boolean") {
-                return React.createElement(
-                    "div",
-                    null,
-                    React.createElement("input", { type: "checkbox", defaultChecked: setting.value, className: "bel-settings-field", id: setting.field.id, name: setting.field.id }),
-                    React.createElement(
-                        "label",
-                        { htmlFor: setting.field.id },
-                        setting.field.name
-                    )
-                );
-            } else {
-                return React.createElement(
-                    "div",
-                    null,
-                    React.createElement(
-                        "label",
-                        { htmlFor: setting.field.id },
-                        setting.field.name
+                        'div',
+                        { className: 'bel-col-1-3 text-center', style: this.getTeamElementStyle() },
+                        'CIVIL WAR'
                     ),
                     React.createElement(
-                        "div",
-                        null,
-                        React.createElement("input", { type: "text", defaultValue: setting.value, className: "bel-settings-field", id: setting.field.id, name: setting.field.id })
+                        'div',
+                        { className: 'bel-col-1-3 text-right bel-teamb-color', style: this.getTeamElementStyle() },
+                        React.createElement('div', { style: this.getFlagStyle(this.props.data.revolutionCountry), className: 'bel-country' }),
+                        ' ',
+                        this.props.data.teamBName
                     )
-                );
-            }
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            var setting = this.props.setting;
-            return React.createElement(
-                "div",
-                { className: "bel-checkbox" },
-                this.getInput(),
-                React.createElement(
-                    "div",
-                    { className: "bel-field-description" },
-                    setting.field.desc
                 )
+            ),
+            React.createElement(
+                If,
+                { test: !SERVER_DATA.isCivilWar },
+                React.createElement(
+                    'div',
+                    { className: 'bel-grid' },
+                    React.createElement(
+                        'div',
+                        { className: 'bel-col-1-2 text-left bel-teama-color', style: this.getTeamElementStyle() },
+                        React.createElement('div', { style: this.getFlagStyle(this.props.data.teamAName), className: 'bel-country' }),
+                        ' ',
+                        this.props.data.teamAName
+                    ),
+                    React.createElement(
+                        'div',
+                        { className: 'bel-col-1-2 text-right bel-teamb-color', style: this.getTeamElementStyle() },
+                        this.props.data.teamBName,
+                        ' ',
+                        React.createElement('div', { style: this.getFlagStyle(this.props.data.teamBName), className: 'bel-country' })
+                    )
+                )
+            )
+        );
+    }
+}
+
+class If extends React.Component {
+    render() {
+        if (this.props.test) {
+            return React.createElement(
+                'span',
+                null,
+                this.props.children
             );
         }
-    }]);
 
-    return SettingsField;
-}(React.Component);
+        return null;
+    }
+}
 
-var SettingsGroup = function (_React$Component13) {
-    _inherits(SettingsGroup, _React$Component13);
+class MiniMonitor extends React.Component {
 
-    function SettingsGroup() {
-        _classCallCheck(this, SettingsGroup);
+    getPerc(a, b) {
+        var ap = 0;
+        if (a + b != 0) {
+            ap = Math.round(a * 1000 / (a + b)) / 10;
+        }
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(SettingsGroup).apply(this, arguments));
+        return ap;
     }
 
-    _createClass(SettingsGroup, [{
-        key: "renderSettings",
-        value: function renderSettings() {
-            var settings = this.props.settings;
-            var components = [];
-
-            for (var i in settings) {
-                var setting = settings[i];
-                components.push(React.createElement(SettingsField, { setting: setting }));
-            }
-
-            return components;
+    printDivisions() {
+        var data = [];
+        var left = this.props.feedData.left;
+        var right = this.props.feedData.right;
+        if (SERVER_DATA.division == 11) {
+            var divs = [11];
+        } else {
+            var divs = [1, 2, 3, 4];
         }
-    }, {
-        key: "render",
-        value: function render() {
+
+        for (var i in divs) {
+            var div = divs[i];
+            data.push(React.createElement(
+                'div',
+                null,
+                React.createElement('div', { className: "bel-div bel-div" + div }),
+                ' ',
+                this.getPerc(left.divisions['div' + div].damage, right.divisions['div' + div].damage),
+                '% - ',
+                this.getPerc(right.divisions['div' + div].damage, left.divisions['div' + div].damage),
+                '%'
+            ));
+        }
+
+        return data;
+    }
+
+    render() {
+        if (!settings.showMiniMonitor.value) {
+            return null;
+        }
+
+        return React.createElement(
+            'div',
+            { className: 'bel-minimonitor' },
+            this.printDivisions()
+        );
+    }
+}
+
+class SettingsField extends React.Component {
+    getInput() {
+        var setting = this.props.setting;
+        // console.log(setting.value);
+        if (typeof setting.value == "boolean") {
             return React.createElement(
-                "div",
-                { className: "bel-col-1-2" },
+                'div',
+                null,
+                React.createElement('input', { type: 'checkbox', defaultChecked: setting.value, className: 'bel-settings-field', id: setting.field.id, name: setting.field.id }),
                 React.createElement(
-                    "h5",
-                    { className: "bel-settings-group" },
-                    this.props.name
+                    'label',
+                    { htmlFor: setting.field.id },
+                    setting.field.name
+                )
+            );
+        } else {
+            return React.createElement(
+                'div',
+                null,
+                React.createElement(
+                    'label',
+                    { htmlFor: setting.field.id },
+                    setting.field.name
                 ),
                 React.createElement(
-                    "div",
-                    { className: "bel-settings-container" },
-                    this.renderSettings()
+                    'div',
+                    null,
+                    React.createElement('input', { type: 'text', defaultValue: setting.value, className: 'bel-settings-field', id: setting.field.id, name: setting.field.id })
                 )
             );
         }
-    }]);
-
-    return SettingsGroup;
-}(React.Component);
-
-var SettingsModal = function (_React$Component14) {
-    _inherits(SettingsModal, _React$Component14);
-
-    function SettingsModal() {
-        _classCallCheck(this, SettingsModal);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(SettingsModal).apply(this, arguments));
     }
 
-    _createClass(SettingsModal, [{
-        key: "renderGroups",
-        value: function renderGroups() {
-            var settings = this.props.settings;
-            var components = [];
-            var groups = {};
+    render() {
+        var setting = this.props.setting;
+        return React.createElement(
+            'div',
+            { className: 'bel-checkbox' },
+            this.getInput(),
+            React.createElement(
+                'div',
+                { className: 'bel-field-description' },
+                setting.field.desc
+            )
+        );
+    }
+}
 
-            for (var i in settings) {
-                var setting = settings[i];
+class SettingsGroup extends React.Component {
 
-                if (groups[setting.field.group] == undefined) {
-                    groups[setting.field.group] = [];
-                }
+    renderSettings() {
+        var settings = this.props.settings;
+        var components = [];
 
-                groups[setting.field.group].push(setting);
+        for (var i in settings) {
+            var setting = settings[i];
+            components.push(React.createElement(SettingsField, { setting: setting }));
+        }
+
+        return components;
+    }
+
+    render() {
+        return React.createElement(
+            'div',
+            { className: 'bel-col-1-2' },
+            React.createElement(
+                'h5',
+                { className: 'bel-settings-group' },
+                this.props.name
+            ),
+            React.createElement(
+                'div',
+                { className: 'bel-settings-container' },
+                this.renderSettings()
+            )
+        );
+    }
+}
+
+class SettingsModal extends React.Component {
+    renderGroups() {
+        var settings = this.props.settings;
+        var components = [];
+        var groups = {};
+
+        for (var i in settings) {
+            var setting = settings[i];
+
+            if (groups[setting.field.group] == undefined) {
+                groups[setting.field.group] = [];
             }
 
-            for (var i in groups) {
-                var group = groups[i];
-                components.push(React.createElement(SettingsGroup, { name: i, settings: group }));
-            }
-            return components;
+            groups[setting.field.group].push(setting);
         }
-    }, {
-        key: "resetSettings",
-        value: function resetSettings() {
-            battleEyeLive.resetSettings();
-            $j('#bel-reset-settings').notify('Settings reset', 'info');
+
+        for (var i in groups) {
+            var group = groups[i];
+            components.push(React.createElement(SettingsGroup, { name: i, settings: group }));
         }
-    }, {
-        key: "render",
-        value: function render() {
-            return React.createElement(
-                "div",
-                { id: "bel-settings-modal", className: "bel-settings " + (this.props.hidden ? "bel-hidden" : "") },
+        return components;
+    }
+
+    resetSettings() {
+        battleEyeLive.resetSettings();
+        $j('#bel-reset-settings').notify('Settings reset', 'info');
+    }
+
+    render() {
+        return React.createElement(
+            'div',
+            { id: 'bel-settings-modal', className: "bel-settings " + (this.props.hidden ? "bel-hidden" : "") },
+            React.createElement(
+                'div',
+                { className: 'clearfix' },
                 React.createElement(
-                    "div",
-                    { className: "clearfix" },
+                    'ul',
+                    { className: 'list-unstyled list-inline pull-right bel-header-menu' },
                     React.createElement(
-                        "ul",
-                        { className: "list-unstyled list-inline pull-right bel-header-menu" },
+                        'li',
+                        null,
                         React.createElement(
-                            "li",
-                            null,
-                            React.createElement(
-                                "a",
-                                { id: "bel-reset-settings", onClick: this.resetSettings, href: "javascript:void(0);", className: "bel-btn bel-btn-inverse bel-btn-alert-success" },
-                                "Reset to defaults"
-                            )
-                        ),
+                            'a',
+                            { id: 'bel-reset-settings', onClick: this.resetSettings, href: 'javascript:void(0);', className: 'bel-btn bel-btn-inverse bel-btn-alert-success' },
+                            'Reset to defaults'
+                        )
+                    ),
+                    React.createElement(
+                        'li',
+                        null,
                         React.createElement(
-                            "li",
-                            null,
-                            React.createElement(
-                                "a",
-                                { href: "https://googledrive.com/host/0B3BZg10JinisM29sa05qV0NyMmM/battle-eye-live.user.js", className: "bel-btn bel-btn-inverse" },
-                                "Update"
-                            )
-                        ),
+                            'a',
+                            { href: 'https://dl.dropboxusercontent.com/u/86379644/battle-eye-live.user.js', className: 'bel-btn bel-btn-inverse' },
+                            'Update'
+                        )
+                    ),
+                    React.createElement(
+                        'li',
+                        null,
                         React.createElement(
-                            "li",
-                            null,
-                            React.createElement(
-                                "button",
-                                { id: "bel-close-modal", onClick: this.props.closeModal, className: "bel-btn bel-btn-danger" },
-                                "Close"
-                            )
+                            'button',
+                            { id: 'bel-close-modal', onClick: this.props.closeModal, className: 'bel-btn bel-btn-danger' },
+                            'Close'
                         )
                     )
-                ),
-                React.createElement(
-                    "div",
-                    { className: "bel-grid" },
-                    this.renderGroups()
                 )
-            );
+            ),
+            React.createElement(
+                'div',
+                { className: 'bel-grid' },
+                this.renderGroups()
+            )
+        );
+    }
+}
+
+class TabSelector extends React.Component {
+    getButtons() {
+        var buttons = [];
+
+        for (var i in this.props.buttons) {
+            var a = this.props.buttons[i];
+            buttons.push(React.createElement(
+                'button',
+                { onClick: this.props.changeTab.bind(this, a[0]), className: this.getStyle(a[0]) },
+                a[1]
+            ));
         }
-    }]);
 
-    return SettingsModal;
-}(React.Component);
-
-var TabSelector = function (_React$Component15) {
-    _inherits(TabSelector, _React$Component15);
-
-    function TabSelector() {
-        _classCallCheck(this, TabSelector);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(TabSelector).apply(this, arguments));
+        return buttons;
     }
 
-    _createClass(TabSelector, [{
-        key: "getButtons",
-        value: function getButtons() {
-            var buttons = [];
-
-            for (var i in this.props.buttons) {
-                var a = this.props.buttons[i];
-                buttons.push(React.createElement(
-                    "button",
-                    { onClick: this.props.changeTab.bind(this, a[0]), className: this.getStyle(a[0]) },
-                    a[1]
-                ));
-            }
-
-            return buttons;
+    getStyle(tab) {
+        if (this.props.tab == tab) {
+            return "bel-btn bel-btn-default";
         }
-    }, {
-        key: "getStyle",
-        value: function getStyle(tab) {
-            if (this.props.tab == tab) {
-                return "bel-btn bel-btn-default";
-            }
 
-            return "bel-btn bel-btn-grey";
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            return React.createElement(
-                "div",
-                { className: "bel-tabs" },
-                this.getButtons()
-            );
-        }
-    }]);
+        return "bel-btn bel-btn-grey";
+    }
 
-    return TabSelector;
-}(React.Component);
+    render() {
+        return React.createElement(
+            'div',
+            { className: 'bel-tabs' },
+            this.getButtons()
+        );
+    }
+}
 
-var Template = function (_React$Component16) {
-    _inherits(Template, _React$Component16);
-
-    function Template() {
-        _classCallCheck(this, Template);
-
-        var _this16 = _possibleConstructorReturn(this, Object.getPrototypeOf(Template).call(this));
-
-        _this16.state = {
+class Template extends React.Component {
+    constructor() {
+        super();
+        this.state = {
             modalHidden: true,
             tab: 'div'
         };
-        return _this16;
     }
 
-    _createClass(Template, [{
-        key: "openModal",
-        value: function openModal() {
-            this.setState({
-                'modalHidden': false
-            });
-        }
-    }, {
-        key: "closeModal",
-        value: function closeModal() {
-            this.setState({
-                'modalHidden': true
-            });
-        }
-    }, {
-        key: "changeTab",
-        value: function changeTab(tab) {
-            this.setState({
-                'tab': tab
-            });
-        }
-    }, {
-        key: "getTabButtons",
-        value: function getTabButtons() {
-            return [['div', 'Divisions'], ['overall', 'Total'], ['countries', 'Countries']];
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            return React.createElement(
-                "div",
-                null,
-                React.createElement(CloseAlert, null),
-                React.createElement(SettingsModal, { closeModal: this.closeModal.bind(this), hidden: this.state.modalHidden, settings: this.props.settings }),
-                React.createElement(Header, { openModal: this.openModal.bind(this), data: this.props.headerData }),
-                React.createElement(TabSelector, { changeTab: this.changeTab.bind(this), tab: this.state.tab, buttons: this.getTabButtons() }),
-                React.createElement(Feed, { data: this.props.feedData, settings: this.props.settings, tab: this.state.tab }),
-                React.createElement(Footer, null)
-            );
-        }
-    }]);
+    openModal() {
+        this.setState({
+            'modalHidden': false
+        });
+    }
 
-    return Template;
-}(React.Component);
+    closeModal() {
+        this.setState({
+            'modalHidden': true
+        });
+    }
 
-var Module = function () {
-    function Module(name, description) {
-        _classCallCheck(this, Module);
+    changeTab(tab) {
+        this.setState({
+            'tab': tab
+        });
+    }
 
+    getTabButtons() {
+        return [['div', 'Divisions'], ['overall', 'Total'], ['countries', 'Countries']];
+    }
+
+    render() {
+        return React.createElement(
+            'div',
+            null,
+            React.createElement(CloseAlert, null),
+            React.createElement(SettingsModal, { closeModal: this.closeModal.bind(this), hidden: this.state.modalHidden, settings: this.props.settings }),
+            React.createElement(Header, { openModal: this.openModal.bind(this), data: this.props.headerData }),
+            React.createElement(TabSelector, { changeTab: this.changeTab.bind(this), tab: this.state.tab, buttons: this.getTabButtons() }),
+            React.createElement(Feed, { data: this.props.feedData, settings: this.props.settings, tab: this.state.tab }),
+            React.createElement(Footer, null)
+        );
+    }
+}
+
+class Module {
+    constructor(name, description, autoload = true) {
         var self = this;
         self.name = name;
         self.desc = description;
+        self.autoload = autoload;
     }
 
-    _createClass(Module, [{
-        key: "defineSettings",
-        value: function defineSettings() {
-            return [];
-        }
-    }, {
-        key: "run",
-        value: function run(settings) {
-            return null;
-        }
-    }]);
+    defineSettings() {
+        return [];
+    }
 
-    return Module;
-}();
+    run(settings) {
+        return null;
+    }
+}
 
-var AutoShooter = function (_Module) {
-    _inherits(AutoShooter, _Module);
-
-    function AutoShooter() {
-        _classCallCheck(this, AutoShooter);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(AutoShooter).call(this, 'AutoShooter', 'Automatically shoots, when the FIGHT button is held'));
+class AutoShooter extends Module {
+    constructor() {
+        super('AutoShooter', 'Automatically shoots, when the FIGHT button is held');
     }
 
     /**
      * Defining settings for autoshooter
      */
+    defineSettings() {
+        return [['autoShooterEnabled', false, "Enable AutoShooter", "Automatically shoots, when the FIGHT button is held"], ['autoShooterStart', false, "Start AutoShooter immediately after the button is pressed.", "Otherwise, AutoShooter will start after the shot delay"], ['autoShooterEnter', true, "Shoot while holding ENTER"], ['autoShooterSpace', true, "Shoot while holding SPACE"], ['autoShooterDelay', 1500, "Delay between shots (in ms)"]];
+    }
 
+    run() {
+        /**
+         * Holds the timer interval data
+         */
+        var tid;
 
-    _createClass(AutoShooter, [{
-        key: "defineSettings",
-        value: function defineSettings() {
-            return [['autoShooterEnabled', false, "Enable AutoShooter", "Automatically shoots, when the FIGHT button is held"], ['autoShooterStart', false, "Start AutoShooter immediately after the button is pressed.", "Otherwise, AutoShooter will start after the shot delay"], ['autoShooterEnter', true, "Shoot while holding ENTER"], ['autoShooterSpace', true, "Shoot while holding SPACE"], ['autoShooterDelay', 1500, "Delay between shots (in ms)"]];
+        var lastEvent;
+
+        /**
+         * eRepublik number format
+         */
+        function format(str) {
+            return ("" + str).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
-    }, {
-        key: "run",
-        value: function run() {
-            /**
-             * Holds the timer interval data
-             */
-            var tid;
 
-            var lastEvent;
+        /**
+         * Button click handler
+         */
+        document.getElementById("fight_btn").addEventListener("mousedown", function () {
+            handle();
+        });
 
-            /**
-             * eRepublik number format
-             */
-            function format(str) {
-                return ("" + str).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        /**
+         * Key press handler
+         */
+        document.onkeydown = function (e) {
+            if (lastEvent && lastEvent.keyCode == e.keyCode) {
+                return;
             }
 
-            /**
-             * Button click handler
-             */
-            document.getElementById("fight_btn").addEventListener("mousedown", function () {
+            if ((settings.autoShooterEnter.value && e.keyCode == 13 || settings.autoShooterSpace.value && e.keyCode == 32) && settings.autoShooterEnabled.value) {
+                lastEvent = e;
                 handle();
-            });
+                $j('#fight_btn').notify('AutoShooter started', { position: "top center", className: "info" });
+            }
+        };
 
-            /**
-             * Key press handler
-             */
-            document.onkeydown = function (e) {
-                if (lastEvent && lastEvent.keyCode == e.keyCode) {
-                    return;
-                }
+        /**
+         * Clears the delay, when the button is released
+         */
+        document.addEventListener("mouseup", function () {
+            clearInterval(tid);
+        });
 
-                if ((settings.autoShooterEnter.value && e.keyCode == 13 || settings.autoShooterSpace.value && e.keyCode == 32) && settings.autoShooterEnabled.value) {
-                    lastEvent = e;
-                    handle();
-                    $j('#fight_btn').notify('AutoShooter started', { position: "top center", className: "info" });
-                }
-            };
-
-            /**
-             * Clears the delay, when the button is released
-             */
-            document.addEventListener("mouseup", function () {
+        /**
+         * Clears the delay, when the key is released
+         */
+        document.onkeyup = function (e) {
+            if (settings.autoShooterEnter.value && e.keyCode == 13 || settings.autoShooterSpace.value && e.keyCode == 32) {
+                lastEvent = null;
                 clearInterval(tid);
-            });
+            }
+        };
 
-            /**
-             * Clears the delay, when the key is released
-             */
-            document.onkeyup = function (e) {
-                if (settings.autoShooterEnter.value && e.keyCode == 13 || settings.autoShooterSpace.value && e.keyCode == 32) {
-                    lastEvent = null;
-                    clearInterval(tid);
-                }
+        /**
+         * AutoShooter handler
+         */
+        var handle = function () {
+            //Checking if enabled
+            if (!settings.autoShooterEnabled.value) {
+                return;
+            }
+
+            //Posts fight request
+            var action = function () {
+                $j.post("/" + erepublik.settings.culture + "/military/fight-shoo" + (SERVER_DATA.onAirforceBattlefield ? "oo" : "o") + "t/" + SERVER_DATA.battleId, {
+                    sideId: SERVER_DATA.countryId,
+                    battleId: SERVER_DATA.battleId,
+                    _token: SERVER_DATA.csrfToken
+                }, function (data) {
+                    if (settings.enableLogging.value) {
+                        console.log("[BATTLEEYE] Request sent. Received: " + data.message);
+                    }
+
+                    if (data.message == "ENEMY_KILLED") {
+                        window.totalPrestigePoints += data.hits;
+                        globalNS.updateSideBar(data.details);
+                        $j("#rank_min").text(format(data.rank.points) + " Rank Points");
+                        $j("#rank_status_gained").css("width", data.rank.percentage + "%");
+
+                        $j("#prestige_value").text(format(window.totalPrestigePoints));
+                        $j("#side_bar_currency_account_value").text(format(data.details.currency));
+                        $j(".left_player .energy_progress").css("width", data.details.current_energy_ratio + "%");
+                        $j(".right_player .energy_progress").css("width", data.enemy.energyRatio + "%");
+                        $j(".weapon_no").text(data.user.weaponQuantity);
+
+                        if ($j('#eRS_options').length <= 0) {
+                            var td = parseInt($j('#total_damage strong').text().replace(/,/g, ''));
+                            $j('#total_damage strong').text(format(td + data.user.givenDamage));
+                        }
+                    } else if (data.message == "ENEMY_ATTACKED" || data.message == "LOW_HEALTH") {
+                        $j('#fight_btn').notify('Low health. AutoShooter stopped', { position: "top center", className: "info" });
+                        if (tid) clearInterval(tid);
+                    } else if (data.message == "ZONE_INACTIVE") {
+                        $j('#fight_btn').notify('Zone is inactive. AutoShooter stopped', { position: "top center", className: "info" });
+                        if (tid) clearInterval(tid);
+                    } else if (data.message == "SHOOT_LOCKOUT") {
+                        $j('#fight_btn').notify('Shoot lockout (Shooting too fast?). AutoShooter stopped.', { position: "top center", className: "info" });
+                        if (tid) clearInterval(tid);
+                    } else {
+                        $j('#fight_btn').notify('AutoShooter stopped. Received: "' + data.message + '"', { position: "top center", className: "warn" });
+                        if (tid) clearInterval(tid);
+                    }
+                });
             };
 
-            /**
-             * AutoShooter handler
-             */
-            var handle = function handle() {
-                //Checking if enabled
-                if (!settings.autoShooterEnabled.value) {
-                    return;
-                }
+            if (settings.autoShooterStart.value) {
+                action();
+            }
+            tid = setInterval(action, Number(settings.autoShooterDelay.value));
 
-                //Posts fight request
-                var action = function action() {
-                    $j.post("/" + erepublik.settings.culture + "/military/fight-shoo" + (SERVER_DATA.onAirforceBattlefield ? "oo" : "o") + "t/" + SERVER_DATA.battleId, {
-                        sideId: SERVER_DATA.countryId,
-                        battleId: SERVER_DATA.battleId,
-                        _token: SERVER_DATA.csrfToken
-                    }, function (data) {
-                        if (settings.enableLogging.value) {
-                            console.log("[BATTLEEYE] Request sent. Received: " + data.message);
-                        }
+            if (settings.enableLogging.value) {
+                console.log("[BATTLEEYE] AutoShooter started");
+            }
+        };
+    }
+}
 
-                        if (data.message == "ENEMY_KILLED") {
-                            window.totalPrestigePoints += data.hits;
-                            globalNS.updateSideBar(data.details);
-                            $j("#rank_min").text(format(data.rank.points) + " Rank Points");
-                            $j("#rank_status_gained").css("width", data.rank.percentage + "%");
-
-                            $j("#prestige_value").text(format(window.totalPrestigePoints));
-                            $j("#side_bar_currency_account_value").text(format(data.details.currency));
-                            $j(".left_player .energy_progress").css("width", data.details.current_energy_ratio + "%");
-                            $j(".right_player .energy_progress").css("width", data.enemy.energyRatio + "%");
-                            $j(".weapon_no").text(data.user.weaponQuantity);
-
-                            if ($j('#eRS_options').length <= 0) {
-                                var td = parseInt($j('#total_damage strong').text().replace(/,/g, ''));
-                                $j('#total_damage strong').text(format(td + data.user.givenDamage));
-                            }
-                        } else if (data.message == "ENEMY_ATTACKED" || data.message == "LOW_HEALTH") {
-                            $j('#fight_btn').notify('Low health. AutoShooter stopped', { position: "top center", className: "info" });
-                            if (tid) clearInterval(tid);
-                        } else if (data.message == "ZONE_INACTIVE") {
-                            $j('#fight_btn').notify('Zone is inactive. AutoShooter stopped', { position: "top center", className: "info" });
-                            if (tid) clearInterval(tid);
-                        } else if (data.message == "SHOOT_LOCKOUT") {
-                            $j('#fight_btn').notify('Shoot lockout (Shooting too fast?). AutoShooter stopped.', { position: "top center", className: "info" });
-                            if (tid) clearInterval(tid);
-                        } else {
-                            $j('#fight_btn').notify('AutoShooter stopped. Received: "' + data.message + '"', { position: "top center", className: "warn" });
-                            if (tid) clearInterval(tid);
-                        }
-                    });
-                };
-
-                if (settings.autoShooterStart.value) {
-                    action();
-                }
-                tid = setInterval(action, Number(settings.autoShooterDelay.value));
-
-                if (settings.enableLogging.value) {
-                    console.log("[BATTLEEYE] AutoShooter started");
-                }
-            };
-        }
-    }]);
-
-    return AutoShooter;
-}(Module);
-
-var ModuleLoader = function () {
-    function ModuleLoader(storage) {
-        _classCallCheck(this, ModuleLoader);
-
+class ModuleLoader {
+    constructor(storage) {
         this.modules = {};
         this.storage = storage;
     }
 
-    _createClass(ModuleLoader, [{
-        key: "load",
-        value: function load(module) {
-            if (module instanceof Module) {
-                this.modules[module.name] = module;
-                var settings = module.defineSettings();
-                for (var i in settings) {
-                    var s = settings[i];
-                    this.storage.define(s[0], s[1], module.name, s[2], s[3]);
-                }
+    load(module) {
+        if (module instanceof Module) {
+            this.modules[module.name] = module;
+            var settings = module.defineSettings();
+            for (var i in settings) {
+                var s = settings[i];
+                this.storage.define(s[0], s[1], module.name, s[2], s[3]);
             }
         }
-    }, {
-        key: "get",
-        value: function get(name) {
-            return this.modules[name];
-        }
-    }, {
-        key: "run",
-        value: function run() {
-            for (var i in this.modules) {
-                try {
-                    this.modules[i].run();
-                } catch (e) {
-                    console.error("Failed to run module " + i + "!: " + e);
-                }
-            }
-        }
-    }]);
-
-    return ModuleLoader;
-}();
-
-var Other = function (_Module2) {
-    _inherits(Other, _Module2);
-
-    function Other() {
-        _classCallCheck(this, Other);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(Other).call(this, 'Other', 'Other miscellaneous enhancements'));
     }
 
-    _createClass(Other, [{
-        key: "defineSettings",
-        value: function defineSettings() {
-            return [['otherFixCometchat', true, "Cometchat fix", "Removes the fading, clickblocking line from the bottom of the screen. (Requires a page refresh)"]];
-        }
-    }, {
-        key: "run",
-        value: function run() {
-            if (settings.otherFixCometchat.value) {
-                var fixCometchat = function fixCometchat() {
-                    var cometchat = document.getElementById('cometchat_base');
-                    if (cometchat !== null) {
-                        var style = "width:auto;position:aboslute;right:0;background:none;";
-                        cometchat.setAttribute('style', style);
-                        clearInterval(waitForCometchat);
-                    }
-                };
+    get(name) {
+        return this.modules[name];
+    }
 
-                //Removing that annoying cometchat background
-                var waitForCometchat = setInterval(fixCometchat, 500);
+    run() {
+        for (var i in this.modules) {
+            try {
+                if (this.modules[i].autoload) {
+                    this.modules[i].run();
+                }
+            } catch (e) {
+                console.error(`Failed to run module ${ i }!: ${ e }`);
             }
         }
-    }]);
+    }
+}
 
-    return Other;
-}(Module);
+class Other extends Module {
+    constructor() {
+        super('Other', 'Other miscellaneous enhancements');
+    }
 
-var CountryStats = function () {
-    function CountryStats() {
-        _classCallCheck(this, CountryStats);
+    defineSettings() {
+        return [['otherFixCometchat', true, "Cometchat fix", "Removes the fading, clickblocking line from the bottom of the screen. (Requires a page refresh)"]];
+    }
 
+    run() {
+        if (settings.otherFixCometchat.value) {
+            //Removing that annoying cometchat background
+            var waitForCometchat = setInterval(fixCometchat, 500);
+            function fixCometchat() {
+                var cometchat = document.getElementById('cometchat_base');
+                if (cometchat !== null) {
+                    var style = "width:auto;position:aboslute;right:0;background:none;";
+                    cometchat.setAttribute('style', style);
+                    clearInterval(waitForCometchat);
+                }
+            }
+        }
+    }
+}
+
+class PercentageFixer extends Module {
+    constructor() {
+        super('Percentage Fixer', '');
+    }
+
+    defineSettings() {
+        return [['percFixEnabled', false, "Enable percentage fixer", "Temporary solution to eRepublik's battle stat inconsistencies"]];
+    }
+
+    run() {
+        var self = this;
+        battleEyeLive.events.on('battleConsoleLoaded', function () {
+            //Getting domination info from erepublik's nbp stats page
+            self.getNbpStats(function (data) {
+                data = JSON.parse(data);
+
+                //Domination values for the defending side
+                var dom = data.division.domination;
+
+                if (SERVER_DATA.division == 11) {
+                    var divs = [11];
+                } else {
+                    var divs = [1, 2, 3, 4];
+                }
+
+                //Checking each division seperately
+                for (var i in divs) {
+                    var domination = dom[divs[i]];
+                    if (domination == 50) {
+                        continue;
+                    }
+
+                    //Total damage left
+                    var aDamage = battleEyeLive.teamA.divisions.get('div' + divs[i]).damage;
+                    //Total damage right
+                    var bDamage = battleEyeLive.teamB.divisions.get('div' + divs[i]).damage;
+
+                    var totalDamage = 0;
+                    totalDamage += aDamage;
+                    totalDamage += bDamage;
+
+                    //Calculate BattleEye's damage percentage for the defending side
+                    if (SERVER_DATA.leftBattleId == SERVER_DATA.defenderId) {
+                        var perc = aDamage / totalDamage * 100;
+                        var left = true;
+                    } else {
+                        var perc = bDamage / totalDamage * 100;
+                        var left = false;
+                    }
+
+                    //If percentages are not the same
+                    if (Math.round(perc) != Math.round(domination)) {
+                        // log(perc, "be perc")
+                        // log(domination, 'domination perc');
+                        //
+                        // log((perc/100)*totalDamage, 'be division damage');
+                        // log((domination/100)*totalDamage, 'division damage');
+
+                        //Difference between BattleEye's expected damage and actual damage
+                        var diff = totalDamage * (perc / 100) - totalDamage * (domination / 100);
+                        log(diff, 'difference');
+
+                        if (diff > 0) {
+                            //Adding missing damage to the defending side
+                            if (left) {
+                                battleEyeLive.teamA.divisions.get('div' + divs[i]).damage += Math.round(Math.abs(diff));
+                            } else {
+                                battleEyeLive.teamB.divisions.get('div' + divs[i]).damage += Math.round(Math.abs(diff));
+                            }
+                        } else {
+                            //Adding missing damage to the attacking side
+                            if (!left) {
+                                battleEyeLive.teamB.divisions.get('div' + divs[i]).damage += Math.round(Math.abs(diff));
+                            } else {
+                                battleEyeLive.teamA.divisions.get('div' + divs[i]).damage += Math.round(Math.abs(diff));
+                            }
+                        }
+
+                        log(`Div ${ divs[i] } percentages fixed`);
+                    } else {
+                        log(`Div ${ divs[i] } percentages are accurate`);
+                    }
+                }
+            });
+        });
+    }
+
+    getNbpStats(cb) {
+        $j.get('https://www.erepublik.com/en/military/nbp-stats/' + SERVER_DATA.battleId + '/2', function (data) {
+            if (typeof cb == 'function') {
+                cb(data);
+            }
+        });
+    }
+}
+
+class CountryStats {
+    constructor() {
         this.countries = {};
     }
 
-    _createClass(CountryStats, [{
-        key: "handle",
-        value: function handle(data) {
-            var country = data.msg.permalink;
-            if (!this.countries[country]) {
-                this.countries[country] = {
-                    damage: 0,
-                    kills: 0
-                };
-            }
-
-            this.countries[country].damage += data.msg.damage;
-            this.countries[country].kills++;
-        }
-    }, {
-        key: "handleBare",
-        value: function handleBare(data) {
-            var ob = {
-                msg: {
-                    permalink: "",
-                    damage: 0
-                }
+    handle(data) {
+        var country = data.msg.permalink;
+        if (!this.countries[country]) {
+            this.countries[country] = {
+                damage: 0,
+                kills: 0
             };
-
-            ob.msg.damage = data.damage;
-            ob.msg.permalink = data.permalink;
-
-            this.handle(ob);
         }
-    }, {
-        key: "getAll",
-        value: function getAll() {
-            var self = this;
-            var sorted = {};
 
-            var keysSorted = Object.keys(self.countries).sort(function (a, b) {
-                return self.countries[b].damage - self.countries[a].damage;
-            });
+        this.countries[country].damage += data.msg.damage;
+        this.countries[country].kills++;
+    }
 
-            for (var i in keysSorted) {
-                var key = keysSorted[i];
-                sorted[key] = self.countries[key];
+    handleBare(data) {
+        var ob = {
+            msg: {
+                permalink: "",
+                damage: 0
             }
-            return sorted;
+        };
+
+        ob.msg.damage = data.damage;
+        ob.msg.permalink = data.permalink;
+
+        this.handle(ob);
+    }
+
+    getAll() {
+        var self = this;
+        var sorted = {};
+
+        var keysSorted = Object.keys(self.countries).sort(function (a, b) {
+            return self.countries[b].damage - self.countries[a].damage;
+        });
+
+        for (var i in keysSorted) {
+            var key = keysSorted[i];
+            sorted[key] = self.countries[key];
         }
-    }]);
+        return sorted;
+    }
+}
 
-    return CountryStats;
-}();
-
-var Divisions = function () {
-    function Divisions() {
-        _classCallCheck(this, Divisions);
-
+class Divisions {
+    constructor() {
         var self = this;
         this.divisions = {};
     }
 
-    _createClass(Divisions, [{
-        key: "create",
-        value: function create(id, division) {
-            this.divisions[id] = new DivisionStats(division);
-            return this.divisions[id];
-        }
-    }, {
-        key: "get",
-        value: function get(id) {
-            return this.divisions[id];
-        }
-    }, {
-        key: "handle",
-        value: function handle(data) {
-            for (var i in this.divisions) {
-                this.divisions[i].handle(data);
-            }
-        }
-    }, {
-        key: "updateDps",
-        value: function updateDps(time) {
-            for (var i in this.divisions) {
-                this.divisions[i].updateDps(time);
-            }
-        }
-    }, {
-        key: "toObject",
-        value: function toObject() {
-            var object = {};
-            for (var i in this.divisions) {
-                object[i] = this.divisions[i].toObject();
-            }
-
-            return object;
-        }
-    }]);
-
-    return Divisions;
-}();
-
-var DivisionStats = function (_DpsHandler) {
-    _inherits(DivisionStats, _DpsHandler);
-
-    function DivisionStats(division) {
-        _classCallCheck(this, DivisionStats);
-
-        var _this19 = _possibleConstructorReturn(this, Object.getPrototypeOf(DivisionStats).call(this, 10));
-
-        _this19.division = division;
-        _this19.hits = 0;
-        _this19.damage = 0;
-        _this19.countries = new CountryStats();
-        return _this19;
+    create(id, division) {
+        this.divisions[id] = new DivisionStats(division);
+        return this.divisions[id];
     }
 
-    _createClass(DivisionStats, [{
-        key: "handle",
-        value: function handle(data) {
-            if (data.division != this.division) {
-                return;
-            }
+    get(id) {
+        return this.divisions[id];
+    }
 
-            this.addHit(data.msg.damage);
-            this.hits++;
-            this.damage += data.msg.damage;
-            this.countries.handle(data);
+    handle(data) {
+        for (var i in this.divisions) {
+            this.divisions[i].handle(data);
         }
-    }, {
-        key: "toObject",
-        value: function toObject() {
-            return {
-                'damage': this.damage,
-                'id': this.id,
-                'dps': this.dps,
-                'hits': this.hits,
-                'avgHit': Math.round(this.damage / this.hits) | 0,
-                'countries': this.countries.countries
-            };
+    }
+
+    updateDps(time) {
+        for (var i in this.divisions) {
+            this.divisions[i].updateDps(time);
         }
-    }]);
+    }
 
-    return DivisionStats;
-}(DpsHandler);
+    toObject() {
+        var object = {};
+        for (var i in this.divisions) {
+            object[i] = this.divisions[i].toObject();
+        }
 
-var EventHandler = function () {
-    function EventHandler() {
-        _classCallCheck(this, EventHandler);
+        return object;
+    }
+}
 
+class DivisionStats extends DpsHandler {
+    constructor(division) {
+        super(10);
+        this.division = division;
+        this.hits = 0;
+        this.damage = 0;
+        this.countries = new CountryStats();
+    }
+
+    handle(data) {
+        if (data.division != this.division) {
+            return;
+        }
+
+        this.addHit(data.msg.damage);
+        this.hits++;
+        this.damage += data.msg.damage;
+        this.countries.handle(data);
+    }
+
+    toObject() {
+        return {
+            'damage': this.damage,
+            'id': this.id,
+            'dps': this.dps,
+            'hits': this.hits,
+            'avgHit': Math.round(this.damage / this.hits) | 0,
+            'countries': this.countries.getAll()
+        };
+    }
+}
+
+class EventHandler {
+    constructor() {
         this.events = {};
     }
 
-    _createClass(EventHandler, [{
-        key: "emit",
-        value: function emit(eventName, data) {
-            if (this.events[eventName]) {
-                this.events[eventName].forEach(function (fn) {
-                    return fn(data);
-                });
-            }
+    emit(eventName, data) {
+        if (this.events[eventName]) {
+            this.events[eventName].forEach(function (fn) {
+                return fn(data);
+            });
         }
-    }, {
-        key: "on",
-        value: function on(eventName, closure) {
-            this.events[eventName] = this.events[eventName] || [];
-            this.events[eventName].push(closure);
-        }
-    }, {
-        key: "off",
-        value: function off(eventName, closure) {
-            if (this.events[eventName]) {
-                for (var i in this.events[eventName]) {
-                    var event = this.events[eventName][i];
-                    if (event == closure) {
-                        this.events[eventName].splice(i, 1);
-                    }
+    }
+
+    on(eventName, closure) {
+        this.events[eventName] = this.events[eventName] || [];
+        this.events[eventName].push(closure);
+    }
+
+    off(eventName, closure) {
+        if (this.events[eventName]) {
+            for (var i in this.events[eventName]) {
+                var event = this.events[eventName][i];
+                if (event == closure) {
+                    this.events[eventName].splice(i, 1);
                 }
             }
         }
-    }]);
+    }
+}
 
-    return EventHandler;
-}();
-
-var HitHistory = function () {
-    function HitHistory() {
-        var rememberFor = arguments.length <= 0 || arguments[0] === undefined ? 30000 : arguments[0];
-
-        _classCallCheck(this, HitHistory);
-
+class HitHistory {
+    constructor(rememberFor = 30000) {
         this.rememberFor = rememberFor;
         this.history = {};
     }
 
-    _createClass(HitHistory, [{
-        key: "add",
-        value: function add(hit) {
-            var time = new Date().getTime();
-            this.history[time] = hit;
-            this.trimOld(time);
-        }
-    }, {
-        key: "trimOld",
-        value: function trimOld() {
-            var time = arguments.length <= 0 || arguments[0] === undefined ? new Date().getTime() : arguments[0];
+    add(hit) {
+        var time = new Date().getTime();
+        this.history[time] = hit;
+        this.trimOld(time);
+    }
 
-            for (var i in this.history) {
-                if (time - i - this.rememberFor > 0) {
-                    delete this.history[i];
-                }
+    trimOld(time = new Date().getTime()) {
+        for (var i in this.history) {
+            if (time - i - this.rememberFor > 0) {
+                delete this.history[i];
             }
         }
-    }, {
-        key: "clear",
-        value: function clear() {
-            this.history = {};
+    }
+
+    clear() {
+        this.history = {};
+    }
+
+    getTotal() {
+        this.trimOld();
+
+        var total = 0;
+        for (var i in this.history) {
+            total += this.history[i];
         }
-    }, {
-        key: "getTotal",
-        value: function getTotal() {
-            this.trimOld();
+        return total;
+    }
+}
 
-            var total = 0;
-            for (var i in this.history) {
-                total += this.history[i];
-            }
-            return total;
-        }
-    }]);
-
-    return HitHistory;
-}();
-
-var Layout = function () {
-    function Layout(style, headerData) {
-        _classCallCheck(this, Layout);
-
+class Layout {
+    constructor(style, headerData) {
         var self = this;
         self.headerData = headerData;
 
@@ -1795,92 +1576,73 @@ var Layout = function () {
         style.load();
     }
 
-    _createClass(Layout, [{
-        key: "update",
-        value: function update(feedData) {
-            ReactDOM.render(React.createElement(Template, { settings: settings, feedData: feedData, headerData: this.headerData }), document.getElementById('battle_eye_live'));
+    update(feedData) {
+        ReactDOM.render(React.createElement(Template, { settings: settings, feedData: feedData, headerData: this.headerData }), document.getElementById('battle_eye_live'));
 
-            ReactDOM.render(React.createElement(MiniMonitor, { settings: settings, feedData: feedData }), document.getElementById('bel-minimonitor'));
-        }
-    }]);
+        ReactDOM.render(React.createElement(MiniMonitor, { settings: settings, feedData: feedData }), document.getElementById('bel-minimonitor'));
+    }
+}
 
-    return Layout;
-}();
+class Stats extends DpsHandler {
+    constructor(id) {
+        super(10);
 
-var Stats = function (_DpsHandler2) {
-    _inherits(Stats, _DpsHandler2);
-
-    function Stats(id) {
-        _classCallCheck(this, Stats);
-
-        var _this20 = _possibleConstructorReturn(this, Object.getPrototypeOf(Stats).call(this, 10));
-
-        _this20.countries = new CountryStats();
-        _this20.id = id;
-        _this20.damage = 0;
-        _this20.hits = 0;
-        _this20.constructDivisions();
-        return _this20;
+        this.countries = new CountryStats();
+        this.id = id;
+        this.damage = 0;
+        this.hits = 0;
+        this.constructDivisions();
+        this.revolution = false;
     }
 
-    _createClass(Stats, [{
-        key: "constructDivisions",
-        value: function constructDivisions() {
-            this.divisions = new Divisions();
+    constructDivisions() {
+        this.divisions = new Divisions();
 
-            this.divisions.create('div1', 1);
-            this.divisions.create('div2', 2);
-            this.divisions.create('div3', 3);
-            this.divisions.create('div4', 4);
-            this.divisions.create('div11', 11);
+        this.divisions.create('div1', 1);
+        this.divisions.create('div2', 2);
+        this.divisions.create('div3', 3);
+        this.divisions.create('div4', 4);
+        this.divisions.create('div11', 11);
+    }
+
+    isSide(side) {
+        return this.id == side;
+    }
+
+    updateDps(timeData) {
+        super.updateDps(timeData);
+        this.divisions.updateDps(timeData);
+    }
+
+    handle(data) {
+        if (!this.isSide(data.side)) {
+            return;
         }
-    }, {
-        key: "isSide",
-        value: function isSide(side) {
-            return this.id == side;
-        }
-    }, {
-        key: "updateDps",
-        value: function updateDps(timeData) {
-            _get(Object.getPrototypeOf(Stats.prototype), "updateDps", this).call(this, timeData);
-            this.divisions.updateDps(timeData);
-        }
-    }, {
-        key: "handle",
-        value: function handle(data) {
-            if (!this.isSide(data.side)) {
-                return;
-            }
 
-            this.divisions.handle(data);
+        this.divisions.handle(data);
 
-            this.addHit(data.msg.damage);
-            this.hits++;
-            this.damage += data.msg.damage;
-            this.countries.handle(data);
-        }
-    }, {
-        key: "toObject",
-        value: function toObject() {
-            return {
-                'damage': this.damage,
-                'id': this.id,
-                'dps': this.dps,
-                'hits': this.hits,
-                'avgHit': Math.round(this.damage / this.hits),
-                'divisions': this.divisions.toObject(),
-                'countries': this.countries.getAll()
-            };
-        }
-    }]);
+        this.addHit(data.msg.damage);
+        this.hits++;
+        this.damage += data.msg.damage;
+        this.countries.handle(data);
+    }
 
-    return Stats;
-}(DpsHandler);
+    toObject() {
+        return {
+            'damage': this.damage,
+            'id': this.id,
+            'dps': this.dps,
+            'hits': this.hits,
+            'avgHit': Math.round(this.damage / this.hits),
+            'divisions': this.divisions.toObject(),
+            'countries': this.countries.getAll(),
+            'revolution': this.revolution
+        };
+    }
+}
 
-var Storage = function () {
-    function Storage() {
-        _classCallCheck(this, Storage);
-
+class Storage {
+    constructor() {
         var self = this;
         if (!self.checkIfStorageAvailable()) {
             return false;
@@ -1891,149 +1653,288 @@ var Storage = function () {
         self.defaults = {};
     }
 
-    _createClass(Storage, [{
-        key: "set",
-        value: function set(id, value) {
-            var self = this;
-            localStorage.setItem("" + self.prepend + id, value);
-            // if(settings.enableLogging.value){
-            console.log("[BATTLEEYE] " + self.prepend + id + " = " + value);
-            // }
-        }
-    }, {
-        key: "get",
-        value: function get(id) {
-            var self = this;
-            var val = localStorage.getItem("" + self.prepend + id);
+    set(id, value) {
+        var self = this;
+        localStorage.setItem(`${ self.prepend }${ id }`, value);
+        // if(settings.enableLogging.value){
+        console.log(`[BATTLEEYE] ${ self.prepend }${ id } = ${ value }`);
+        // }
+    }
 
-            switch (val) {
-                case 'true':
-                    val = true;
-                    break;
-                case 'false':
-                    val = false;
-                    break;
+    get(id) {
+        var self = this;
+        var val = localStorage.getItem(`${ self.prepend }${ id }`);
+
+        switch (val) {
+            case 'true':
+                val = true;
+                break;
+            case 'false':
+                val = false;
+                break;
+        }
+
+        return val;
+    }
+
+    has(field) {
+        var self = this;
+        if (localStorage.getItem(`${ self.prepend }${ field }`)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    define(id, value, group, name, desc) {
+        var self = this;
+
+        self.defaults[id] = {
+            id, name, desc, group, value
+        };
+    }
+
+    loadSettings() {
+        var self = this;
+
+        for (var i in self.defaults) {
+            var field = self.defaults[i];
+
+            if (self.fields[i] === undefined) {
+                self.fields[i] = {
+                    id: field.id,
+                    name: field.name,
+                    desc: field.desc,
+                    group: field.group
+                };
             }
 
-            return val;
-        }
-    }, {
-        key: "has",
-        value: function has(field) {
-            var self = this;
-            if (localStorage.getItem("" + self.prepend + field)) {
-                return true;
-            }
-
-            return false;
-        }
-    }, {
-        key: "define",
-        value: function define(id, value, group, name, desc) {
-            var self = this;
-
-            self.defaults[id] = {
-                id: id, name: name, desc: desc, group: group, value: value
-            };
-        }
-    }, {
-        key: "loadSettings",
-        value: function loadSettings() {
-            var self = this;
-
-            for (var i in self.defaults) {
-                var field = self.defaults[i];
-
-                if (self.fields[i] === undefined) {
-                    self.fields[i] = {
-                        id: field.id,
-                        name: field.name,
-                        desc: field.desc,
-                        group: field.group
-                    };
-                }
-
-                if (!self.has(i)) {
-                    self.set(i, field.value);
-                }
+            if (!self.has(i)) {
+                self.set(i, field.value);
             }
         }
-    }, {
-        key: "loadDefaults",
-        value: function loadDefaults() {
-            var self = this;
+    }
 
-            for (var i in self.defaults) {
-                self.set(i, self.defaults[i].value);
-            }
+    loadDefaults() {
+        var self = this;
+
+        for (var i in self.defaults) {
+            self.set(i, self.defaults[i].value);
         }
-    }, {
-        key: "getAll",
-        value: function getAll() {
-            var self = this;
+    }
 
-            var object = {};
+    getAll() {
+        var self = this;
 
-            for (var i in self.fields) {
-                var f = self.fields[i];
+        var object = {};
 
-                object[i] = { field: f, value: self.get(f.id) };
-            }
+        for (var i in self.fields) {
+            var f = self.fields[i];
 
-            return object;
+            object[i] = { field: f, value: self.get(f.id) };
         }
-    }, {
-        key: "checkIfStorageAvailable",
-        value: function checkIfStorageAvailable() {
-            return typeof Storage !== "undefined";
-        }
-    }]);
 
-    return Storage;
-}();
+        return object;
+    }
 
-var Stylesheet = function () {
-    function Stylesheet() {
-        _classCallCheck(this, Stylesheet);
+    checkIfStorageAvailable() {
+        return typeof Storage !== "undefined";
+    }
+}
 
+class Stylesheet {
+    constructor() {
         this.sheet = "";
 
-        this.sheet += "\n            @keyframes bel-pulse-w {\n                0% {\n                    background-color: #27ae60;\n                }\n\n                10% {\n                    background-color: #2ecc71;\n                }\n\n                100% {\n                    background-color: #27ae60;\n                }\n            }\n\n            @keyframes bel-pulse-l {\n                0% {\n                    background-color: #e74c3c;\n                }\n\n                10% {\n                    background-color: #c0392b;\n                }\n\n                100% {\n                    background-color: #e74c3c;\n                }\n            }\n\n            .bel-spinner {\n              width: 50px;\n              height: 20px;\n              text-align: center;\n              font-size: 10px;\n              padding-top: 8px;\n            }\n\n            .bel-spinner > div {\n              background-color: #2980b9;\n              height: 100%;\n              width: 6px;\n              display: inline-block;\n\n              -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;\n              animation: sk-stretchdelay 1.2s infinite ease-in-out;\n            }\n\n            .bel-spinner .rect2 {\n              -webkit-animation-delay: -1.1s;\n              animation-delay: -1.1s;\n              background-color: #3498db;\n            }\n\n            .bel-spinner .rect3 {\n              -webkit-animation-delay: -1.0s;\n              animation-delay: -1.0s;\n              background-color: #2980b9;\n            }\n\n            .bel-spinner .rect4 {\n              -webkit-animation-delay: -0.9s;\n              animation-delay: -0.9s;\n              background-color: #3498db;\n            }\n\n            .bel-spinner .rect5 {\n              -webkit-animation-delay: -0.8s;\n              animation-delay: -0.8s;\n              background-color: #2980b9;\n            }\n\n            @-webkit-keyframes sk-stretchdelay {\n              0%, 40%, 100% { -webkit-transform: scaleY(0.4) }\n              20% { -webkit-transform: scaleY(1.0) }\n            }\n\n            @keyframes sk-stretchdelay {\n              0%, 40%, 100% {\n                transform: scaleY(0.4);\n                -webkit-transform: scaleY(0.4);\n              }  20% {\n                transform: scaleY(1.0);\n                -webkit-transform: scaleY(1.0);\n              }\n            }\n\n            hr.bel{\n                 border: 0; height: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.3);\n            }\n        ";
+        this.sheet += `
+            @keyframes bel-pulse-w {
+                0% {
+                    background-color: #27ae60;
+                }
 
-        this.addCSSRule('.clearfix:after', "\n            content: \"\";\n            display: table;\n            clear: both;\n        ");
+                10% {
+                    background-color: #2ecc71;
+                }
+
+                100% {
+                    background-color: #27ae60;
+                }
+            }
+
+            @keyframes bel-pulse-l {
+                0% {
+                    background-color: #e74c3c;
+                }
+
+                10% {
+                    background-color: #c0392b;
+                }
+
+                100% {
+                    background-color: #e74c3c;
+                }
+            }
+
+            .bel-spinner {
+              width: 50px;
+              height: 20px;
+              text-align: center;
+              font-size: 10px;
+              padding-top: 8px;
+            }
+
+            .bel-spinner > div {
+              background-color: #2980b9;
+              height: 100%;
+              width: 6px;
+              display: inline-block;
+
+              -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;
+              animation: sk-stretchdelay 1.2s infinite ease-in-out;
+            }
+
+            .bel-spinner .rect2 {
+              -webkit-animation-delay: -1.1s;
+              animation-delay: -1.1s;
+              background-color: #3498db;
+            }
+
+            .bel-spinner .rect3 {
+              -webkit-animation-delay: -1.0s;
+              animation-delay: -1.0s;
+              background-color: #2980b9;
+            }
+
+            .bel-spinner .rect4 {
+              -webkit-animation-delay: -0.9s;
+              animation-delay: -0.9s;
+              background-color: #3498db;
+            }
+
+            .bel-spinner .rect5 {
+              -webkit-animation-delay: -0.8s;
+              animation-delay: -0.8s;
+              background-color: #2980b9;
+            }
+
+            @-webkit-keyframes sk-stretchdelay {
+              0%, 40%, 100% { -webkit-transform: scaleY(0.4) }
+              20% { -webkit-transform: scaleY(1.0) }
+            }
+
+            @keyframes sk-stretchdelay {
+              0%, 40%, 100% {
+                transform: scaleY(0.4);
+                -webkit-transform: scaleY(0.4);
+              }  20% {
+                transform: scaleY(1.0);
+                -webkit-transform: scaleY(1.0);
+              }
+            }
+
+            hr.bel{
+                 border: 0; height: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            }
+        `;
+
+        this.addCSSRule('.clearfix:after', `
+            content: "";
+            display: table;
+            clear: both;
+        `);
 
         //General
         //
 
-        this.addCSSRule('#bel-minimonitor', "\n            position: absolute;\n            right: 0;\n        ");
+        this.addCSSRule('#bel-minimonitor', `
+            position: absolute;
+            right: 0;
+        `);
 
-        this.addCSSRule('#bel-country-list', "\n            max-height: 400px;\n            overflow-y: scroll;\n        ");
+        this.addCSSRule('#bel-country-list', `
+            max-height: 400px;
+            overflow-y: scroll;
+        `);
 
-        this.addCSSRule('.bel-minimonitor', "\n            position: absolute;\n            width: 118px;\n            background-color: rgba(52, 73, 94, 0.7);\n            right: 0;\n            color: #ecf0f1;\n            top: 10px;\n            padding: 2px;\n        ");
+        this.addCSSRule('.bel-minimonitor', `
+            position: absolute;
+            width: 118px;
+            background-color: rgba(52, 73, 94, 0.7);
+            right: 0;
+            color: #ecf0f1;
+            top: 10px;
+            padding: 2px;
+        `);
 
-        this.addCSSRule('.bel-div', "\n            background-image: url(\"https://dl.dropboxusercontent.com/u/86379644/divs.png\");\n            background-repeat: no-repeat;\n            height: 22px;\n            width: 19px;\n            display: inline-block;\n            vertical-align: middle;\n            margin-right: 5px;\n        ");
+        this.addCSSRule('.bel-div', `
+            background-image: url("https://dl.dropboxusercontent.com/u/86379644/divs.png");
+            background-repeat: no-repeat;
+            height: 22px;
+            width: 19px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 5px;
+        `);
 
-        this.addCSSRule('.bel-div1', "\n            background-position: 0 0;\n        ");
+        this.addCSSRule('.bel-div1', `
+            background-position: 0 0;
+        `);
 
-        this.addCSSRule('.bel-div2', "\n            background-position: -38px 0;\n        ");
+        this.addCSSRule('.bel-div2', `
+            background-position: -38px 0;
+        `);
 
-        this.addCSSRule('.bel-div3', "\n            background-position: -19px 0;\n        ");
+        this.addCSSRule('.bel-div3', `
+            background-position: -19px 0;
+        `);
 
-        this.addCSSRule('.bel-div4', "\n            background-position: -76px 0;\n        ");
+        this.addCSSRule('.bel-div4', `
+            background-position: -76px 0;
+        `);
 
-        this.addCSSRule('.bel-div11', "\n            background-position: -57px 0;\n        ");
+        this.addCSSRule('.bel-div11', `
+            background-position: -57px 0;
+        `);
 
-        this.addCSSRule('.bel-tabs', "\n            margin: 5px 0;\n        ");
+        this.addCSSRule('.bel-tabs', `
+            margin: 5px 0;
+        `);
 
-        this.addCSSRule('.bel-tabs button', "\n            border-radius: 0px;\n        ");
+        this.addCSSRule('.bel-tabs button', `
+            border-radius: 0px;
+        `);
 
-        this.addCSSRule('.bel-tabs button:first-child', "\n            border-radius: 4px 0 0 4px;\n        ");
+        this.addCSSRule('.bel-tabs button:first-child', `
+            border-radius: 4px 0 0 4px;
+        `);
 
-        this.addCSSRule('.bel-tabs button:last-child', "\n            border-radius: 0 4px 4px 0;\n        ");
+        this.addCSSRule('.bel-tabs button:last-child', `
+            border-radius: 0 4px 4px 0;
+        `);
 
-        this.addCSSRule('.bel-country', "\n            width: 28px;\n            height: 25px;\n            margin-bottom: -5px;\n            margin-left: 5px;\n            margin-right: 5px;\n            display: inline-block;\n        ");
+        this.addCSSRule('.bel-country', `
+            width: 28px;
+            height: 25px;
+            margin-bottom: -5px;
+            margin-left: 5px;
+            margin-right: 5px;
+            display: inline-block;
+        `);
 
-        this.addCSSRule("#battle_eye_live", "\n            width: 100%;\n            position:relative;\n            float:left;\n            padding:10px;\n            box-sizing: border-box;\n            border-radius:0px 0px 20px 20px;\n            background-color: #ffffff;\n            color: #34495e;\n            font-size:14px;\n            font-family: \"Lato\",Helvetica,Arial,sans-serif;\n            text-align: center;\n            line-height: 1.7;\n        ");
+        this.addCSSRule("#battle_eye_live", `
+            width: 100%;
+            position:relative;
+            float:left;
+            padding:10px;
+            box-sizing: border-box;
+            border-radius:0px 0px 20px 20px;
+            background-color: #ffffff;
+            color: #34495e;
+            font-size:14px;
+            font-family: "Lato",Helvetica,Arial,sans-serif;
+            text-align: center;
+            line-height: 1.7;
+        `);
 
         this.addCSSRule('.color-silver', 'color: #bdc3c7');
 
@@ -2041,11 +1942,26 @@ var Stylesheet = function () {
         this.addCSSRule('.pull-right', 'float:right;');
 
         this.addCSSRule('#battle_eye_live *,#battle_eye_live *:after,#battle_eye_live *:before', '-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;');
-        this.addCSSRule(".bel-value", "\n            display: inline-block;\n            line-height: 1.2;\n            background-color: #ecf0f1;\n            padding: 2px 10px;\n            border-radius: 4px;\n            margin: 0 2px 2px 2px;\n        ");
+        this.addCSSRule(".bel-value", `
+            display: inline-block;
+            line-height: 1.2;
+            background-color: #ecf0f1;
+            padding: 2px 10px;
+            border-radius: 4px;
+            margin: 0 2px 2px 2px;
+        `);
 
-        this.addCSSRule(".bel-value-hl-w", "\n            color: #ffffff;\n            animation: bel-pulse-w 3s infinite;\n            background-color: #27ae60;\n        ");
+        this.addCSSRule(".bel-value-hl-w", `
+            color: #ffffff;
+            animation: bel-pulse-w 3s infinite;
+            background-color: #27ae60;
+        `);
 
-        this.addCSSRule(".bel-value-hl-l", "\n            color: #ffffff;\n            animation: bel-pulse-l 3s infinite;\n            background-color: #e74c3c;\n        ");
+        this.addCSSRule(".bel-value-hl-l", `
+            color: #ffffff;
+            animation: bel-pulse-l 3s infinite;
+            background-color: #e74c3c;
+        `);
 
         this.addCSSRule(".text-center", "text-align:center;");
         this.addCSSRule(".text-left", "text-align:left;");
@@ -2053,10 +1969,17 @@ var Stylesheet = function () {
         this.addCSSRule('.bel-version', 'background-color: #34495e;color:#ecf0f1;padding: 3px 8px;border-radius:4px;margin-right:4px;');
         this.addCSSRule('.bel-version-outdated', 'background-color: #e74c3c;');
         this.addCSSRule('.bel-title', 'background-color: #ecf0f1;margin-bottom:2px;margin-top:5px;');
-        this.addCSSRule('.bel-titles', "\n            font-weight: 700;\n        ");
+        this.addCSSRule('.bel-titles', `
+            font-weight: 700;
+        `);
         this.addCSSRule('.bel-text-tiny', 'font-size:10px;');
-        this.addCSSRule('.bel-highlight-title', "\n            background-color: #34495e;\n            color: #fff;\n        ");
-        this.addCSSRule('.bel-highlight', "\n            color: #34495e;\n        ");
+        this.addCSSRule('.bel-highlight-title', `
+            background-color: #34495e;
+            color: #fff;
+        `);
+        this.addCSSRule('.bel-highlight', `
+            color: #34495e;
+        `);
         //Grids
         this.addCSSRule('.bel-grid:after', 'content: "";display: table;clear: both;');
         this.addCSSRule("[class*='bel-col-']", 'float: left;min-height: 1px;');
@@ -2069,48 +1992,137 @@ var Stylesheet = function () {
         this.addCSSRule('.list-unstyled', 'list-style: outside none none;padding-left: 0;');
         this.addCSSRule('.list-inline li', 'display: inline-block;');
 
-        this.addCSSRule('.bel-closed', "\n            z-index: 100;\n            position: absolute;\n            width: 100%;\n            opacity: 0.95;\n            top: 0;\n            left: 0;\n            background-color: #2c3e50;\n            text-shadow: 0 0 2px #363636;\n            color: #ffffff;\n            font-size: 20px;\n            padding: 14px;\n            text-align: center;\n            overflow: hidden;\n            height: 100%;\n            display: none;\n        ");
-        this.addCSSRule('.bel-closed p', "\n            font-size: 12px;\n        ");
+        this.addCSSRule('.bel-closed', `
+            z-index: 100;
+            position: absolute;
+            width: 100%;
+            opacity: 0.95;
+            top: 0;
+            left: 0;
+            background-color: #2c3e50;
+            text-shadow: 0 0 2px #363636;
+            color: #ffffff;
+            font-size: 20px;
+            padding: 14px;
+            text-align: center;
+            overflow: hidden;
+            height: 100%;
+            display: none;
+        `);
+        this.addCSSRule('.bel-closed p', `
+            font-size: 12px;
+        `);
 
         //Settings
-        this.addCSSRule('.bel-settings', "\n            z-index: 100;\n            position: absolute;\n            width: 100%;\n            opacity: 0.95;\n            top: 0;\n            left: 0;\n            background-color: #ffffff;\n            padding: 14px;\n            text-align: left;\n            overflow-y: scroll;\n            height: 100%;\n        ");
+        this.addCSSRule('.bel-settings', `
+            z-index: 100;
+            position: absolute;
+            width: 100%;
+            opacity: 0.95;
+            top: 0;
+            left: 0;
+            background-color: #ffffff;
+            padding: 14px;
+            text-align: left;
+            overflow-y: scroll;
+            height: 100%;
+        `);
 
-        this.addCSSRule('.bel-settings-group', "\n            background-color: #34495e;\n            color: #ecf0f1;\n            padding-left: 10px;\n        ");
+        this.addCSSRule('.bel-settings-group', `
+            background-color: #34495e;
+            color: #ecf0f1;
+            padding-left: 10px;
+        `);
 
-        this.addCSSRule('.bel-settings-container', "\n            padding-left: 5px;\n        ");
+        this.addCSSRule('.bel-settings-container', `
+            padding-left: 5px;
+        `);
 
-        this.addCSSRule('.bel-settings-field', "\n            margin-right: 3px;\n        ");
+        this.addCSSRule('.bel-settings-field', `
+            margin-right: 3px;
+        `);
 
-        this.addCSSRule('.bel-field-description', "\n            font-size: 12px;\n            color: #95a5a6;\n        ");
+        this.addCSSRule('.bel-field-description', `
+            font-size: 12px;
+            color: #95a5a6;
+        `);
 
-        this.addCSSRule('.bel-checkbox', "\n            padding: 5px 3px;\n            border-bottom: 1px solid #ecf0f1;\n        ");
+        this.addCSSRule('.bel-checkbox', `
+            padding: 5px 3px;
+            border-bottom: 1px solid #ecf0f1;
+        `);
 
-        this.addCSSRule('.bel-hidden', "\n            display: none;\n        ");
+        this.addCSSRule('.bel-hidden', `
+            display: none;
+        `);
 
         //Button
-        this.addCSSRule('.bel-btn', "\n            -webkit-user-select: none;\n            -moz-user-select: none;\n            -ms-user-select: none;\n            user-select: none;\n            background-image: none;\n            border: none !important;\n            cursor: pointer;\n            font-size: 13px;\n            font-weight: normal;\n            margin-bottom: 0;\n            text-align: center;\n            border-radius: 4px;\n            padding: 3px 8px;\n            font-family: \"Lato\",Helvetica,Arial,sans-serif;\n            transition: background-color 0.5s;\n        ");
+        this.addCSSRule('.bel-btn', `
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: none !important;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: normal;
+            margin-bottom: 0;
+            text-align: center;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-family: "Lato",Helvetica,Arial,sans-serif;
+            transition: background-color 0.5s;
+        `);
 
-        this.addCSSRule('a.bel-btn', "\n            padding: 4px 8px;\n        ");
+        this.addCSSRule('a.bel-btn', `
+            padding: 4px 8px;
+        `);
 
-        this.addCSSRule('.bel-btn-default', "\n            background-color: #1abc9c;\n            color: #ffffff;\n        ");
+        this.addCSSRule('.bel-btn-default', `
+            background-color: #1abc9c;
+            color: #ffffff;
+        `);
 
-        this.addCSSRule('.bel-btn-default:hover', "\n            background-color: #16a085;\n        ");
+        this.addCSSRule('.bel-btn-default:hover', `
+            background-color: #16a085;
+        `);
 
-        this.addCSSRule('.bel-btn-grey', "\n            background-color: #ecf0f1;\n            color: #34495e;\n        ");
+        this.addCSSRule('.bel-btn-grey', `
+            background-color: #ecf0f1;
+            color: #34495e;
+        `);
 
-        this.addCSSRule('.bel-btn-grey:hover', "\n            background-color: #CED3D6;\n        ");
+        this.addCSSRule('.bel-btn-grey:hover', `
+            background-color: #CED3D6;
+        `);
 
-        this.addCSSRule('.bel-btn-danger', "\n            background-color: #e74c3c;\n            color: #ffffff;\n        ");
+        this.addCSSRule('.bel-btn-danger', `
+            background-color: #e74c3c;
+            color: #ffffff;
+        `);
 
-        this.addCSSRule('.bel-btn-danger:hover', "\n            background-color: #c0392b;\n        ");
+        this.addCSSRule('.bel-btn-danger:hover', `
+            background-color: #c0392b;
+        `);
 
-        this.addCSSRule('.bel-btn-inverse', "\n            background-color: #2c3e50;\n            color: #ffffff;\n        ");
+        this.addCSSRule('.bel-btn-inverse', `
+            background-color: #2c3e50;
+            color: #ffffff;
+        `);
 
-        this.addCSSRule('.bel-btn-inverse:hover', "\n            background-color: #34495e;\n        ");
+        this.addCSSRule('.bel-btn-inverse:hover', `
+            background-color: #34495e;
+        `);
 
-        this.addCSSRule('.bel-btn-info', "\n            background-color: #2980b9;\n            color: #ffffff;\n        ");
+        this.addCSSRule('.bel-btn-info', `
+            background-color: #2980b9;
+            color: #ffffff;
+        `);
 
-        this.addCSSRule('.bel-btn-info:hover', "\n            background-color: #3498db;\n        ");
+        this.addCSSRule('.bel-btn-info:hover', `
+            background-color: #3498db;
+        `);
 
         //Header menu
         this.addCSSRule('.bel-header-menu', 'margin-bottom: 10px;');
@@ -2123,46 +2135,74 @@ var Stylesheet = function () {
         this.addCSSRule('.bel-teamb-color', 'color: #c0392b;');
 
         //Progress bars
-        this.addCSSRule('.bel-progress', "\n            height: 4px;\n            position: relative;\n            background: #ebedef none repeat scroll 0 0;\n            border-radius: 32px;\n            box-shadow: none;\n            margin-top: 2px;\n            overflow: hidden;\n        ");
+        this.addCSSRule('.bel-progress', `
+            height: 4px;
+            position: relative;
+            background: #ebedef none repeat scroll 0 0;
+            border-radius: 32px;
+            box-shadow: none;
+            margin-top: 2px;
+            overflow: hidden;
+        `);
 
-        this.addCSSRule('.bel-progress-bar', "\n            box-shadow: none;\n            line-height: 12px;\n            color: #fff;\n            float: left;\n            font-size: 12px;\n            height: 100%;\n            line-height: 20px;\n            text-align: center;\n            transition: width 0.6s ease 0s;\n            width: 0;\n        ");
+        this.addCSSRule('.bel-progress-bar', `
+            box-shadow: none;
+            line-height: 12px;
+            color: #fff;
+            float: left;
+            font-size: 12px;
+            height: 100%;
+            line-height: 20px;
+            text-align: center;
+            transition: width 0.6s ease 0s;
+            width: 0;
+        `);
 
-        this.addCSSRule('.bel-progress-center-marker', "\n            border-right: 3px solid #ffffff;\n            height: 10px;\n            left: 50%;\n            margin-left: -2px;\n            opacity: 0.6;\n            position: absolute;\n        ");
+        this.addCSSRule('.bel-progress-center-marker', `
+            border-right: 3px solid #ffffff;
+            height: 10px;
+            left: 50%;
+            margin-left: -2px;
+            opacity: 0.6;
+            position: absolute;
+        `);
         //Other
-        this.addCSSRule('.bel-hr', "\n            -moz-border-bottom-colors: none;\n            -moz-border-left-colors: none;\n            -moz-border-right-colors: none;\n            -moz-border-top-colors: none;\n            border-color: #eee -moz-use-text-color -moz-use-text-color;\n            border-image: none;\n            border-style: solid none none;\n            border-width: 1px 0 0;\n            margin-bottom: 20px;\n        ");
+        this.addCSSRule('.bel-hr', `
+            -moz-border-bottom-colors: none;
+            -moz-border-left-colors: none;
+            -moz-border-right-colors: none;
+            -moz-border-top-colors: none;
+            border-color: #eee -moz-use-text-color -moz-use-text-color;
+            border-image: none;
+            border-style: solid none none;
+            border-width: 1px 0 0;
+            margin-bottom: 20px;
+        `);
     }
 
-    _createClass(Stylesheet, [{
-        key: "addCSSRule",
-        value: function addCSSRule(selector, rules) {
-            this.sheet += selector + "{" + rules + "}";
-        }
-    }, {
-        key: "load",
-        value: function load() {
-            $j('head').append("<style>" + this.sheet + "</style>");
-        }
-    }]);
-
-    return Stylesheet;
-}();
-
-var Utils = function () {
-    function Utils() {
-        _classCallCheck(this, Utils);
+    addCSSRule(selector, rules) {
+        this.sheet += selector + "{" + rules + "}";
     }
 
-    _createClass(Utils, [{
-        key: "uid",
-        value: function uid() {
-            return ("0000" + (Math.random() * Math.pow(36, 4) << 0).toString(36)).slice(-4);
-        }
-    }]);
+    load() {
+        $j('head').append(`<style>${ this.sheet }</style>`);
+    }
+}
 
-    return Utils;
-}();
+class Utils {
+    uid() {
+        return ("0000" + (Math.random() * Math.pow(36, 4) << 0).toString(36)).slice(-4);
+    }
+}
 
 var UTILS = new Utils();
+
+function log(data, desc) {
+    if (desc === undefined) {
+        desc = '';
+    }
+    console.log("[BATTLEEYE] " + desc + ": " + data);
+}
 
 var settings = {};
 var contributors = [];
@@ -2170,10 +2210,11 @@ var modules = null;
 var storage = null;
 var battleEyeLive = {
     closed: false,
-    init: function init() {
+    init: function () {
         var self = this;
         console.log('[BATTLEEYE] Initialisation');
 
+        //Setting up the Storage class, that handles localStorage stuff
         storage = self.settingsStorage = new Storage();
         if (storage === false) {
             return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
@@ -2206,6 +2247,7 @@ var battleEyeLive = {
         modules = new ModuleLoader(self.settingsStorage);
         modules.load(new AutoShooter());
         modules.load(new Other());
+        // modules.load(new PercentageFixer());
 
         //Loading settings
         storage.loadSettings();
@@ -2213,25 +2255,46 @@ var battleEyeLive = {
         //
 
         self.events = new EventHandler();
+
+        //Defining Stats classes for both sides
         self.teamA = new Stats(SERVER_DATA.leftBattleId);
         self.teamAName = SERVER_DATA.countries[SERVER_DATA.leftBattleId];
         self.teamB = new Stats(SERVER_DATA.rightBattleId);
         self.teamBName = SERVER_DATA.countries[SERVER_DATA.rightBattleId];
 
+        var revolCountry = null;
+        if (SERVER_DATA.isCivilWar) {
+            if (SERVER_DATA.invaderId == SERVER_DATA.leftBattleId) {
+                self.teamA.revolution = true;
+                self.teamAName = self.teamBName + " Revolution";
+                revolCountry = self.teamBName;
+            } else {
+                self.teamB.revolution = true;
+                self.teamBName = self.teamAName + " Revolution";
+                revolCountry = self.teamAName;
+            }
+        }
+
         self.layout = new Layout(new Stylesheet(), {
             'teamAName': this.teamAName,
             'teamBName': this.teamBName,
-            'version': GM_info.script.version
+            'version': GM_info.script.version,
+            'revolutionCountry': revolCountry
         });
 
+        //Rendering the layout
         self.layout.update(self.getTeamStats());
 
+        //Overriding pomelo's disconnect to avoid interruptions by 3rd parties
         pomelo.disconnect = function () {};
 
+        //Updates data from data.json
         self.checkForUpdates();
 
+        //Loads stats from erepublik's battle console
         self.loadBattleStats();
 
+        //Listens to setting changes
         $j('.bel-settings-field').on('change', function (event) {
             var input = event.target;
 
@@ -2252,79 +2315,81 @@ var battleEyeLive = {
         self.handleEvents();
         modules.run();
     },
-
-    loadBattleStats: function loadBattleStats() {
+    //Loads stats from erepublik's battle console
+    loadBattleStats: function () {
         var self = this;
-        if (settings.gatherBattleStats.value) {
-            self.getBattleStats(function (leftDamage, rightDamage, leftKills, rightKills) {
-                var divs = [1, 2, 3, 4, 11];
+        if (!settings.gatherBattleStats.value) {
+            return;
+        }
 
-                for (var d in divs) {
-                    var div = divs[d];
-                    var leftDmg = 0;
-                    var rightDmg = 0;
-                    var leftKl = 0;
-                    var rightKl = 0;
+        self.getBattleStats(function (leftDamage, rightDamage, leftKills, rightKills) {
+            var divs = [1, 2, 3, 4, 11];
 
-                    for (var i in leftDamage['div' + div]) {
-                        var hit = leftDamage['div' + div][i];
-                        var dmg = Number(hit.value.replace(/[,\.]/g, ''));
-                        leftDmg += dmg;
+            for (var d in divs) {
+                var div = divs[d];
+                var leftDmg = 0;
+                var rightDmg = 0;
+                var leftKl = 0;
+                var rightKl = 0;
 
-                        var bareData = {
-                            damage: dmg,
-                            permalink: hit.country_permalink
-                        };
+                for (var i in leftDamage['div' + div]) {
+                    var hit = leftDamage['div' + div][i];
+                    var dmg = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
+                    leftDmg += dmg;
 
-                        self.teamA.countries.handleBare(bareData);
-                        self.teamA.divisions.get('div' + div).countries.handleBare(bareData);
-                    }
+                    var bareData = {
+                        damage: dmg,
+                        permalink: hit.country_permalink
+                    };
 
-                    for (var i in rightDamage['div' + div]) {
-                        var hit = rightDamage['div' + div][i];
-                        var dmg = Number(hit.value.replace(/[,\.]/g, ''));
-                        rightDmg += dmg;
-
-                        var bareData = {
-                            damage: dmg,
-                            permalink: hit.country_permalink
-                        };
-
-                        self.teamB.countries.handleBare(bareData);
-                        self.teamB.divisions.get('div' + div).countries.handleBare(bareData);
-                    }
-
-                    for (var i in leftKills['div' + div]) {
-                        var hit = leftKills['div' + div][i];
-                        leftKl += Number(hit.value.replace(/[,\.]/g, ''));
-                    }
-
-                    for (var i in rightKills['div' + div]) {
-                        var hit = rightKills['div' + div][i];
-                        rightKl += Number(hit.value.replace(/[,\.]/g, ''));
-                    }
-
-                    self.teamA.divisions.get('div' + div).damage += leftDmg;
-                    self.teamB.divisions.get('div' + div).damage += rightDmg;
-                    self.teamA.damage += leftDmg;
-                    self.teamB.damage += rightDmg;
-                    self.teamA.divisions.get('div' + div).hits += leftKl;
-                    self.teamB.divisions.get('div' + div).hits += rightKl;
-                    self.teamA.hits += leftKl;
-                    self.teamB.hits += rightKl;
+                    self.teamA.countries.handleBare(bareData);
+                    self.teamA.divisions.get('div' + div).countries.handleBare(bareData);
                 }
 
-                $j('#bel-loading').hide();
-            });
-        }
+                for (var i in rightDamage['div' + div]) {
+                    var hit = rightDamage['div' + div][i];
+                    var dmg = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
+                    rightDmg += dmg;
+
+                    var bareData = {
+                        damage: dmg,
+                        permalink: hit.country_permalink
+                    };
+
+                    self.teamB.countries.handleBare(bareData);
+                    self.teamB.divisions.get('div' + div).countries.handleBare(bareData);
+                }
+
+                for (var i in leftKills['div' + div]) {
+                    var hit = leftKills['div' + div][i];
+                    leftKl += Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
+                }
+
+                for (var i in rightKills['div' + div]) {
+                    var hit = rightKills['div' + div][i];
+                    rightKl += Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
+                }
+
+                self.teamA.divisions.get('div' + div).damage += leftDmg;
+                self.teamB.divisions.get('div' + div).damage += rightDmg;
+                self.teamA.damage += leftDmg;
+                self.teamB.damage += rightDmg;
+                self.teamA.divisions.get('div' + div).hits += leftKl;
+                self.teamB.divisions.get('div' + div).hits += rightKl;
+                self.teamA.hits += leftKl;
+                self.teamB.hits += rightKl;
+            }
+
+            $j('#bel-loading').hide();
+        });
     },
 
-    resetSettings: function resetSettings() {
+    resetSettings: function () {
         storage.loadDefaults();
         settings = storage.getAll();
     },
 
-    checkForUpdates: function checkForUpdates() {
+    checkForUpdates: function () {
         var self = this;
         $j.get('https://dl.dropboxusercontent.com/u/86379644/data.json', function (data) {
             data = JSON.parse(data);
@@ -2339,7 +2404,7 @@ var battleEyeLive = {
         });
     },
 
-    displayContributors: function displayContributors() {
+    displayContributors: function () {
         $j('.bel-contributor').each(function () {
             $j(this).removeClass('bel-contributor').removeAttr('style').removeAttr('original-title');
         });
@@ -2363,14 +2428,14 @@ var battleEyeLive = {
         }
     },
 
-    getTeamStats: function getTeamStats() {
+    getTeamStats: function () {
         return {
             'left': this.teamA.toObject(),
             'right': this.teamB.toObject()
         };
     },
 
-    getBattleStats: function getBattleStats(callback) {
+    getBattleStats: function (callback) {
         var self = this;
         var attacker = SERVER_DATA.leftBattleId;
         var defender = SERVER_DATA.rightBattleId;
@@ -2380,7 +2445,7 @@ var battleEyeLive = {
             attackerKillData = { div1: [], div2: [], div3: [], div4: [], div11: [] },
             defenderKillData = { div1: [], div2: [], div3: [], div4: [], div11: [] };
 
-        var request = function request(div, pageLeft, pageRight, cb, type) {
+        var request = function (div, pageLeft, pageRight, cb, type) {
             if (type == undefined) {
                 type = 'damage';
             }
@@ -2394,13 +2459,13 @@ var battleEyeLive = {
                 rightPage: pageRight,
                 round: SERVER_DATA.zoneId,
                 type: type,
-                zoneId: 1
+                zoneId: parseInt(SERVER_DATA.zoneId, 10)
             }, function (data) {
                 cb(data);
             });
         };
 
-        var damageHandler = function damageHandler(div, cb) {
+        var damageHandler = function (div, cb) {
             var page = 1;
             var maxPage = 1;
 
@@ -2428,7 +2493,7 @@ var battleEyeLive = {
             });
         };
 
-        var killsHandler = function killsHandler(div, cb) {
+        var killsHandler = function (div, cb) {
             var page = 1;
             var maxPage = 1;
 
@@ -2463,15 +2528,16 @@ var battleEyeLive = {
         async.each(divRange, damageHandler.bind(self), function () {
             async.each(divRange, killsHandler.bind(self), function () {
                 callback(attackerData, defenderData, attackerKillData, defenderKillData);
+                self.events.emit('battleConsoleLoaded', null);
             });
         });
     },
 
-    runTicker: function runTicker() {
+    runTicker: function () {
         var self = this;
         var second = 0;
 
-        var ticker = function ticker() {
+        var ticker = function () {
             second++;
             var timeData = {
                 'second': second,
@@ -2483,7 +2549,7 @@ var battleEyeLive = {
         self.interval = setInterval(ticker, 1000);
     },
 
-    handleEvents: function handleEvents() {
+    handleEvents: function () {
         var self = this;
         self.events.on('tick', function (timeData) {
             self.teamA.updateDps(timeData);
@@ -2492,17 +2558,17 @@ var battleEyeLive = {
         });
     },
 
-    overridePomelo: function overridePomelo() {
+    overridePomelo: function () {
         var self = this;
 
-        var handler = function handler(data) {
-            if (currentPlayerDisplayRateValue !== "Maximum") {
-                if (battleFX.checkPlayerDisplayRate(currentPlayerDisplayRateValue)) {
-                    battleFX.populatePlayerData(data);
-                }
-            } else {
-                battleFX.populatePlayerData(data);
-            }
+        var handler = function (data) {
+            // if(currentPlayerDisplayRateValue !== "Maximum") {
+            // 	if(battleFX.checkPlayerDisplayRate(currentPlayerDisplayRateValue)) {
+            // 		battleFX.populatePlayerData(data);
+            // 	}
+            // } else {
+            // 	battleFX.populatePlayerData(data);
+            // }
 
             self.displayContributors();
             self.handle(data);
@@ -2516,7 +2582,7 @@ var battleEyeLive = {
             clearTimeout(self.interval);
         });
     },
-    handle: function handle(data) {
+    handle: function (data) {
         var self = this;
         self.teamA.handle(data);
         self.teamB.handle(data);

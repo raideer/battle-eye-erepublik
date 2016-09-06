@@ -1,8 +1,9 @@
 class Module{
-    constructor(name, description){
+    constructor(name, description, autoload = true){
         var self = this;
         self.name = name;
         self.desc = description;
+        self.autoload = autoload;
     }
 
     defineSettings(){
