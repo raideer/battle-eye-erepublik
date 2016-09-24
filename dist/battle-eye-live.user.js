@@ -5,7 +5,7 @@
 // @homepage    https://docs.google.com/spreadsheets/d/1Ebqp5Hb8KmGvX6X0FXmALO30Fv-IyfJHUGPkjKey8tg
 // @description LIVE battlefield statistics
 // @include     http*://www.erepublik.com/*/military/battlefield-new/*
-// @version     1.4.0
+// @version     1.4.2
 // @require     https://fb.me/react-15.2.1.min.js
 // @require     https://fb.me/react-dom-15.2.1.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.0.1/async.min.js
@@ -62,11 +62,12 @@ class Feed extends React.Component {
         }
 
         var divs = [];
+        var divInfo = [];
 
         if (SERVER_DATA.division == 11) {
-            var divInfo = [[11, 'Air Division']];
+            divInfo = [[11, 'Air Division']];
         } else {
-            var divInfo = [[1, 'Division 1'], [2, 'Division 2'], [3, 'Division 3'], [4, 'Division 4']];
+            divInfo = [[1, 'Division 1'], [2, 'Division 2'], [3, 'Division 3'], [4, 'Division 4']];
         }
 
         for (var d in divInfo) {
@@ -120,6 +121,10 @@ class Feed extends React.Component {
         return React.createElement(FeedCountries, { data: data, settings: this.props.settings });
     }
 
+    printOther() {
+        return React.createElement(FeedOther, null);
+    }
+
     getContent() {
         if (this.props.tab == 'div') {
             return this.printDivisions();
@@ -128,6 +133,9 @@ class Feed extends React.Component {
         } else if (this.props.tab == 'countries') {
             return this.printCountries();
         }
+        // else if(this.props.tab == 'other'){
+        //     return this.printOther();
+        // }
     }
 
     render() {
@@ -156,10 +164,12 @@ class FeedCountries extends React.Component {
 
     getStats(side) {
         var content = [];
+        var countries = [];
+
         if (this.state.tab == 'overall') {
-            var countries = this.props.data[side].countries;
+            countries = this.props.data[side].countries;
         } else {
-            var countries = this.props.data[side].divisions[this.state.tab].countries;
+            countries = this.props.data[side].divisions[this.state.tab].countries;
         }
 
         for (var i in countries) {
@@ -242,6 +252,16 @@ class FeedDivision extends React.Component {
         if (settings.highlightDivision.value && SERVER_DATA.division == this.props.div[0]) {
             highlightDivision = true;
         }
+
+        var leftDomination = left.damage * battleEyeLive.leftDetBonus;
+        var rightDomination = right.damage * battleEyeLive.rightDetBonus;
+
+        var leftDmgPerPercent = Math.round(parseFloat(left.damage) / parseFloat(this.getPerc(leftDomination, rightDomination)));
+        var rightDmgPerPercent = Math.round(parseFloat(right.damage) / parseFloat(this.getPerc(rightDomination, leftDomination)));
+        if (battleEyeLive.leftDetBonus == battleEyeLive.rightDetBonus) {
+            // rightDmgPerPercent = leftDmgPerPercent;
+        }
+
         return React.createElement(
             'div',
             null,
@@ -252,13 +272,38 @@ class FeedDivision extends React.Component {
             ),
             React.createElement(
                 'div',
-                { className: 'bel-col-1-3 text-right' },
+                { className: 'belFeedValue' },
                 React.createElement(
                     'ul',
                     { className: 'list-unstyled' },
                     React.createElement(
                         'li',
-                        null,
+                        { className: 'bel-col-1-3 text-right' },
+                        React.createElement(FeedTextValue, { a: "1% = " + leftDmgPerPercent.toLocaleString() + " dmg" }),
+                        React.createElement(FeedValue, { green: true, a: this.getPerc(leftDomination, rightDomination), b: this.getPerc(rightDomination, leftDomination), highlight: settings.highlightValue.value, text: "%" })
+                    ),
+                    React.createElement(
+                        'li',
+                        { className: 'bel-col-1-3 text-center' },
+                        'Domination'
+                    ),
+                    React.createElement(
+                        'li',
+                        { className: 'bel-col-1-3 text-left' },
+                        React.createElement(FeedValue, { b: this.getPerc(leftDomination, rightDomination), a: this.getPerc(rightDomination, leftDomination), highlight: settings.highlightValue.value, text: "%" }),
+                        React.createElement(FeedTextValue, { a: "1% = " + rightDmgPerPercent.toLocaleString() + " dmg" })
+                    )
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'belFeedValue' },
+                React.createElement(
+                    'ul',
+                    { className: 'list-unstyled' },
+                    React.createElement(
+                        'li',
+                        { className: 'bel-col-1-3 text-right' },
                         React.createElement(
                             If,
                             { test: settings.showKills.value },
@@ -272,57 +317,13 @@ class FeedDivision extends React.Component {
                         React.createElement(FeedValue, { green: true, a: left.damage, b: right.damage, highlight: settings.highlightValue.value })
                     ),
                     React.createElement(
-                        If,
-                        { test: settings.showAverageDamage.value },
-                        React.createElement(
-                            'li',
-                            null,
-                            React.createElement(FeedValue, { green: true, a: left.avgHit, b: right.avgHit, highlight: settings.highlightValue.value })
-                        )
-                    ),
-                    React.createElement(
                         'li',
-                        null,
-                        React.createElement(FeedValue, { green: true, a: left.dps, b: right.dps, highlight: settings.highlightValue.value })
-                    )
-                )
-            ),
-            React.createElement(
-                'div',
-                { className: 'bel-col-1-3 text-center' },
-                React.createElement(
-                    'ul',
-                    { className: "list-unstyled bel-titles " + (highlightDivision ? "bel-highlight" : "") },
-                    React.createElement(
-                        'li',
-                        null,
+                        { className: 'bel-col-1-3 text-center' },
                         'Total Damage'
                     ),
                     React.createElement(
-                        If,
-                        { test: settings.showAverageDamage.value },
-                        React.createElement(
-                            'li',
-                            null,
-                            'Average Damage'
-                        )
-                    ),
-                    React.createElement(
                         'li',
-                        null,
-                        'DPS'
-                    )
-                )
-            ),
-            React.createElement(
-                'div',
-                { className: 'bel-col-1-3 text-left' },
-                React.createElement(
-                    'ul',
-                    { className: 'list-unstyled' },
-                    React.createElement(
-                        'li',
-                        null,
+                        { className: 'bel-col-1-3 text-left' },
                         React.createElement(FeedValue, { a: right.damage, b: left.damage, highlight: settings.highlightValue.value }),
                         React.createElement(
                             If,
@@ -334,19 +335,55 @@ class FeedDivision extends React.Component {
                             { test: settings.showKills.value },
                             React.createElement(FeedValue, { a: right.hits, b: left.hits, text: "kills", highlight: settings.highlightValue.value })
                         )
-                    ),
+                    )
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'belFeedValue' },
+                React.createElement(
+                    If,
+                    { test: settings.showAverageDamage.value },
                     React.createElement(
-                        If,
-                        { test: settings.showAverageDamage.value },
+                        'ul',
+                        { className: 'list-unstyled' },
                         React.createElement(
                             'li',
-                            null,
+                            { className: 'bel-col-1-3 text-right' },
+                            React.createElement(FeedValue, { green: true, a: left.avgHit, b: right.avgHit, highlight: settings.highlightValue.value })
+                        ),
+                        React.createElement(
+                            'li',
+                            { className: 'bel-col-1-3 text-center' },
+                            'Average damage'
+                        ),
+                        React.createElement(
+                            'li',
+                            { className: 'bel-col-1-3 text-left' },
                             React.createElement(FeedValue, { a: right.avgHit, b: left.avgHit, highlight: settings.highlightValue.value })
                         )
+                    )
+                )
+            ),
+            React.createElement(
+                'div',
+                { className: 'belFeedValue' },
+                React.createElement(
+                    'ul',
+                    { className: 'list-unstyled' },
+                    React.createElement(
+                        'li',
+                        { className: 'bel-col-1-3 text-right' },
+                        React.createElement(FeedValue, { green: true, a: left.dps, b: right.dps, highlight: settings.highlightValue.value })
                     ),
                     React.createElement(
                         'li',
-                        null,
+                        { className: 'bel-col-1-3 text-center' },
+                        'DPS'
+                    ),
+                    React.createElement(
+                        'li',
+                        { className: 'bel-col-1-3 text-left' },
                         React.createElement(FeedValue, { a: right.dps, b: left.dps, highlight: settings.highlightValue.value })
                     )
                 )
@@ -354,6 +391,28 @@ class FeedDivision extends React.Component {
             React.createElement(
                 'div',
                 { className: 'bel-col-1-1' },
+                React.createElement(
+                    If,
+                    { test: settings.showDominationBar.value },
+                    React.createElement(
+                        'div',
+                        { className: 'text-left bel-text-tiny' },
+                        'DOMINATION ',
+                        React.createElement(
+                            'span',
+                            { className: 'color-silver' },
+                            '(',
+                            React.createElement(
+                                'strong',
+                                null,
+                                Math.abs(leftDomination - rightDomination).toLocaleString(),
+                                ' '
+                            ),
+                            ' difference)'
+                        )
+                    ),
+                    React.createElement(FeedProgressBar, { a: leftDomination, b: rightDomination })
+                ),
                 React.createElement(
                     If,
                     { test: settings.showDamageBar.value },
@@ -372,6 +431,14 @@ class FeedDivision extends React.Component {
                                 ' '
                             ),
                             ' difference)'
+                        ),
+                        ' ',
+                        React.createElement(
+                            'span',
+                            { className: 'color-silver' },
+                            '(1% ~ ',
+                            React.createElement('strong', null),
+                            ')'
                         )
                     ),
                     React.createElement(FeedProgressBar, { a: left.damage, b: right.damage })
@@ -379,7 +446,6 @@ class FeedDivision extends React.Component {
                 React.createElement(
                     If,
                     { test: settings.showDpsBar.value },
-                    React.createElement(FeedProgressBar, { a: left.dps, b: right.dps }),
                     React.createElement(
                         'div',
                         { className: 'text-left bel-text-tiny' },
@@ -395,9 +461,44 @@ class FeedDivision extends React.Component {
                             ),
                             ' difference)'
                         )
-                    )
+                    ),
+                    React.createElement(FeedProgressBar, { a: left.dps, b: right.dps })
                 )
             )
+        );
+    }
+}
+
+class FeedOther extends React.Component {
+    render() {
+        if (battleEyeLive.nbpStats === null) {
+            return React.createElement(
+                'div',
+                { className: 'bel-spinner' },
+                React.createElement('div', { className: 'rect1' }),
+                React.createElement('div', { className: 'rect2' }),
+                React.createElement('div', { className: 'rect3' }),
+                React.createElement('div', { className: 'rect4' }),
+                React.createElement('div', { className: 'rect5' })
+            );
+        }
+
+        return React.createElement(
+            'div',
+            { className: 'text-left' },
+            React.createElement(
+                'div',
+                { className: 'bel-col-1-3' },
+                React.createElement(
+                    'b',
+                    null,
+                    'Highest hit:'
+                ),
+                ' ',
+                parseInt(battleEyeLive.nbpStats.maxHit).toLocaleString()
+            ),
+            React.createElement('div', { className: 'bel-col-1-3' }),
+            React.createElement('div', { className: 'bel-col-1-3' })
         );
     }
 }
@@ -611,6 +712,26 @@ class FeedProgressBar extends React.Component {
     }
 }
 
+class FeedTextValue extends React.Component {
+    constructor() {
+        super();
+        this.props = {
+            text: "",
+            green: false
+        };
+    }
+
+    render() {
+        return React.createElement(
+            'span',
+            { className: 'bel-value' },
+            this.props.a,
+            ' ',
+            this.props.text
+        );
+    }
+}
+
 class FeedValue extends React.Component {
     constructor() {
         super();
@@ -705,6 +826,15 @@ class Header extends React.Component {
                             null,
                             React.createElement(
                                 'a',
+                                { className: 'bel-btn bel-btn-inverse', target: '_blank', href: 'http://bit.ly/BattleEye' },
+                                'Homepage'
+                            )
+                        ),
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(
+                                'a',
                                 { className: 'bel-btn bel-btn-inverse', target: '_blank', href: 'http://www.erepublik.com/en/citizen/profile/8075739' },
                                 'Contact/Donate'
                             )
@@ -792,7 +922,7 @@ class MiniMonitor extends React.Component {
 
     getPerc(a, b) {
         var ap = 0;
-        if (a + b != 0) {
+        if (a + b !== 0) {
             ap = Math.round(a * 1000 / (a + b)) / 10;
         }
 
@@ -803,22 +933,28 @@ class MiniMonitor extends React.Component {
         var data = [];
         var left = this.props.feedData.left;
         var right = this.props.feedData.right;
+
+        var divs = [];
+
         if (SERVER_DATA.division == 11) {
-            var divs = [11];
+            divs = [11];
         } else {
-            var divs = [1, 2, 3, 4];
+            divs = [1, 2, 3, 4];
         }
 
         for (var i in divs) {
             var div = divs[i];
+            var leftDamage = left.divisions['div' + div].damage * battleEyeLive.leftDetBonus;
+            var rightDamage = right.divisions['div' + div].damage * battleEyeLive.rightDetBonus;
+
             data.push(React.createElement(
                 'div',
                 null,
                 React.createElement('div', { className: "bel-div bel-div" + div }),
                 ' ',
-                this.getPerc(left.divisions['div' + div].damage, right.divisions['div' + div].damage),
+                this.getPerc(leftDamage, rightDamage),
                 '% - ',
-                this.getPerc(right.divisions['div' + div].damage, left.divisions['div' + div].damage),
+                this.getPerc(rightDamage, leftDamage),
                 '%'
             ));
         }
@@ -1003,7 +1139,7 @@ class TabSelector extends React.Component {
             var a = this.props.buttons[i];
             buttons.push(React.createElement(
                 'button',
-                { onClick: this.props.changeTab.bind(this, a[0]), className: this.getStyle(a[0]) },
+                { 'data-tab': a[0], onClick: this.props.changeTab.bind(this, a[0]), className: this.getStyle(a[0]) },
                 a[1]
             ));
         }
@@ -1056,7 +1192,9 @@ class Template extends React.Component {
     }
 
     getTabButtons() {
-        return [['div', 'Divisions'], ['overall', 'Total'], ['countries', 'Countries']];
+        return [['div', 'Divisions'], ['overall', 'Total'], ['countries', 'Countries']
+        // ,['other', 'Other']
+        ];
     }
 
     render() {
@@ -1217,6 +1355,25 @@ class AutoShooter extends Module {
                 console.log("[BATTLEEYE] AutoShooter started");
             }
         };
+    }
+}
+
+class BattleHistory extends Module {
+    constructor() {
+        super('Battle History', 'Displays recent battles where you have fought');
+    }
+
+    defineSettings() {
+        return [['battleHistoryEnabled', true, 'Enable Battle History', 'Displays recent battles where you have fought']];
+    }
+
+    run() {
+        if (!storage.has('battleHistoryData')) {
+            storage.set('battleHistoryData', []);
+        }
+
+        $j('#pvp .battle_footer .footer_menu').append('<a id="bel-battle-history" original-title="Battle History" href="javascript: void(0);">Battle History</a>');
+        $j('#bel-battle-history').tipsy({ gravity: 's' });
     }
 }
 
@@ -1593,6 +1750,7 @@ class Stats extends DpsHandler {
         this.hits = 0;
         this.constructDivisions();
         this.revolution = false;
+        this.defender = false;
     }
 
     constructDivisions() {
@@ -1842,6 +2000,54 @@ class Stylesheet {
             display: table;
             clear: both;
         `);
+
+        // this.addCSSRule('.belFeedValue:after', `
+        //     content: "";
+        //     display: table;
+        //     clear: both;
+        // `);
+        //
+        // this.addCSSRule('.belFeedValue', `
+        //     position: relative;
+        // `);
+        //
+        // this.addCSSRule('.belFeedValue ul', `
+        //     z-index: 2;
+        //     position: relative;
+        // `);
+
+        this.addCSSRule('#bel-battle-history', `
+            position: relative;
+            display: block;
+            height: 35px;
+            width: 35px;
+            float: left;
+            text-indent: -9999px;
+            margin-left: 4px;
+            margin-top: 5px;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.45);
+        `);
+
+        this.addCSSRule('#bel-battle-history:hover', `
+            background-color: rgba(0, 0, 0, 0.8);
+        `);
+
+        this.addCSSRule('#bel-battle-history::after', `
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 35px;
+            height: 35px;
+            background-image: url("https://dl.dropboxusercontent.com/u/86379644/sprites.png");
+            background-repeat: no-repeat;
+            background-position: 0 0;
+            content: " ";
+            opacity: 0.6;
+        `);
+
+        this.addCSSRule('#bel-battle-history');
 
         //General
         //
@@ -2135,6 +2341,13 @@ class Stylesheet {
         this.addCSSRule('.bel-teamb-color', 'color: #c0392b;');
 
         //Progress bars
+        // this.addCSSRule('.bel-progress', `
+        //     position: absolute;
+        //     height: 20px;
+        //     width: 100%;
+        //     left:0;
+        //     bottom: 0;
+        // `);
         this.addCSSRule('.bel-progress', `
             height: 4px;
             position: relative;
@@ -2157,7 +2370,7 @@ class Stylesheet {
             transition: width 0.6s ease 0s;
             width: 0;
         `);
-
+        //
         this.addCSSRule('.bel-progress-center-marker', `
             border-right: 3px solid #ffffff;
             height: 10px;
@@ -2210,6 +2423,8 @@ var modules = null;
 var storage = null;
 var battleEyeLive = {
     closed: false,
+    nbpStats: null,
+    updateContributors: true,
     init: function () {
         var self = this;
         console.log('[BATTLEEYE] Initialisation');
@@ -2226,6 +2441,7 @@ var battleEyeLive = {
         storage.define('showDiv2', true, 'Structure', "Show DIV 2");
         storage.define('showDiv3', true, 'Structure', "Show DIV 3");
         storage.define('showDiv4', true, 'Structure', "Show DIV 4");
+        storage.define('showDomination', true, 'Structure', "Show domination", "Similar to damage, but takes domination bonus in count");
         storage.define('showAverageDamage', false, 'Structure', "Show average damage dealt");
         storage.define('showMiniMonitor', true, 'Structure', "Display a small division monitor on the battlefield");
         storage.define('showKills', false, 'Structure', "Show kills done by each division");
@@ -2239,7 +2455,8 @@ var battleEyeLive = {
         storage.define('highlightValue', true, 'Visual', "Highlight winning side");
 
         storage.define('showDpsBar', true, 'Bars', "Show DPS bar");
-        storage.define('showDamageBar', true, 'Bars', "Show Damage bar");
+        storage.define('showDamageBar', false, 'Bars', "Show Damage bar");
+        storage.define('showDominationBar', true, 'Bars', "Show Domination bar");
         storage.define('largerBars', false, 'Bars', "Larger bars");
 
         storage.define('enableLogging', false, 'Other', "Enable logging to console");
@@ -2247,6 +2464,7 @@ var battleEyeLive = {
         modules = new ModuleLoader(self.settingsStorage);
         modules.load(new AutoShooter());
         modules.load(new Other());
+        // modules.load(new BattleHistory());
         // modules.load(new PercentageFixer());
 
         //Loading settings
@@ -2262,6 +2480,12 @@ var battleEyeLive = {
         self.teamB = new Stats(SERVER_DATA.rightBattleId);
         self.teamBName = SERVER_DATA.countries[SERVER_DATA.rightBattleId];
 
+        if (SERVER_DATA.defenderId == SERVER_DATA.leftBattleId) {
+            self.teamA.defender = true;
+        } else {
+            self.teamB.defender = true;
+        }
+
         var revolCountry = null;
         if (SERVER_DATA.isCivilWar) {
             if (SERVER_DATA.invaderId == SERVER_DATA.leftBattleId) {
@@ -2272,6 +2496,27 @@ var battleEyeLive = {
                 self.teamB.revolution = true;
                 self.teamBName = self.teamAName + " Revolution";
                 revolCountry = self.teamAName;
+            }
+        }
+
+        var resistanceBonusAttacker = $j('#pvp_header .domination span.resistance_influence_value.attacker em');
+        var resistanceBonusDefender = $j('#pvp_header .domination span.resistance_influence_value.defender em');
+        self.leftDetBonus = 1;
+        self.rightDetBonus = 1;
+
+        if (resistanceBonusAttacker.length > 0) {
+            if (!self.teamA.defender) {
+                self.leftDetBonus = parseFloat(resistanceBonusAttacker.html());
+            } else {
+                self.rightDetBonus = parseFloat(resistanceBonusAttacker.html());
+            }
+        }
+
+        if (resistanceBonusDefender.length > 0) {
+            if (self.teamA.defender) {
+                self.leftDetBonus = parseFloat(resistanceBonusDefender.html());
+            } else {
+                self.rightDetBonus = parseFloat(resistanceBonusDefender.html());
             }
         }
 
@@ -2297,11 +2542,12 @@ var battleEyeLive = {
         //Listens to setting changes
         $j('.bel-settings-field').on('change', function (event) {
             var input = event.target;
+            var value;
 
             if (input.type == "checkbox") {
-                var value = input.checked;
+                value = input.checked;
             } else {
-                var value = input.value;
+                value = input.value;
             }
             self.settingsStorage.set(input.name, value);
             settings[input.name].value = value;
@@ -2311,14 +2557,31 @@ var battleEyeLive = {
             $j("label[for=\"" + targetAtt + "\"]").notify("Saved", { position: "right middle", className: "success" });
         });
 
+        $j('[data-tab="other"]').click(function () {
+            self.nbpStats = null;
+            self.updateNbpStats(function (data) {});
+        });
+
         self.runTicker();
         self.handleEvents();
         modules.run();
+    },
+    updateNbpStats: function (cb) {
+        var self = this;
+        $j.get('https://www.erepublik.com/en/military/nbp-stats/85503/2', function (data) {
+            data = JSON.parse(data);
+            self.nbpStats = data;
+            self.nbpUpdated = new Date();
+            if (typeof cb == 'function') {
+                cb(data);
+            }
+        });
     },
     //Loads stats from erepublik's battle console
     loadBattleStats: function () {
         var self = this;
         if (!settings.gatherBattleStats.value) {
+            $j('#bel-loading').hide();
             return;
         }
 
@@ -2401,6 +2664,10 @@ var battleEyeLive = {
                 document.querySelector('.bel-version').classList.add('bel-version-outdated');
                 document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="' + data.updateUrl + '">Update</a>';
             }
+
+            console.log('[BATTLEEYE] Data JSON received and processed');
+        }).error(function (error) {
+            console.error('[BATTLEEYE] Failed to download data.json');
         });
     },
 
@@ -2418,8 +2685,8 @@ var battleEyeLive = {
                         textShadow: " 0 0 10px " + color,
                         color: color
                     }).attr('original-title', "BattleEye contributor").tipsy();
-                } else if ($j('li[data-citizen-id="' + cId + '"] .player_name').length > 0) {
-                    $j('li[data-citizen-id="' + cId + '"] .player_name').css({
+                } else if ($j('li[data-citizen-id="' + cId + '"] .player_name a').length > 0) {
+                    $j('li[data-citizen-id="' + cId + '"] .player_name a').css({
                         textShadow: " 0 0 10px " + color,
                         color: color
                     }).attr('original-title', "BattleEye contributor").addClass('bel-contributor').tipsy();
@@ -2446,7 +2713,7 @@ var battleEyeLive = {
             defenderKillData = { div1: [], div2: [], div3: [], div4: [], div11: [] };
 
         var request = function (div, pageLeft, pageRight, cb, type) {
-            if (type == undefined) {
+            if (type === undefined) {
                 type = 'damage';
             }
 
@@ -2504,8 +2771,8 @@ var battleEyeLive = {
                         attackerKillData['div' + div].push(data[attacker].fighterData[i]);
                     }
 
-                    for (var i in data[defender].fighterData) {
-                        defenderKillData['div' + div].push(data[defender].fighterData[i]);
+                    for (var j in data[defender].fighterData) {
+                        defenderKillData['div' + div].push(data[defender].fighterData[j]);
                     }
 
                     maxPage = Math.max(data[attacker].pages, data[defender].pages);
@@ -2552,6 +2819,10 @@ var battleEyeLive = {
     handleEvents: function () {
         var self = this;
         self.events.on('tick', function (timeData) {
+            if (timeData.second % 3 === 0 && self.updateContributors) {
+                self.updateContributors = false;
+                self.displayContributors();
+            }
             self.teamA.updateDps(timeData);
             self.teamB.updateDps(timeData);
             self.layout.update(self.getTeamStats());
@@ -2562,15 +2833,7 @@ var battleEyeLive = {
         var self = this;
 
         var handler = function (data) {
-            // if(currentPlayerDisplayRateValue !== "Maximum") {
-            // 	if(battleFX.checkPlayerDisplayRate(currentPlayerDisplayRateValue)) {
-            // 		battleFX.populatePlayerData(data);
-            // 	}
-            // } else {
-            // 	battleFX.populatePlayerData(data);
-            // }
-
-            self.displayContributors();
+            self.updateContributors = true;
             self.handle(data);
         };
 
