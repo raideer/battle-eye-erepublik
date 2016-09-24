@@ -30,6 +30,7 @@ class Template extends React.Component{
             ['div', 'Divisions'],
             ['overall', 'Total'],
             ['countries', 'Countries']
+            // ,['other', 'Other']
         ];
     }
 
