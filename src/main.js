@@ -11,6 +11,8 @@ var modules = null;
 var storage = null;
 var battleEyeLive = {
     closed: false,
+    nbpStats: null,
+    updateContributors: true,
     init: function(){
         var self = this;
         console.log('[BATTLEEYE] Initialisation');
@@ -27,6 +29,7 @@ var battleEyeLive = {
         storage.define('showDiv2', true, 'Structure', "Show DIV 2");
         storage.define('showDiv3', true, 'Structure', "Show DIV 3");
         storage.define('showDiv4', true, 'Structure', "Show DIV 4");
+        storage.define('showDomination', true, 'Structure', "Show domination", "Similar to damage, but takes domination bonus in count");
         storage.define('showAverageDamage', false, 'Structure', "Show average damage dealt");
         storage.define('showMiniMonitor', true, 'Structure', "Display a small division monitor on the battlefield");
         storage.define('showKills', false, 'Structure', "Show kills done by each division");
@@ -40,7 +43,8 @@ var battleEyeLive = {
         storage.define('highlightValue', true, 'Visual', "Highlight winning side");
 
         storage.define('showDpsBar', true, 'Bars', "Show DPS bar");
-        storage.define('showDamageBar', true, 'Bars', "Show Damage bar");
+        storage.define('showDamageBar', false, 'Bars', "Show Damage bar");
+        storage.define('showDominationBar', true, 'Bars', "Show Domination bar");
         storage.define('largerBars', false, 'Bars', "Larger bars");
 
         storage.define('enableLogging', false, 'Other', "Enable logging to console");
@@ -49,6 +53,7 @@ var battleEyeLive = {
         modules = new ModuleLoader(self.settingsStorage);
         modules.load(new AutoShooter());
         modules.load(new Other());
+        // modules.load(new BattleHistory());
         // modules.load(new PercentageFixer());
 
         //Loading settings
@@ -64,6 +69,12 @@ var battleEyeLive = {
         self.teamB = new Stats(SERVER_DATA.rightBattleId);
         self.teamBName = SERVER_DATA.countries[SERVER_DATA.rightBattleId];
 
+        if(SERVER_DATA.defenderId == SERVER_DATA.leftBattleId){
+            self.teamA.defender = true;
+        }else{
+            self.teamB.defender = true;
+        }
+
         var revolCountry = null;
         if(SERVER_DATA.isCivilWar){
             if(SERVER_DATA.invaderId == SERVER_DATA.leftBattleId){
@@ -74,6 +85,27 @@ var battleEyeLive = {
                 self.teamB.revolution = true;
                 self.teamBName = self.teamAName + " Revolution";
                 revolCountry = self.teamAName;
+            }
+        }
+
+        var resistanceBonusAttacker = $j('#pvp_header .domination span.resistance_influence_value.attacker em');
+        var resistanceBonusDefender = $j('#pvp_header .domination span.resistance_influence_value.defender em');
+        self.leftDetBonus = 1;
+        self.rightDetBonus = 1;
+
+        if(resistanceBonusAttacker.length > 0){
+            if(!self.teamA.defender){
+                self.leftDetBonus = parseFloat(resistanceBonusAttacker.html());
+            }else{
+                self.rightDetBonus = parseFloat(resistanceBonusAttacker.html());
+            }
+        }
+
+        if(resistanceBonusDefender.length > 0){
+            if(self.teamA.defender){
+                self.leftDetBonus = parseFloat(resistanceBonusDefender.html());
+            }else{
+                self.rightDetBonus = parseFloat(resistanceBonusDefender.html());
             }
         }
 
@@ -88,7 +120,7 @@ var battleEyeLive = {
         self.layout.update(self.getTeamStats());
 
         //Overriding pomelo's disconnect to avoid interruptions by 3rd parties
-        pomelo.disconnect = function() {}
+        pomelo.disconnect = function() {};
 
         //Updates data from data.json
         self.checkForUpdates();
@@ -99,11 +131,12 @@ var battleEyeLive = {
         //Listens to setting changes
         $j('.bel-settings-field').on('change', function(event) {
             var input = event.target;
+            var value;
 
             if(input.type == "checkbox"){
-                var value = input.checked;
+                value = input.checked;
             }else{
-                var value = input.value;
+                value = input.value;
             }
             self.settingsStorage.set(input.name, value);
             settings[input.name].value = value;
@@ -113,14 +146,33 @@ var battleEyeLive = {
             $j("label[for=\""+targetAtt+"\"]").notify("Saved", {position: "right middle", className: "success"});
         });
 
+        $j('[data-tab="other"]').click(function(){
+            self.nbpStats = null;
+            self.updateNbpStats(function(data){
+
+            });
+        });
+
         self.runTicker();
         self.handleEvents();
         modules.run();
+    },
+    updateNbpStats: function(cb){
+        var self = this;
+        $j.get('https://www.erepublik.com/en/military/nbp-stats/85503/2', function(data) {
+            data = JSON.parse(data);
+            self.nbpStats = data;
+            self.nbpUpdated = new Date();
+            if(typeof cb == 'function'){
+                cb(data);
+            }
+        });
     },
     //Loads stats from erepublik's battle console
     loadBattleStats: function() {
         var self = this;
         if(!settings.gatherBattleStats.value){
+            $j('#bel-loading').hide();
             return;
         }
 
@@ -203,6 +255,10 @@ var battleEyeLive = {
                 document.querySelector('.bel-version').classList.add('bel-version-outdated');
                 document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="'+data.updateUrl+'">Update</a>';
             }
+
+            console.log('[BATTLEEYE] Data JSON received and processed');
+        }).error(function(error){
+            console.error('[BATTLEEYE] Failed to download data.json');
         });
     },
 
@@ -222,8 +278,8 @@ var battleEyeLive = {
                         textShadow: " 0 0 10px " + color,
                         color: color
                     }).attr('original-title', "BattleEye contributor").tipsy();
-                }else if($j('li[data-citizen-id="'+cId+'"] .player_name').length > 0){
-                    $j('li[data-citizen-id="'+cId+'"] .player_name').css({
+                }else if($j('li[data-citizen-id="'+cId+'"] .player_name a').length > 0){
+                    $j('li[data-citizen-id="'+cId+'"] .player_name a').css({
                         textShadow: " 0 0 10px " + color,
                         color: color
                     }).attr('original-title', "BattleEye contributor").addClass('bel-contributor').tipsy();
@@ -250,7 +306,7 @@ var battleEyeLive = {
             defenderKillData = {div1: [], div2: [], div3: [], div4: [], div11: []};
 
         var request = function(div,pageLeft,pageRight,cb,type) {
-            if(type == undefined){
+            if(type === undefined){
                 type = 'damage';
             }
 
@@ -308,8 +364,8 @@ var battleEyeLive = {
                         attackerKillData['div'+div].push(data[attacker].fighterData[i]);
                     }
 
-                    for(var i in data[defender].fighterData){
-                        defenderKillData['div'+div].push(data[defender].fighterData[i]);
+                    for(var j in data[defender].fighterData){
+                        defenderKillData['div'+div].push(data[defender].fighterData[j]);
                     }
 
                     maxPage = Math.max(data[attacker].pages, data[defender].pages);
@@ -357,6 +413,10 @@ var battleEyeLive = {
     handleEvents: function(){
         var self = this;
         self.events.on('tick', function(timeData) {
+            if(timeData.second % 3 === 0 && self.updateContributors){
+                self.updateContributors = false;
+                self.displayContributors();
+            }
             self.teamA.updateDps(timeData);
             self.teamB.updateDps(timeData);
             self.layout.update(self.getTeamStats());
@@ -367,15 +427,7 @@ var battleEyeLive = {
         var self = this;
 
         var handler = function(data) {
-			// if(currentPlayerDisplayRateValue !== "Maximum") {
-			// 	if(battleFX.checkPlayerDisplayRate(currentPlayerDisplayRateValue)) {
-			// 		battleFX.populatePlayerData(data);
-			// 	}
-			// } else {
-			// 	battleFX.populatePlayerData(data);
-			// }
-
-            self.displayContributors();
+            self.updateContributors = true;
             self.handle(data);
 		};
 
