@@ -8,6 +8,7 @@ class Stats extends DpsHandler{
         this.hits = 0;
         this.constructDivisions();
         this.revolution = false;
+        this.defender = false;
     }
 
     constructDivisions(){
