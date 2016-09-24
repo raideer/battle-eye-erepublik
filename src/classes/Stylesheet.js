@@ -99,6 +99,54 @@ class Stylesheet{
             clear: both;
         `);
 
+        // this.addCSSRule('.belFeedValue:after', `
+        //     content: "";
+        //     display: table;
+        //     clear: both;
+        // `);
+        //
+        // this.addCSSRule('.belFeedValue', `
+        //     position: relative;
+        // `);
+        //
+        // this.addCSSRule('.belFeedValue ul', `
+        //     z-index: 2;
+        //     position: relative;
+        // `);
+
+        this.addCSSRule('#bel-battle-history', `
+            position: relative;
+            display: block;
+            height: 35px;
+            width: 35px;
+            float: left;
+            text-indent: -9999px;
+            margin-left: 4px;
+            margin-top: 5px;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.45);
+        `);
+
+        this.addCSSRule('#bel-battle-history:hover', `
+            background-color: rgba(0, 0, 0, 0.8);
+        `);
+
+        this.addCSSRule('#bel-battle-history::after', `
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 35px;
+            height: 35px;
+            background-image: url("https://dl.dropboxusercontent.com/u/86379644/sprites.png");
+            background-repeat: no-repeat;
+            background-position: 0 0;
+            content: " ";
+            opacity: 0.6;
+        `);
+
+        this.addCSSRule('#bel-battle-history')
+
         //General
         //
 
@@ -393,6 +441,13 @@ class Stylesheet{
         this.addCSSRule('.bel-teamb-color', 'color: #c0392b;');
 
         //Progress bars
+        // this.addCSSRule('.bel-progress', `
+        //     position: absolute;
+        //     height: 20px;
+        //     width: 100%;
+        //     left:0;
+        //     bottom: 0;
+        // `);
         this.addCSSRule('.bel-progress', `
             height: 4px;
             position: relative;
@@ -415,7 +470,7 @@ class Stylesheet{
             transition: width 0.6s ease 0s;
             width: 0;
         `);
-
+        //
         this.addCSSRule('.bel-progress-center-marker', `
             border-right: 3px solid #ffffff;
             height: 10px;
