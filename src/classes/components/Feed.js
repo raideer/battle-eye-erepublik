@@ -5,11 +5,12 @@ class Feed extends React.Component{
         }
 
         var divs = [];
+        var divInfo = [];
 
         if(SERVER_DATA.division == 11){
-            var divInfo = [[11,'Air Division']];
+            divInfo = [[11,'Air Division']];
         }else{
-            var divInfo = [[1,'Division 1'], [2,'Division 2'], [3,'Division 3'], [4,'Division 4']];
+            divInfo = [[1,'Division 1'], [2,'Division 2'], [3,'Division 3'], [4,'Division 4']];
         }
 
         for(var d in divInfo){
@@ -67,6 +68,12 @@ class Feed extends React.Component{
         );
     }
 
+    printOther(){
+        return (
+            <FeedOther />
+        );
+    }
+
     getContent(){
         if(this.props.tab == 'div'){
             return this.printDivisions();
@@ -75,6 +82,9 @@ class Feed extends React.Component{
         }else if(this.props.tab == 'countries'){
             return this.printCountries();
         }
+        // else if(this.props.tab == 'other'){
+        //     return this.printOther();
+        // }
     }
 
     render(){
