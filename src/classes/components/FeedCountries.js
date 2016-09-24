@@ -15,10 +15,12 @@ class FeedCountries extends React.Component{
 
     getStats(side){
         var content = [];
+        var countries = [];
+
         if(this.state.tab == 'overall'){
-            var countries = this.props.data[side].countries;
+            countries = this.props.data[side].countries;
         }else{
-            var countries = this.props.data[side].divisions[this.state.tab].countries;
+            countries = this.props.data[side].divisions[this.state.tab].countries;
         }
 
         for(var i in countries){
