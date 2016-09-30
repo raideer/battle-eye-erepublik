@@ -1,4 +1,4 @@
-class TabSelector extends React.Component{
+export default class TabSelector extends React.Component{
     getButtons(){
         var buttons = [];
 

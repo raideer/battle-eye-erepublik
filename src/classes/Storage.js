@@ -1,4 +1,4 @@
-class Storage{
+export default class Storage{
     constructor(){
         var self = this;
         if(!self.checkIfStorageAvailable()){

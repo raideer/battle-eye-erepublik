@@ -1,4 +1,8 @@
-class FeedOverall extends React.Component{
+import FloatValue from '../elements/FloatValue';
+import If from '../If';
+import ProgressBar from '../elements/ProgressBar';
+
+export default class OverallTab extends React.Component{
     getPerc(a, b){
         var ap = 0;
         if(a+b != 0){
@@ -22,24 +26,24 @@ class FeedOverall extends React.Component{
                     <ul className="list-unstyled">
                         <li>
                             <If test={settings.showKills.value}>
-                                <FeedValue green={true} a={left.hits} b={right.hits} highlight={settings.highlightValue.value} text={"kills"}/>
+                                <FloatValue green={true} a={left.hits} b={right.hits} highlight={settings.highlightValue.value} text={"kills"}/>
                             </If>
 
                             <If test={settings.showDamagePerc.value}>
-                                <FeedValue green={true} a={this.getPerc(left.damage, right.damage)} b={this.getPerc(right.damage, left.damage)} highlight={settings.highlightValue.value} text={"%"}/>
+                                <FloatValue green={true} a={this.getPerc(left.damage, right.damage)} b={this.getPerc(right.damage, left.damage)} highlight={settings.highlightValue.value} text={"%"}/>
                             </If>
 
-                            <FeedValue green={true} a={left.damage} b={right.damage} highlight={settings.highlightValue.value}/>
+                            <FloatValue green={true} a={left.damage} b={right.damage} highlight={settings.highlightValue.value}/>
                         </li>
 
                         <If test={settings.showAverageDamage.value}>
                             <li>
-                                <FeedValue green={true} a={left.avgHit} b={right.avgHit} highlight={settings.highlightValue.value}/>
+                                <FloatValue green={true} a={left.avgHit} b={right.avgHit} highlight={settings.highlightValue.value}/>
                             </li>
                         </If>
 
                         <li>
-                            <FeedValue green={true} a={left.dps} b={right.dps} highlight={settings.highlightValue.value}/>
+                            <FloatValue green={true} a={left.dps} b={right.dps} highlight={settings.highlightValue.value}/>
                         </li>
                     </ul>
                 </div>
@@ -55,34 +59,34 @@ class FeedOverall extends React.Component{
                 <div className="bel-col-1-3 text-left">
                     <ul className="list-unstyled">
                         <li>
-                            <FeedValue a={right.damage} b={left.damage} highlight={settings.highlightValue.value}/>
+                            <FloatValue a={right.damage} b={left.damage} highlight={settings.highlightValue.value}/>
 
                             <If test={settings.showDamagePerc.value}>
-                                <FeedValue b={this.getPerc(left.damage, right.damage)} a={this.getPerc(right.damage, left.damage)} highlight={settings.highlightValue.value} text={"%"}/>
+                                <FloatValue b={this.getPerc(left.damage, right.damage)} a={this.getPerc(right.damage, left.damage)} highlight={settings.highlightValue.value} text={"%"}/>
                             </If>
 
                             <If test={settings.showKills.value}>
-                                <FeedValue a={right.hits} b={left.hits} text={"kills"} highlight={settings.highlightValue.value}/>
+                                <FloatValue a={right.hits} b={left.hits} text={"kills"} highlight={settings.highlightValue.value}/>
                             </If>
                         </li>
                         <If test={settings.showAverageDamage.value}>
                             <li>
-                                <FeedValue a={right.avgHit} b={left.avgHit} highlight={settings.highlightValue.value}/>
+                                <FloatValue a={right.avgHit} b={left.avgHit} highlight={settings.highlightValue.value}/>
                             </li>
                         </If>
                         <li>
-                            <FeedValue a={right.dps} b={left.dps} highlight={settings.highlightValue.value}/>
+                            <FloatValue a={right.dps} b={left.dps} highlight={settings.highlightValue.value}/>
                         </li>
                     </ul>
                 </div>
                 <div className="bel-col-1-1">
                     <If test={settings.showDamageBar.value}>
                         <div className="text-left bel-text-tiny">DAMAGE <span className="color-silver">(<strong>{Math.abs(left.damage-right.damage).toLocaleString()} </strong> difference)</span></div>
-                        <FeedProgressBar a={left.damage} b={right.damage}/>
+                        <ProgressBar a={left.damage} b={right.damage}/>
                     </If>
 
                     <If test={settings.showDpsBar.value}>
-                        <FeedProgressBar a={left.dps} b={right.dps}/>
+                        <ProgressBar a={left.dps} b={right.dps}/>
                         <div className="text-left bel-text-tiny">DPS <span className="color-silver">(<strong>{Math.abs(left.dps-right.dps).toLocaleString()}</strong> difference)</span></div>
                     </If>
                 </div>

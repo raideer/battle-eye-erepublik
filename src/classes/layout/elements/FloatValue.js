@@ -1,4 +1,4 @@
-class FeedValue extends React.Component{
+export default class FloatValue extends React.Component{
     constructor(){
         super();
         this.props = {

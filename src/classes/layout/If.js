@@ -1,4 +1,4 @@
-class If extends React.Component{
+export default class If extends React.Component{
     render(){
         if(this.props.test){
             return (<span>{this.props.children}</span>);

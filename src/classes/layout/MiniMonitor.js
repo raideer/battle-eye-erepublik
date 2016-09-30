@@ -1,4 +1,4 @@
-class MiniMonitor extends React.Component{
+export default class MiniMonitor extends React.Component{
 
     getPerc(a, b){
         var ap = 0;
@@ -24,8 +24,8 @@ class MiniMonitor extends React.Component{
 
         for(var i in divs){
             var div = divs[i];
-            var leftDamage = left.divisions['div'+div].damage * battleEyeLive.leftDetBonus;
-            var rightDamage = right.divisions['div'+div].damage * battleEyeLive.rightDetBonus;
+            var leftDamage = left.divisions['div'+div].damage * window.leftDetBonus;
+            var rightDamage = right.divisions['div'+div].damage * window.rightDetBonus;
 
             data.push(<div><div className={"bel-div bel-div"+div}></div> {this.getPerc(leftDamage, rightDamage)}% - {this.getPerc(rightDamage, leftDamage)}%</div>);
         }

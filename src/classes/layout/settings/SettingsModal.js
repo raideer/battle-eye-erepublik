@@ -1,4 +1,6 @@
-class SettingsModal extends React.Component{
+import SettingsGroup from './SettingsGroup';
+
+export default class SettingsModal extends React.Component{
     renderGroups(){
         var settings = this.props.settings;
         var components = [];

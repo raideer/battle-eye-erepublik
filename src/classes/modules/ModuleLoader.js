@@ -1,7 +1,8 @@
-class ModuleLoader{
-    constructor(storage){
+import Module from './Module';
+
+export default class ModuleLoader{
+    constructor(){
         this.modules = {};
-        this.storage = storage;
     }
 
     load(module){
@@ -10,7 +11,7 @@ class ModuleLoader{
             var settings = module.defineSettings();
             for(var i in settings){
                 var s = settings[i];
-                this.storage.define(s[0], s[1], module.name, s[2], s[3]);
+                window.storage.define(s[0], s[1], module.name, s[2], s[3]);
             }
         }
     }

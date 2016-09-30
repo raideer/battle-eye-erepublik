@@ -1,4 +1,6 @@
-class PercentageFixer extends Module{
+import Module from './Module';
+
+export default class PercentageFixer extends Module{
     constructor(){
         super('Percentage Fixer', '');
     }

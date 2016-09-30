@@ -1,4 +1,4 @@
-class CloseAlert extends React.Component{
+export default class CloseAlert extends React.Component{
     render(){
         return null;
         // return (

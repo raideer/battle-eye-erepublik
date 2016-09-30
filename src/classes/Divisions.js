@@ -1,4 +1,6 @@
-class Divisions{
+import DivisionStats from './DivisionStats';
+
+export default class Divisions{
     constructor(){
         var self = this;
         this.divisions = {};

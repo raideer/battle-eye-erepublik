@@ -1,4 +1,6 @@
-class BattleHistory extends Module{
+import Module from './Module';
+
+export default class BattleHistory extends Module{
     constructor(){
         super('Battle History', 'Displays recent battles where you have fought');
     }

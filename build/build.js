@@ -1,20 +1,3 @@
-// ==UserScript==
-// @name        Battle Eye Live
-// @namespace   battle-eye-live
-// @author      Industrials
-// @homepage    https://docs.google.com/spreadsheets/d/1Ebqp5Hb8KmGvX6X0FXmALO30Fv-IyfJHUGPkjKey8tg
-// @description LIVE battlefield statistics
-// @include     http*://www.erepublik.com/*/military/battlefield-new/*
-// @version     1.4.3
-// @require     https://fb.me/react-15.2.1.min.js
-// @require     https://fb.me/react-dom-15.2.1.min.js
-// @require     https://cdnjs.cloudflare.com/ajax/libs/async/2.0.1/async.min.js
-// @require     https://dl.dropboxusercontent.com/u/86379644/notify.js
-// @run-at      document-idle
-// @grant       none
-// @noframes
-// ==/UserScript==
-
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 

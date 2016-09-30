@@ -1,4 +1,7 @@
-class FeedCountries extends React.Component{
+import If from '../If';
+import TabSelector from './TabSelector';
+
+export default class CountriesTab extends React.Component{
     constructor(){
         super();
 

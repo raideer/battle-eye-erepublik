@@ -1,4 +1,4 @@
-class FeedProgressBar extends React.Component{
+export default class ProgressBar extends React.Component{
     render(){
         var aPerc = 0, bPerc = 0;
 

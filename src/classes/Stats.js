@@ -1,4 +1,8 @@
-class Stats extends DpsHandler{
+import DpsHandler from './DpsHandler';
+import CountryStats from './CountryStats';
+import Divisions from './Divisions';
+
+export default class Stats extends DpsHandler{
     constructor(id){
         super(10);
 

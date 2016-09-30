@@ -1,4 +1,4 @@
-class Module{
+export default class Module{
     constructor(name, description, autoload = true){
         var self = this;
         self.name = name;

@@ -1,4 +1,4 @@
-class Stylesheet{
+class StyleSheet{
     constructor(){
         this.sheet = "";
 
@@ -501,3 +501,5 @@ class Stylesheet{
         $j('head').append(`<style>${this.sheet}</style>`);
     }
 }
+
+export default (new StyleSheet());

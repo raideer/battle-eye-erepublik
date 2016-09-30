@@ -1,4 +1,4 @@
-class SettingsField extends React.Component{
+export default class SettingsField extends React.Component{
     getInput(){
         var setting = this.props.setting;
         // console.log(setting.value);

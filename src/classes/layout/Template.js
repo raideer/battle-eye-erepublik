@@ -1,4 +1,10 @@
-class Template extends React.Component{
+import SettingsModal from './settings/SettingsModal';
+import TabSelector from './tabs/TabSelector';
+import Tabs from './tabs/Tabs';
+import Header from './Header';
+import Footer from './Footer';
+
+export default class Template extends React.Component{
     constructor(){
         super();
         this.state = {
@@ -30,6 +36,7 @@ class Template extends React.Component{
             ['div', 'Divisions'],
             ['overall', 'Total'],
             ['countries', 'Countries']
+            ,['summary', 'Summary']
             // ,['other', 'Other']
         ];
     }
@@ -37,11 +44,10 @@ class Template extends React.Component{
     render(){
         return (
             <div>
-                <CloseAlert />
                 <SettingsModal closeModal={this.closeModal.bind(this)} hidden={this.state.modalHidden} settings={this.props.settings}/>
                 <Header openModal={this.openModal.bind(this)} data={this.props.headerData}/>
                 <TabSelector changeTab={this.changeTab.bind(this)} tab={this.state.tab} buttons={this.getTabButtons()} />
-                <Feed data={this.props.feedData} settings={this.props.settings} tab={this.state.tab} />
+                <Tabs data={this.props.feedData} settings={this.props.settings} tab={this.state.tab} />
                 <Footer />
             </div>
         );

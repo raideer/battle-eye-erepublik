@@ -1,4 +1,6 @@
-class SettingsGroup extends React.Component{
+import SettingsField from './SettingsField';
+
+export default class SettingsGroup extends React.Component{
 
     renderSettings(){
         var settings = this.props.settings;

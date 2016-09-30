@@ -1,4 +1,4 @@
-class FeedOther extends React.Component{
+export default class OtherTab extends React.Component{
     render(){
         if(battleEyeLive.nbpStats === null){
             return (

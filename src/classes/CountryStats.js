@@ -1,4 +1,4 @@
-class CountryStats{
+export default class CountryStats{
     constructor(){
         this.countries = {};
     }

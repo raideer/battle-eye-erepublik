@@ -13,6 +13,7 @@ var battleEyeLive = {
     closed: false,
     nbpStats: null,
     updateContributors: true,
+    summaryGenerated: false,
     init: function(){
         var self = this;
         console.log('[BATTLEEYE] Initialisation');
@@ -275,8 +276,8 @@ var battleEyeLive = {
                 var cId = players[j];
                 if(erepublik.citizen.citizenId == cId){
                     $j('#battleConsole .left_player .player_name').css({
-                        textShadow: " 0 0 10px " + color,
-                        color: color
+                        textShadow: `0 0 10px ${color} !important`,
+                        color: `${color} !important`
                     }).attr('original-title', "BattleEye contributor").tipsy();
                 }else if($j('li[data-citizen-id="'+cId+'"] .player_name a').length > 0){
                     $j('li[data-citizen-id="'+cId+'"] .player_name a').css({

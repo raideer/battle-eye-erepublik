@@ -1,5 +1,11 @@
-class Feed extends React.Component{
-    printDivisions(){
+import DivisionTab from './DivisionTab';
+import OtherTab from './OtherTab';
+import CountriesTab from './CountriesTab';
+import OverallTab from './OverallTab';
+import SummaryTab from './SummaryTab';
+
+export default class Tabs extends React.Component{
+    renderDivisions(){
         if(!this.props.data){
             return null;
         }
@@ -42,48 +48,57 @@ class Feed extends React.Component{
                 divData.left = this.props.data.left.divisions['div' + info[0]];
                 divData.right = this.props.data.right.divisions['div' + info[0]];
 
-            divs.push(<FeedDivision data={divData} div={info} settings={this.props.settings}/>);
+            divs.push(<DivisionTab data={divData} div={info} settings={this.props.settings}/>);
         }
 
         return divs;
     }
 
-    printOverall(){
+    renderOverall(){
         var data = {};
         data.left = this.props.data.left;
         data.right = this.props.data.right;
 
         return (
-            <FeedOverall data={data} settings={this.props.settings} />
+            <OverallTab data={data} settings={this.props.settings} />
         );
     }
 
-    printCountries(){
+    renderCountries(){
         var data = {};
         data.left = this.props.data.left;
         data.right = this.props.data.right;
 
         return (
-            <FeedCountries data={data} settings={this.props.settings} />
+            <CountriesTab data={data} settings={this.props.settings} />
         );
     }
 
-    printOther(){
+    renderOther(){
         return (
-            <FeedOther />
+            <OtherTab />
+        );
+    }
+
+    renderSummary(){
+        return (
+            <SummaryTab />
         );
     }
 
     getContent(){
         if(this.props.tab == 'div'){
-            return this.printDivisions();
+            return this.renderDivisions();
         }else if(this.props.tab == 'overall'){
-            return this.printOverall();
+            return this.renderOverall();
         }else if(this.props.tab == 'countries'){
-            return this.printCountries();
+            return this.renderCountries();
+        }
+        else if(this.props.tab == 'summary'){
+            return this.renderSummary();
         }
         // else if(this.props.tab == 'other'){
-        //     return this.printOther();
+        //     return this.renderOther();
         // }
     }
 

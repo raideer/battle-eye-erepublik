@@ -1,4 +1,6 @@
-class Other extends Module{
+import Module from './Module';
+
+export default class Other extends Module{
     constructor(){
         super('Other', 'Other miscellaneous enhancements');
     }

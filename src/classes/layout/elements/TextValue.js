@@ -1,4 +1,4 @@
-class FeedTextValue extends React.Component{
+export default class TextValue extends React.Component{
     constructor(){
         super();
         this.props = {

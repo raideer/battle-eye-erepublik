@@ -1,4 +1,6 @@
-class AutoShooter extends Module{
+import Module from './Module';
+
+export default class AutoShooter extends Module{
     constructor(){
         super('AutoShooter', 'Automatically shoots, when the FIGHT button is held');
     }

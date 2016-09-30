@@ -1,4 +1,4 @@
-class HitHistory{
+export default class HitHistory{
     constructor(rememberFor = 30000){
         this.rememberFor = rememberFor;
         this.history = {};

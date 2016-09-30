@@ -1,4 +1,6 @@
-class DpsHandler{
+import HitHistory from './HitHistory';
+
+export default class DpsHandler{
     constructor(rem){
         this.rememberDpsFor = rem;
         this.hitHistory = new HitHistory(rem * 1000);

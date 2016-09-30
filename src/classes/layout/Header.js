@@ -1,4 +1,6 @@
-class Header extends React.Component{
+import If from './If';
+
+export default class Header extends React.Component{
     getTeamElementStyle(){
         return {
             fontWeight: 700,
