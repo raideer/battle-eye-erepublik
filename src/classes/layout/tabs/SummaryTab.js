@@ -1,55 +1,199 @@
+import If from '../If';
+import TabSelector from './TabSelector';
+
 export default class SummaryTab extends React.Component{
     constructor(){
         super();
-        this.loading = false;
+
+        this.state = {
+            step: 0,
+            progress: {
+                current: 0,
+                max: SERVER_DATA.zoneId+1,
+                status: "Fetching data"
+            },
+            tab: 'overall',
+            division: 'overall'
+        }
+
+        this.data = {
+            left: null,
+            right: null,
+            data: null
+        };
+
+    }
+
+    renderIndex(){
+        return (
+            <div>
+                <button onClick={this.generateSummary.bind(this)} className="bel-btn bel-btn-info">Generate summary</button>
+            </div>
+        );
+    }
+
+    renderProgress(){
+        var style = {
+            width: Math.round(this.state.progress.current/this.state.progress.max*100) + "%"
+        };
+
+        return (
+            <div>
+                <h4>{this.state.progress.status}</h4>
+                <div className="bel-progress">
+                    <div className="bel-progress-bar bel-teama" style={style}></div>
+                </div>
+            </div>
+        );
+    }
+
+    generateSummary(){
+        var self = this;
+        self.state.step = 1;
+        window.BattleEye.generateSummary();
+
+        window.BattleEye.events.on('summary.update', (step)=>{
+            self.state.progress.status = `Fetched round ${step}`;
+            self.state.progress.current = step;
+        });
+
+        window.BattleEye.events.on('summary.finished', ([left, right, rounds])=>{
+            self.state.progress.status = `Data fetching done. Organizing data`;
+
+            self.data.left = left;
+            self.data.right = right;
+            self.data.rounds = rounds;
+
+            this.state.step = 2;
+        });
+    }
+
+    getStats(side){
+        var content = [];
+        var countries = [];
+
+        // console.log(this.state.tab);
+
+        if(this.state.tab.startsWith('round')){
+            var round = parseInt(this.state.tab.replace( /^\D+/g, ''));
+            if(this.state.division.startsWith('div')){
+                countries = this.data.rounds[round][side].divisions[this.state.division].countries;
+            }else{
+                countries = this.data.rounds[round][side].countries;
+            }
+        }else{
+            if(this.state.division.startsWith('div')){
+                countries = this.data[side].divisions[this.state.division].countries;
+            }else{
+                countries = this.data[side].countries;
+            }
+            // countries = this.data[side].divisions[this.state.tab].countries;
+        }
+
+        for(var i in countries){
+            var c = countries[i];
+
+            content.push(
+                <div>
+                    <If test={side == "right"}>
+                        <div style={this.getFlagStyle(i)} className="bel-country"></div>
+                    </If>
+                    <If test={side != "right"}>
+                        <span className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
+                        <span className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
+                        <span className="bel-spacer-sm"></span>
+                    </If>
+                    <b className="bel-color-belize">{i}</b>
+                    <If test={side == "left"}>
+
+                        <div style={this.getFlagStyle(i)} className="bel-country"></div>
+                    </If>
+                    <If test={side != "left"}>
+                        <span className="bel-spacer-sm"></span>
+                        <span className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
+                        <span className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
+                    </If>
+                    <hr className="bel" />
+                </div>
+            );
+        }
+
+        return content;
+    }
+
+    getRoundButtons(){
+        var tabs = [['overall', 'Battle Total']];
+
+        for(var i = 1; i < SERVER_DATA.zoneId; i++){
+            tabs.push([`round${i}`, `Round ${i}`]);
+        }
+
+        return tabs;
+    }
+
+    getDivisionButtons(){
+        var tabs = [
+            ['overall', 'Battle Total'],
+            ['div1', 'DIV1'],
+            ['div2', 'DIV2'],
+            ['div3', 'DIV3'],
+            ['div4', 'DIV4']
+        ];
+
+        return tabs;
+    }
+
+    changeRound(tab){
+        this.setState({
+            tab: tab
+        });
+    }
+
+    changeDivision(tab){
+        this.setState({
+            division: tab
+        });
     }
 
     renderSummary(){
-
-    }
-
-    renderButton(){
         return (
-            <div id="bel-summary" className="text-center">
-                <div>
-                    This will generate a summary of this battle till this point. The process can take up to 20 seconds. <br/>
-                    Please use this tool only when necessary, as it is quite a heavy process.
-                </div>
-                <button id="bel-generate-summary" onClick={this.showLoader} className="bel-btn bel-btn-info">GENERATE</button>
-            </div>
-        );
-    }
+            <div>
+                <TabSelector changeTab={this.changeRound.bind(this)} tab={this.state.tab} buttons={this.getRoundButtons()} />
+                <TabSelector changeTab={this.changeDivision.bind(this)} tab={this.state.division} buttons={this.getDivisionButtons()} />
+                <div className="bel-country-list">
 
-    showLoader(){
-        this.loading = true;
-        console.log('Show loader');
-    }
-
-    renderLoader(){
-        return (
-            <div id="bel-summary" className="text-center">
-                <div className="bel-spinner text-center">
-                    <div className="rect1"></div>
-                    <div className="rect2"></div>
-                    <div className="rect3"></div>
-                    <div className="rect4"></div>
-                    <div className="rect5"></div>
+                    <div className="bel-col-1-2 text-right">
+                        {this.getStats('left')}
+                    </div>
+                    <div className="bel-col-1-2 text-left">
+                        {this.getStats('right')}
+                    </div>
                 </div>
             </div>
         );
+    }
+
+    getFlagStyle(c){
+        return {
+            backgroundImage: `url('/images/flags_png/L/${c}.png')`,
+            backgroundPosition: "-4px -4px"
+        };
     }
 
     render(){
-        if(false){
-            return this.renderSummary();
-        }else{
-            if(this.loading){
-                return this.renderLoader();
-            }else{
-                return this.renderButton();
-            }
+        if(this.props.tab != 'summary'){
+            return null;
         }
 
-        return null;
+        switch(this.state.step){
+            case 0:
+                return this.renderIndex();
+            case 1:
+                return this.renderProgress();
+            case 2:
+                return this.renderSummary();
+            default:
+                return null;
+        }
     }
 }

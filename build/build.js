@@ -1,10 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _Utils = require('./classes/Utils');
@@ -51,7 +47,13 @@ var BattleEye = function () {
     function BattleEye() {
         _classCallCheck(this, BattleEye);
 
+        var self = this;
+        window.BattleEye = this;
         window.storage = this.storage = new _Storage2.default();
+        window.viewData = {
+            connected: true
+        };
+
         if (this.storage === false) {
             return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
         }
@@ -106,20 +108,29 @@ var BattleEye = function () {
             }
         }
 
+        self.forceDisconnect = pomelo.disconnect;
+        pomelo.disconnect = function () {};
+
+        this.events.on('layout.ready', function (layout) {
+            layout.update(self.getTeamStats());
+            self.checkForUpdates();
+            self.getNbpStats(SERVER_DATA.battleId).then(function (data) {
+                if (!data.zone_finished) {
+                    self.loadBattleStats();
+                } else {
+                    $j('#bel-loading').hide();
+                }
+            });
+
+            modules.run();
+        });
+
         this.layout = new _Layout2.default({
             'teamAName': this.teamAName,
             'teamBName': this.teamBName,
             'version': GM_info.script.version,
             'revolutionCountry': this.revolutionCountry
-        });
-
-        this.layout.update(this.getTeamStats());
-
-        pomelo.disconnect = function () {};
-
-        this.checkForUpdates();
-
-        this.loadBattleStats();
+        }, this);
 
         this.defineListeners();
 
@@ -127,7 +138,7 @@ var BattleEye = function () {
 
         this.handleEvents();
 
-        modules.run();
+        console.log('Constructor end');
     }
 
     _createClass(BattleEye, [{
@@ -145,12 +156,28 @@ var BattleEye = function () {
                     value = input.value;
                 }
                 self.storage.set(input.name, value);
-                self.settings[input.name].value = value;
+                window.settings[input.name].value = value;
 
                 var targetAtt = $j(this).attr('id');
 
+                self.events.emit('log', 'Updated setting ' + input.name + ' to ' + value);
+
                 $j("label[for=\"" + targetAtt + "\"]").notify("Saved", { position: "right middle", className: "success" });
             });
+        }
+    }, {
+        key: 'sortByValue',
+        value: function sortByValue(obj) {
+            var sorted = {};
+            var sortedKeys = Object.keys(obj).sort(function (a, b) {
+                return obj[a] - obj[b];
+            }).reverse();
+
+            for (var i in sortedKeys) {
+                sorted[sortedKeys[i]] = obj[sortedKeys[i]];
+            }
+
+            return sorted;
         }
     }, {
         key: 'defineDefaultSettings',
@@ -162,16 +189,16 @@ var BattleEye = function () {
                 }
             }
 
-            var settings = [['showOtherDivs', true, 'Structure', "Show other divisions", "You can select what divisions you want to see with the settings below."], ['showDiv1', true, 'Structure', "Show DIV 1"], ['showDiv2', true, 'Structure', "Show DIV 2"], ['showDiv3', true, 'Structure', "Show DIV 3"], ['showDiv4', true, 'Structure', "Show DIV 4"], ['showDomination', true, 'Structure', "Show domination", "Similar to damage, but takes domination bonus in count"], ['showAverageDamage', false, 'Structure', "Show average damage dealt"], ['showMiniMonitor', true, 'Structure', "Display a small division monitor on the battlefield"], ['showKills', false, 'Structure', "Show kills done by each division"], ['showDamagePerc', true, 'Structure', "Show Damage percentages"], ['moveToTop', false, 'Structure', "Display BattleEye above the battlefield", '*Requires a page refresh'], ['reduceLoad', false, 'Performance', "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance"], ['gatherBattleStats', true, 'Performance', "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time."], ['highlightDivision', true, 'Visual', "Highlight current division"], ['highlightValue', true, 'Visual', "Highlight winning side"], ['showDpsBar', true, 'Bars', "Show DPS bar"], ['showDamageBar', false, 'Bars', "Show Damage bar"], ['showDominationBar', true, 'Bars', "Show Domination bar"], ['largerBars', false, 'Bars', "Larger bars"], ['enableLogging', false, 'Other', "Enable logging to console"]];
+            var settings = [['showOtherDivs', false, 'Structure', "Show other divisions", "You can select what divisions you want to see with the settings below."], ['showDiv1', true, 'Structure', "Show DIV 1"], ['showDiv2', true, 'Structure', "Show DIV 2"], ['showDiv3', true, 'Structure', "Show DIV 3"], ['showDiv4', true, 'Structure', "Show DIV 4"], ['showDomination', true, 'Structure', "Show domination", "Similar to damage, but takes domination bonus in count"], ['showAverageDamage', false, 'Structure', "Show average damage dealt"], ['showMiniMonitor', true, 'Structure', "Display a small division monitor on the battlefield"], ['showKills', false, 'Structure', "Show kills done by each division"], ['showDamagePerc', true, 'Structure', "Show Damage percentages"], ['moveToTop', false, 'Structure', "Display BattleEye above the battlefield", '*Requires a page refresh'], ['reduceLoad', false, 'Performance', "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance"], ['gatherBattleStats', true, 'Performance', "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time."], ['highlightDivision', true, 'Visual', "Highlight current division"], ['highlightValue', true, 'Visual', "Highlight winning side"], ['showDpsBar', true, 'Bars', "Show DPS bar"], ['showDamageBar', false, 'Bars', "Show Damage bar"], ['showDominationBar', true, 'Bars', "Show Domination bar"], ['largerBars', false, 'Bars', "Larger bars"], ['enableLogging', false, 'Other', "Enable logging to console"]];
 
             define(settings);
         }
     }, {
-        key: 'updateNbpStats',
-        value: function updateNbpStats(cb) {
+        key: 'getNbpStats',
+        value: function getNbpStats(battleId, cb) {
             var self = this;
             return new Promise(function (resolve, reject) {
-                $j.get('https://www.erepublik.com/en/military/nbp-stats/85503/2', function (data) {
+                $j.get('https://www.erepublik.com/en/military/nbp-stats/' + battleId, function (data) {
                     data = JSON.parse(data);
                     resolve(data);
                     if (typeof cb === 'function') {
@@ -183,18 +210,11 @@ var BattleEye = function () {
             });
         }
     }, {
-        key: 'loadBattleStats',
-        value: function loadBattleStats() {
-            var self = this;
-
-            if (!window.settings.gatherBattleStats.value) {
-                return $j('#bel-loading').hide();
-            }
-
-            var processData = function processData(data) {
-                console.log('Processing data');
-                console.log(data);
+        key: 'processBattleStats',
+        value: function processBattleStats(data, teamA, teamB) {
+            return new Promise(function (resolve, reject) {
                 var divs = [1, 2, 3, 4, 11];
+                var hit, dmg, i, bareData, killValue;
 
                 for (var d in divs) {
                     var div = divs[d];
@@ -203,58 +223,81 @@ var BattleEye = function () {
                     var leftKl = 0;
                     var rightKl = 0;
 
-                    for (var i in data.leftDamage['div' + div]) {
-                        var hit = data.leftDamage['div' + div][i];
-                        var dmg = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
+                    for (i in data.leftDamage['div' + div]) {
+                        hit = data.leftDamage['div' + div][i];
+                        dmg = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
                         leftDmg += dmg;
 
-                        var bareData = {
+                        bareData = {
                             damage: dmg,
                             permalink: hit.country_permalink
                         };
 
-                        self.teamA.countries.handleBare(bareData);
-                        self.teamA.divisions.get('div' + div).countries.handleBare(bareData);
+                        teamA.countries.handleBare(bareData);
+                        teamA.divisions.get('div' + div).countries.handleBare(bareData);
                     }
 
-                    for (var i in data.rightDamage['div' + div]) {
-                        var hit = data.rightDamage['div' + div][i];
-                        var dmg = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
+                    for (i in data.rightDamage['div' + div]) {
+                        hit = data.rightDamage['div' + div][i];
+                        dmg = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
                         rightDmg += dmg;
 
-                        var bareData = {
+                        bareData = {
                             damage: dmg,
                             permalink: hit.country_permalink
                         };
 
-                        self.teamB.countries.handleBare(bareData);
-                        self.teamB.divisions.get('div' + div).countries.handleBare(bareData);
+                        teamB.countries.handleBare(bareData);
+                        teamB.divisions.get('div' + div).countries.handleBare(bareData);
                     }
 
-                    for (var i in data.leftKills['div' + div]) {
-                        var hit = data.leftKills['div' + div][i];
-                        leftKl += Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
+                    for (i in data.leftKills['div' + div]) {
+                        hit = data.leftKills['div' + div][i];
+                        killValue = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
+                        leftKl += killValue;
+                        teamA.countries.handleKills(hit.country_permalink, killValue);
+                        teamA.divisions.get('div' + div).countries.handleKills(hit.country_permalink, killValue);
                     }
 
-                    for (var i in data.rightKills['div' + div]) {
-                        var hit = data.rightKills['div' + div][i];
-                        rightKl += Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
+                    for (i in data.rightKills['div' + div]) {
+                        hit = data.rightKills['div' + div][i];
+                        killValue = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,\.]/g, ''));
+                        rightKl += killValue;
+                        teamB.countries.handleKills(hit.country_permalink, killValue);
+                        teamB.divisions.get('div' + div).countries.handleKills(hit.country_permalink, killValue);
                     }
 
-                    self.teamA.divisions.get('div' + div).damage += leftDmg;
-                    self.teamB.divisions.get('div' + div).damage += rightDmg;
-                    self.teamA.damage += leftDmg;
-                    self.teamB.damage += rightDmg;
-                    self.teamA.divisions.get('div' + div).hits += leftKl;
-                    self.teamB.divisions.get('div' + div).hits += rightKl;
-                    self.teamA.hits += leftKl;
-                    self.teamB.hits += rightKl;
+                    teamA.divisions.get('div' + div).damage += leftDmg;
+                    teamB.divisions.get('div' + div).damage += rightDmg;
+                    teamA.damage += leftDmg;
+                    teamB.damage += rightDmg;
+                    teamA.divisions.get('div' + div).hits += leftKl;
+                    teamB.divisions.get('div' + div).hits += rightKl;
+                    teamA.hits += leftKl;
+                    teamB.hits += rightKl;
                 }
 
-                $j('#bel-loading').hide();
-            };
+                resolve();
+            });
+        }
+    }, {
+        key: 'loadBattleStats',
+        value: function loadBattleStats() {
+            var self = this;
 
-            this.getBattleStats().then(processData);
+            if (!window.settings.gatherBattleStats.value) {
+                self.events.emit('log', 'Battle stat fetching canceled since the battle is over.');
+                return $j('#bel-loading').hide();
+            }
+
+            self.getBattleStats().then(function (data) {
+                self.events.emit('log', 'Battle stats fetched. Processing...');
+                return self.processBattleStats(data, self.teamA, self.teamB);
+            }).then(function () {
+                self.events.emit('log', 'Battle stats loaded.');
+                $j('#bel-loading').hide();
+                self.layout.update(self.getTeamStats());
+            });
         }
     }, {
         key: 'resetSettings',
@@ -275,15 +318,78 @@ var BattleEye = function () {
                     var version = parseInt(data.version.replace(/\D/g, ""));
                     var currentVersion = parseInt(GM_info.script.version.replace(/\D/g, ""));
                     if (currentVersion != version) {
-                        document.querySelector('.bel-version').classList.add('bel-version-outdated');
+                        document.querySelector('#bel-version .bel-alert').classList.add('bel-alert-danger');
                         document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="' + data.updateUrl + '">Update</a>';
                     }
 
                     console.log('[BATTLEEYE] Data JSON received and processed');
+                    self.events.emit('log', 'Data.json synced');
                     resolve(data);
                 }).error(function (error) {
                     console.error('[BATTLEEYE] Failed to download data.json');
                     reject(error);
+                });
+            });
+        }
+    }, {
+        key: 'generateSummary',
+        value: function generateSummary() {
+            var self = this;
+            var data = [];
+            this.step = 1;
+            self.events.emit('log', 'Generating summary...');
+            var round = 1;
+            function getStats(cb) {
+                var divRange = [1, 2, 3, 4];
+                if (round % 4 === 0) {
+                    divRange = [11];
+                }
+
+                self.getBattleStats(round, divRange).then(function (stats) {
+                    self.events.emit('summary.update', round);
+                    data[round] = stats;
+                    round++;
+                    if (round <= SERVER_DATA.zoneId) {
+                        getStats(cb);
+                    } else {
+                        cb();
+                    }
+                });
+            }
+
+            getStats(function () {
+                // console.log(data);
+                var left = new _Stats2.default(SERVER_DATA.leftBattleId);
+                var right = new _Stats2.default(SERVER_DATA.rightBattleId);
+                var rounds = [];
+
+                left.defender = SERVER_DATA.defenderId == SERVER_DATA.leftBattleId;
+                right.defender = SERVER_DATA.defenderId != SERVER_DATA.leftBattleId;
+
+                async.eachOf(data, function (roundStats, key, cb) {
+                    if (!roundStats) cb();
+                    self.processBattleStats(roundStats, left, right).then(function () {
+                        rounds[key] = {
+                            left: new _Stats2.default(SERVER_DATA.leftBattleId),
+                            right: new _Stats2.default(SERVER_DATA.rightBattleId)
+                        };
+
+                        rounds[key].left.defender = SERVER_DATA.defenderId == SERVER_DATA.leftBattleId;
+                        rounds[key].right.defender = SERVER_DATA.defenderId != SERVER_DATA.leftBattleId;
+
+                        self.processBattleStats(roundStats, rounds[key].left, rounds[key].right).then(function () {
+                            self.events.emit('log', 'Processed round ' + (key + 1));
+                            cb();
+                        });
+                    });
+                }, function () {
+                    for (var i in rounds) {
+                        rounds[i].left = rounds[i].left.toObject();
+                        rounds[i].right = rounds[i].right.toObject();
+                    }
+
+                    self.events.emit('summary.finished', [left.toObject(), right.toObject(), rounds, data]);
+                    self.events.emit('log', 'Summary data fetching done');
                 });
             });
         }
@@ -300,8 +406,8 @@ var BattleEye = function () {
                     var cId = players[j];
                     if (erepublik.citizen.citizenId == cId) {
                         $j('#battleConsole .left_player .player_name').css({
-                            textShadow: '0 0 10px ' + color + ' !important',
-                            color: color + ' !important'
+                            textShadow: '0 0 10px ' + color,
+                            color: '' + color
                         }).attr('original-title', "BattleEye contributor").tipsy();
                     } else if ($j('li[data-citizen-id="' + cId + '"] .player_name a').length > 0) {
                         $j('li[data-citizen-id="' + cId + '"] .player_name a').css({
@@ -323,6 +429,9 @@ var BattleEye = function () {
     }, {
         key: 'getBattleStats',
         value: function getBattleStats() {
+            var round = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : SERVER_DATA.zoneId;
+            var divRange = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
             var self = this;
 
             return new Promise(function (resolve, reject) {
@@ -348,9 +457,9 @@ var BattleEye = function () {
                             division: div,
                             leftPage: pageLeft,
                             rightPage: pageRight,
-                            round: SERVER_DATA.zoneId,
+                            round: round,
                             type: type,
-                            zoneId: parseInt(SERVER_DATA.zoneId, 10)
+                            zoneId: parseInt(round, 10)
                         }, function (data) {
                             resolve(data);
                         });
@@ -360,13 +469,14 @@ var BattleEye = function () {
                 var damageHandler = function damageHandler(div, cb) {
                     var page = 1;
                     var maxPage = 1;
+                    var i;
 
                     async.doWhilst(function (whileCb) {
                         request(div, page, page, 'damage').then(function (data) {
-                            for (var i in data[attacker].fighterData) {
+                            for (i in data[attacker].fighterData) {
                                 leftDamage['div' + div].push(data[attacker].fighterData[i]);
                             }
-                            for (var i in data[defender].fighterData) {
+                            for (i in data[defender].fighterData) {
                                 rightDamage['div' + div].push(data[defender].fighterData[i]);
                             }
 
@@ -374,6 +484,7 @@ var BattleEye = function () {
 
                             if (window.settings.enableLogging.value) {
                                 console.log('[BATTLEEYE] Finished damage page ' + page + "/" + maxPage + " div" + div);
+                                self.events.emit('log', 'Fetched damage ' + page + '/' + maxPage + ' for div' + div);
                             }
 
                             page++;
@@ -403,6 +514,7 @@ var BattleEye = function () {
                             maxPage = Math.max(data[attacker].pages, data[defender].pages);
                             if (window.settings.enableLogging.value) {
                                 console.log('[BATTLEEYE] Finished kill page ' + page + "/" + maxPage + " div" + div);
+                                self.events.emit('log', 'Fetched kills ' + page + '/' + maxPage + ' for div' + div);
                             }
                             page++;
 
@@ -415,11 +527,12 @@ var BattleEye = function () {
                     });
                 };
 
-                var divRange = SERVER_DATA.division == 11 ? [11] : [1, 2, 3, 4];
+                if (divRange === null) {
+                    divRange = SERVER_DATA.division == 11 ? [11] : [1, 2, 3, 4];
+                }
 
                 async.each(divRange, damageHandler.bind(self), function () {
                     async.each(divRange, killsHandler.bind(self), function () {
-                        console.log('Finished fetching data');
                         resolve({ leftDamage: leftDamage, rightDamage: rightDamage, leftKills: leftKills, rightKills: rightKills });
                     });
                 });
@@ -428,19 +541,18 @@ var BattleEye = function () {
     }, {
         key: 'runTicker',
         value: function runTicker() {
-            var _this = this;
-
             var second = 0;
+            var self = this;
 
             var ticker = function ticker() {
                 second++;
-                _this.events.emit('tick', {
+                self.events.emit('tick', {
                     second: second,
                     time: new Date().getTime()
                 });
             };
 
-            this.interval = setInterval(ticker.call(this), 1000);
+            this.interval = setInterval(ticker, 1000);
         }
     }, {
         key: 'handleEvents',
@@ -469,9 +581,10 @@ var BattleEye = function () {
             pomelo.on('onMessage', handler);
             pomelo.on('close', function (data) {
                 console.log('[BATTLEEYE] Socket closed [' + data.reason + ']');
-                self.closed = true;
-                $j('#belClosed').show();
+                self.events.emit('log', 'Connection to the battlefield was closed.');
+                window.viewData.connected = false;
                 clearTimeout(self.interval);
+                self.layout.update(self.getTeamStats());
             });
         }
     }, {
@@ -483,15 +596,16 @@ var BattleEye = function () {
             if (!settings.reduceLoad.value) {
                 self.layout.update(self.getTeamStats());
             }
+            window.viewData.connected = true;
         }
     }]);
 
     return BattleEye;
 }();
 
-exports.default = new BattleEye();
+module.exports = new BattleEye();
 
-},{"./classes/EventHandler":6,"./classes/Layout":8,"./classes/Stats":9,"./classes/Storage":10,"./classes/Stylesheet":11,"./classes/Utils":12,"./classes/modules/AutoShooter":31,"./classes/modules/ModuleLoader":33,"./classes/modules/Other":34}],2:[function(require,module,exports){
+},{"./classes/EventHandler":6,"./classes/Layout":8,"./classes/Stats":9,"./classes/Storage":10,"./classes/Stylesheet":11,"./classes/Utils":12,"./classes/modules/AutoShooter":30,"./classes/modules/ModuleLoader":32,"./classes/modules/Other":33}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -512,6 +626,9 @@ var CountryStats = function () {
     _createClass(CountryStats, [{
         key: "handle",
         value: function handle(data) {
+            var addKill = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+            var addDamage = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+
             var country = data.msg.permalink;
             if (!this.countries[country]) {
                 this.countries[country] = {
@@ -520,8 +637,13 @@ var CountryStats = function () {
                 };
             }
 
-            this.countries[country].damage += data.msg.damage;
-            this.countries[country].kills++;
+            if (addDamage) {
+                this.countries[country].damage += data.msg.damage;
+            }
+
+            if (addKill) {
+                this.countries[country].kills += 1;
+            }
         }
     }, {
         key: "handleBare",
@@ -536,7 +658,19 @@ var CountryStats = function () {
             ob.msg.damage = data.damage;
             ob.msg.permalink = data.permalink;
 
-            this.handle(ob);
+            this.handle(ob, false);
+        }
+    }, {
+        key: "handleKills",
+        value: function handleKills(country, value) {
+            if (!this.countries[country]) {
+                this.countries[country] = {
+                    damage: 0,
+                    kills: 0
+                };
+            }
+
+            this.countries[country].kills += value;
         }
     }, {
         key: "getAll",
@@ -592,7 +726,7 @@ var DivisionStats = function (_DpsHandler) {
     function DivisionStats(division) {
         _classCallCheck(this, DivisionStats);
 
-        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(DivisionStats).call(this, 10));
+        var _this = _possibleConstructorReturn(this, (DivisionStats.__proto__ || Object.getPrototypeOf(DivisionStats)).call(this, 10));
 
         _this.division = division;
         _this.hits = 0;
@@ -819,7 +953,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var HitHistory = function () {
     function HitHistory() {
-        var rememberFor = arguments.length <= 0 || arguments[0] === undefined ? 30000 : arguments[0];
+        var rememberFor = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 30000;
 
         _classCallCheck(this, HitHistory);
 
@@ -837,7 +971,7 @@ var HitHistory = function () {
     }, {
         key: "trimOld",
         value: function trimOld() {
-            var time = arguments.length <= 0 || arguments[0] === undefined ? new Date().getTime() : arguments[0];
+            var time = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new Date().getTime();
 
             for (var i in this.history) {
                 if (time - i - this.rememberFor > 0) {
@@ -899,6 +1033,7 @@ var Layout = function () {
 
         var self = this;
         self.headerData = headerData;
+        self.canRender = true;
 
         var battleEye = document.createElement('div');
         battleEye.setAttribute('id', 'battle_eye_live');
@@ -912,12 +1047,16 @@ var Layout = function () {
         $j('#battleConsole').append('<div id="bel-minimonitor"></div>');
 
         _Stylesheet2.default.load();
+
+        window.BattleEye.events.emit('layout.ready', this);
     }
 
     _createClass(Layout, [{
         key: 'update',
         value: function update(feedData) {
-            ReactDOM.render(React.createElement(_Template2.default, { settings: window.settings, feedData: feedData, headerData: this.headerData }), document.getElementById('battle_eye_live'));
+            if (!this.canRender) return;
+
+            ReactDOM.render(React.createElement(_Template2.default, { settings: window.settings, viewData: window.viewData, feedData: feedData, headerData: this.headerData }), document.getElementById('battle_eye_live'));
 
             ReactDOM.render(React.createElement(_MiniMonitor2.default, { settings: window.settings, feedData: feedData }), document.getElementById('bel-minimonitor'));
         }
@@ -965,7 +1104,7 @@ var Stats = function (_DpsHandler) {
     function Stats(id) {
         _classCallCheck(this, Stats);
 
-        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Stats).call(this, 10));
+        var _this = _possibleConstructorReturn(this, (Stats.__proto__ || Object.getPrototypeOf(Stats)).call(this, 10));
 
         _this.countries = new _CountryStats2.default();
         _this.id = id;
@@ -996,7 +1135,7 @@ var Stats = function (_DpsHandler) {
     }, {
         key: 'updateDps',
         value: function updateDps(timeData) {
-            _get(Object.getPrototypeOf(Stats.prototype), 'updateDps', this).call(this, timeData);
+            _get(Stats.prototype.__proto__ || Object.getPrototypeOf(Stats.prototype), 'updateDps', this).call(this, timeData);
             this.divisions.updateDps(timeData);
         }
     }, {
@@ -1179,9 +1318,16 @@ var StyleSheet = function () {
 
         this.sheet = "";
 
-        this.sheet += '\n            @keyframes bel-pulse-w {\n                0% {\n                    background-color: #27ae60;\n                }\n\n                10% {\n                    background-color: #2ecc71;\n                }\n\n                100% {\n                    background-color: #27ae60;\n                }\n            }\n\n            @keyframes bel-pulse-l {\n                0% {\n                    background-color: #e74c3c;\n                }\n\n                10% {\n                    background-color: #c0392b;\n                }\n\n                100% {\n                    background-color: #e74c3c;\n                }\n            }\n\n            .bel-spinner {\n              width: 50px;\n              height: 20px;\n              text-align: center;\n              font-size: 10px;\n              padding-top: 8px;\n            }\n\n            .bel-spinner > div {\n              background-color: #2980b9;\n              height: 100%;\n              width: 6px;\n              display: inline-block;\n\n              -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;\n              animation: sk-stretchdelay 1.2s infinite ease-in-out;\n            }\n\n            .bel-spinner .rect2 {\n              -webkit-animation-delay: -1.1s;\n              animation-delay: -1.1s;\n              background-color: #3498db;\n            }\n\n            .bel-spinner .rect3 {\n              -webkit-animation-delay: -1.0s;\n              animation-delay: -1.0s;\n              background-color: #2980b9;\n            }\n\n            .bel-spinner .rect4 {\n              -webkit-animation-delay: -0.9s;\n              animation-delay: -0.9s;\n              background-color: #3498db;\n            }\n\n            .bel-spinner .rect5 {\n              -webkit-animation-delay: -0.8s;\n              animation-delay: -0.8s;\n              background-color: #2980b9;\n            }\n\n            @-webkit-keyframes sk-stretchdelay {\n              0%, 40%, 100% { -webkit-transform: scaleY(0.4) }\n              20% { -webkit-transform: scaleY(1.0) }\n            }\n\n            @keyframes sk-stretchdelay {\n              0%, 40%, 100% {\n                transform: scaleY(0.4);\n                -webkit-transform: scaleY(0.4);\n              }  20% {\n                transform: scaleY(1.0);\n                -webkit-transform: scaleY(1.0);\n              }\n            }\n\n            hr.bel{\n                 border: 0; height: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.3);\n            }\n        ';
+        this.sheet += '\n            @keyframes bel-pulse-w {\n                0% {\n                    background-color: #27ae60;\n                }\n\n                10% {\n                    background-color: #2ecc71;\n                }\n\n                100% {\n                    background-color: #27ae60;\n                }\n            }\n\n            @keyframes bel-pulse-l {\n                0% {\n                    background-color: #e74c3c;\n                }\n\n                10% {\n                    background-color: #c0392b;\n                }\n\n                100% {\n                    background-color: #e74c3c;\n                }\n            }\n\n            @keyframes connectionAlert{\n                49%{\n                    background-color: #34495e;\n                }\n                50%{\n                    background-color: #e74c3c;\n                }\n            }\n\n            .bel-disconnectedAlert{\n                animation: connectionAlert 1s infinite;\n            }\n\n            .bel-status-log{\n                padding: 2px;\n                text-align: right;\n                margin: 4px 0;\n                font-size: 0.8em;\n                color: #8c8c8c;\n                width: 100%;\n            }\n\n            .bel-spinner {\n              width: 50px;\n              height: 20px;\n              text-align: center;\n              font-size: 10px;\n              padding-top: 8px;\n            }\n\n            .bel-spinner > div {\n              background-color: #2980b9;\n              height: 100%;\n              width: 6px;\n              display: inline-block;\n\n              -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;\n              animation: sk-stretchdelay 1.2s infinite ease-in-out;\n            }\n\n            .bel-spinner .rect2 {\n              -webkit-animation-delay: -1.1s;\n              animation-delay: -1.1s;\n              background-color: #3498db;\n            }\n\n            .bel-spinner .rect3 {\n              -webkit-animation-delay: -1.0s;\n              animation-delay: -1.0s;\n              background-color: #2980b9;\n            }\n\n            .bel-spinner .rect4 {\n              -webkit-animation-delay: -0.9s;\n              animation-delay: -0.9s;\n              background-color: #3498db;\n            }\n\n            .bel-spinner .rect5 {\n              -webkit-animation-delay: -0.8s;\n              animation-delay: -0.8s;\n              background-color: #2980b9;\n            }\n\n            @-webkit-keyframes sk-stretchdelay {\n              0%, 40%, 100% { -webkit-transform: scaleY(0.4) }\n              20% { -webkit-transform: scaleY(1.0) }\n            }\n\n            @keyframes sk-stretchdelay {\n              0%, 40%, 100% {\n                transform: scaleY(0.4);\n                -webkit-transform: scaleY(0.4);\n              }  20% {\n                transform: scaleY(1.0);\n                -webkit-transform: scaleY(1.0);\n              }\n            }\n\n            hr.bel{\n                 border: 0; height: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.3);\n            }\n\n            .bel-stat-spacer{\n                padding-right: 2px;\n                padding-left: 2px;\n            }\n\n            .bel-color-emerald{\n                color: #2ecc71;\n            }\n\n            .bel-color-belize{\n                color: #2980b9;\n            }\n\n            .bel-color-amethyst{\n                color: #9b59b6;\n            }\n\n            .bel-spacer-sm{\n                display: inline-block;\n                width: 15px;\n            }\n        ';
 
         this.addCSSRule('.clearfix:after', '\n            content: "";\n            display: table;\n            clear: both;\n        ');
+
+        this.addCSSRule('.bel-alert', '\n            background-color: #34495e;\n            color:#ecf0f1;\n            padding: 3px 8px;\n            border-radius:4px;\n            margin-right:4px;\n        ');
+
+        this.addCSSRule('.bel-alert-danger', '\n            background-color: #e74c3c;\n        ');
+
+        // this.addCSSRule('.bel-version', 'background-color: #34495e;color:#ecf0f1;padding: 3px 8px;border-radius:4px;margin-right:4px;');
+        // this.addCSSRule('.bel-version-outdated', 'background-color: #e74c3c;');
 
         // this.addCSSRule('.belFeedValue:after', `
         //     content: "";
@@ -1211,7 +1357,7 @@ var StyleSheet = function () {
 
         this.addCSSRule('#bel-minimonitor', '\n            position: absolute;\n            right: 0;\n        ');
 
-        this.addCSSRule('#bel-country-list', '\n            max-height: 400px;\n            overflow-y: scroll;\n        ');
+        this.addCSSRule('.bel-country-list', '\n            max-height: 400px;\n            overflow-y: scroll;\n        ');
 
         this.addCSSRule('.bel-minimonitor', '\n            position: absolute;\n            width: 118px;\n            background-color: rgba(52, 73, 94, 0.7);\n            right: 0;\n            color: #ecf0f1;\n            top: 10px;\n            padding: 2px;\n        ');
 
@@ -1409,7 +1555,7 @@ var Footer = function (_React$Component) {
     function Footer() {
         _classCallCheck(this, Footer);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(Footer).apply(this, arguments));
+        return _possibleConstructorReturn(this, (Footer.__proto__ || Object.getPrototypeOf(Footer)).apply(this, arguments));
     }
 
     _createClass(Footer, [{
@@ -1451,7 +1597,16 @@ var Header = function (_React$Component) {
     function Header() {
         _classCallCheck(this, Header);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(Header).apply(this, arguments));
+        var _this = _possibleConstructorReturn(this, (Header.__proto__ || Object.getPrototypeOf(Header)).call(this));
+
+        var self = _this;
+
+        _this.state = {
+            log: null
+        };
+
+        _this.listenerRegistered = false;
+        return _this;
     }
 
     _createClass(Header, [{
@@ -1479,8 +1634,32 @@ var Header = function (_React$Component) {
             };
         }
     }, {
+        key: 'componentDidUpdate',
+        value: function componentDidUpdate() {
+            this.attachTooltip();
+        }
+    }, {
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            this.attachTooltip();
+        }
+    }, {
+        key: 'attachTooltip',
+        value: function attachTooltip() {
+            $j('.bel-disconnectedAlert').attr('original-title', 'Not connected to the battlefield!').tipsy();
+        }
+    }, {
         key: 'render',
         value: function render() {
+            var self = this;
+
+            if (!this.listenerRegistered && window.BattleEye) {
+                window.BattleEye.events.on('log', function (text) {
+                    self.state.log = text;
+                });
+
+                this.listenerRegistered = true;
+            }
             return React.createElement(
                 'div',
                 { id: 'battle_eye_header' },
@@ -1492,7 +1671,7 @@ var Header = function (_React$Component) {
                         { id: 'bel-version' },
                         React.createElement(
                             'span',
-                            { className: 'bel-version' },
+                            { className: 'bel-alert' },
                             this.props.data.version
                         ),
                         ' ',
@@ -1513,6 +1692,19 @@ var Header = function (_React$Component) {
                             React.createElement('div', { className: 'rect3' }),
                             React.createElement('div', { className: 'rect4' }),
                             React.createElement('div', { className: 'rect5' })
+                        )
+                    ),
+                    React.createElement(
+                        _If2.default,
+                        { test: !window.viewData.connected },
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(
+                                'span',
+                                { className: 'bel-alert bel-disconnectedAlert' },
+                                'Not connected!'
+                            )
                         )
                     ),
                     React.createElement(
@@ -1550,6 +1742,11 @@ var Header = function (_React$Component) {
                             )
                         )
                     )
+                ),
+                React.createElement(
+                    'div',
+                    { className: 'bel-grid bel-status-log' },
+                    this.state.log
                 ),
                 React.createElement(
                     _If2.default,
@@ -1630,7 +1827,7 @@ var If = function (_React$Component) {
     function If() {
         _classCallCheck(this, If);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(If).apply(this, arguments));
+        return _possibleConstructorReturn(this, (If.__proto__ || Object.getPrototypeOf(If)).apply(this, arguments));
     }
 
     _createClass(If, [{
@@ -1674,7 +1871,7 @@ var MiniMonitor = function (_React$Component) {
     function MiniMonitor() {
         _classCallCheck(this, MiniMonitor);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(MiniMonitor).apply(this, arguments));
+        return _possibleConstructorReturn(this, (MiniMonitor.__proto__ || Object.getPrototypeOf(MiniMonitor)).apply(this, arguments));
     }
 
     _createClass(MiniMonitor, [{
@@ -1784,7 +1981,7 @@ var Template = function (_React$Component) {
     function Template() {
         _classCallCheck(this, Template);
 
-        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Template).call(this));
+        var _this = _possibleConstructorReturn(this, (Template.__proto__ || Object.getPrototypeOf(Template)).call(this));
 
         _this.state = {
             modalHidden: true,
@@ -1817,9 +2014,7 @@ var Template = function (_React$Component) {
     }, {
         key: 'getTabButtons',
         value: function getTabButtons() {
-            return [['div', 'Divisions'], ['overall', 'Total'], ['countries', 'Countries'], ['summary', 'Summary']
-            // ,['other', 'Other']
-            ];
+            return [['div', 'Divisions'], ['overall', 'Total'], ['countries', 'Countries'], ['summary', 'Battle stats (beta)']];
         }
     }, {
         key: 'render',
@@ -1828,7 +2023,7 @@ var Template = function (_React$Component) {
                 'div',
                 null,
                 React.createElement(_SettingsModal2.default, { closeModal: this.closeModal.bind(this), hidden: this.state.modalHidden, settings: this.props.settings }),
-                React.createElement(_Header2.default, { openModal: this.openModal.bind(this), data: this.props.headerData }),
+                React.createElement(_Header2.default, { viewData: this.props.viewData, openModal: this.openModal.bind(this), data: this.props.headerData }),
                 React.createElement(_TabSelector2.default, { changeTab: this.changeTab.bind(this), tab: this.state.tab, buttons: this.getTabButtons() }),
                 React.createElement(_Tabs2.default, { data: this.props.feedData, settings: this.props.settings, tab: this.state.tab }),
                 React.createElement(_Footer2.default, null)
@@ -1841,7 +2036,7 @@ var Template = function (_React$Component) {
 
 exports.default = Template;
 
-},{"./Footer":13,"./Header":14,"./settings/SettingsModal":23,"./tabs/TabSelector":29,"./tabs/Tabs":30}],18:[function(require,module,exports){
+},{"./Footer":13,"./Header":14,"./settings/SettingsModal":23,"./tabs/TabSelector":28,"./tabs/Tabs":29}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1862,7 +2057,7 @@ var FloatValue = function (_React$Component) {
     function FloatValue() {
         _classCallCheck(this, FloatValue);
 
-        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(FloatValue).call(this));
+        var _this = _possibleConstructorReturn(this, (FloatValue.__proto__ || Object.getPrototypeOf(FloatValue)).call(this));
 
         _this.props = {
             text: "",
@@ -1910,7 +2105,7 @@ var ProgressBar = function (_React$Component) {
     function ProgressBar() {
         _classCallCheck(this, ProgressBar);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(ProgressBar).apply(this, arguments));
+        return _possibleConstructorReturn(this, (ProgressBar.__proto__ || Object.getPrototypeOf(ProgressBar)).apply(this, arguments));
     }
 
     _createClass(ProgressBar, [{
@@ -1973,7 +2168,7 @@ var TextValue = function (_React$Component) {
     function TextValue() {
         _classCallCheck(this, TextValue);
 
-        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(TextValue).call(this));
+        var _this = _possibleConstructorReturn(this, (TextValue.__proto__ || Object.getPrototypeOf(TextValue)).call(this));
 
         _this.props = {
             text: "",
@@ -2021,7 +2216,7 @@ var SettingsField = function (_React$Component) {
     function SettingsField() {
         _classCallCheck(this, SettingsField);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(SettingsField).apply(this, arguments));
+        return _possibleConstructorReturn(this, (SettingsField.__proto__ || Object.getPrototypeOf(SettingsField)).apply(this, arguments));
     }
 
     _createClass(SettingsField, [{
@@ -2106,7 +2301,7 @@ var SettingsGroup = function (_React$Component) {
     function SettingsGroup() {
         _classCallCheck(this, SettingsGroup);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(SettingsGroup).apply(this, arguments));
+        return _possibleConstructorReturn(this, (SettingsGroup.__proto__ || Object.getPrototypeOf(SettingsGroup)).apply(this, arguments));
     }
 
     _createClass(SettingsGroup, [{
@@ -2174,7 +2369,7 @@ var SettingsModal = function (_React$Component) {
     function SettingsModal() {
         _classCallCheck(this, SettingsModal);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(SettingsModal).apply(this, arguments));
+        return _possibleConstructorReturn(this, (SettingsModal.__proto__ || Object.getPrototypeOf(SettingsModal)).apply(this, arguments));
     }
 
     _createClass(SettingsModal, [{
@@ -2183,18 +2378,19 @@ var SettingsModal = function (_React$Component) {
             var settings = this.props.settings;
             var components = [];
             var groups = {};
+            var i;
 
-            for (var i in settings) {
+            for (i in settings) {
                 var setting = settings[i];
 
-                if (groups[setting.field.group] == undefined) {
+                if (groups[setting.field.group] === undefined) {
                     groups[setting.field.group] = [];
                 }
 
                 groups[setting.field.group].push(setting);
             }
 
-            for (var i in groups) {
+            for (i in groups) {
                 var group = groups[i];
                 components.push(React.createElement(_SettingsGroup2.default, { name: i, settings: group }));
             }
@@ -2203,8 +2399,13 @@ var SettingsModal = function (_React$Component) {
     }, {
         key: 'resetSettings',
         value: function resetSettings() {
-            battleEyeLive.resetSettings();
+            window.BattleEye.resetSettings();
             $j('#bel-reset-settings').notify('Settings reset', 'info');
+        }
+    }, {
+        key: 'disconnect',
+        value: function disconnect() {
+            window.BattleEye.forceDisconnect();
         }
     }, {
         key: 'render',
@@ -2234,6 +2435,15 @@ var SettingsModal = function (_React$Component) {
                                 'a',
                                 { href: 'https://dl.dropboxusercontent.com/u/86379644/battle-eye-live.user.js', className: 'bel-btn bel-btn-inverse' },
                                 'Update'
+                            )
+                        ),
+                        React.createElement(
+                            'li',
+                            null,
+                            React.createElement(
+                                'button',
+                                { onClick: this.disconnect, className: 'bel-btn bel-btn-danger' },
+                                'Disconnect'
                             )
                         ),
                         React.createElement(
@@ -2292,7 +2502,7 @@ var CountriesTab = function (_React$Component) {
     function CountriesTab() {
         _classCallCheck(this, CountriesTab);
 
-        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CountriesTab).call(this));
+        var _this = _possibleConstructorReturn(this, (CountriesTab.__proto__ || Object.getPrototypeOf(CountriesTab)).call(this));
 
         _this.state = {
             tab: 'overall'
@@ -2314,6 +2524,7 @@ var CountriesTab = function (_React$Component) {
             var content = [];
             var countries = [];
 
+            // console.log(this.state.tab);
             if (this.state.tab == 'overall') {
                 countries = this.props.data[side].countries;
             } else {
@@ -2322,6 +2533,7 @@ var CountriesTab = function (_React$Component) {
 
             for (var i in countries) {
                 var c = countries[i];
+
                 content.push(React.createElement(
                     'div',
                     null,
@@ -2331,16 +2543,60 @@ var CountriesTab = function (_React$Component) {
                         React.createElement('div', { style: this.getFlagStyle(i), className: 'bel-country' })
                     ),
                     React.createElement(
+                        _If2.default,
+                        { test: side != "right" },
+                        React.createElement(
+                            'span',
+                            { className: 'bel-stat-spacer' },
+                            React.createElement(
+                                'span',
+                                { className: 'tooltip-kills bel-value' },
+                                c.kills.toLocaleString()
+                            )
+                        ),
+                        React.createElement(
+                            'span',
+                            { className: 'bel-stat-spacer' },
+                            React.createElement(
+                                'span',
+                                { className: 'tooltip-damage bel-value' },
+                                c.damage.toLocaleString()
+                            )
+                        ),
+                        React.createElement('span', { className: 'bel-spacer-sm' })
+                    ),
+                    React.createElement(
                         'b',
-                        null,
+                        { className: 'bel-color-belize' },
                         i
                     ),
-                    ': ',
-                    c.damage.toLocaleString(),
                     React.createElement(
                         _If2.default,
                         { test: side == "left" },
                         React.createElement('div', { style: this.getFlagStyle(i), className: 'bel-country' })
+                    ),
+                    React.createElement(
+                        _If2.default,
+                        { test: side != "left" },
+                        React.createElement('span', { className: 'bel-spacer-sm' }),
+                        React.createElement(
+                            'span',
+                            { className: 'bel-stat-spacer' },
+                            React.createElement(
+                                'span',
+                                { className: 'tooltip-damage bel-value' },
+                                c.damage.toLocaleString()
+                            )
+                        ),
+                        React.createElement(
+                            'span',
+                            { className: 'bel-stat-spacer' },
+                            React.createElement(
+                                'span',
+                                { className: 'tooltip-kills bel-value' },
+                                c.kills.toLocaleString()
+                            )
+                        )
                     ),
                     React.createElement('hr', { className: 'bel' })
                 ));
@@ -2349,9 +2605,25 @@ var CountriesTab = function (_React$Component) {
             return content;
         }
     }, {
+        key: 'componentDidUpdate',
+        value: function componentDidUpdate() {
+            this.attachTooltip();
+        }
+    }, {
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            this.attachTooltip();
+        }
+    }, {
+        key: 'attachTooltip',
+        value: function attachTooltip() {
+            $j('.tooltip-kills').attr('original-title', 'Kills').tipsy();
+            $j('.tooltip-damage').attr('original-title', 'Damage').tipsy();
+        }
+    }, {
         key: 'getTabButtons',
         value: function getTabButtons() {
-            return [['overall', 'Total'], ['div1', 'DIV1'], ['div2', 'DIV2'], ['div3', 'DIV3'], ['div4', 'DIV4']];
+            return [['overall', 'Round Total'], ['div1', 'DIV1'], ['div2', 'DIV2'], ['div3', 'DIV3'], ['div4', 'DIV4']];
         }
     }, {
         key: 'changeTab',
@@ -2363,13 +2635,17 @@ var CountriesTab = function (_React$Component) {
     }, {
         key: 'render',
         value: function render() {
+            if (this.props.tab != 'countries' && this.props.tab != 'div1' && this.props.tab != 'div2' && this.props.tab != 'div3' && this.props.tab != 'div4') {
+                return null;
+            }
+
             return React.createElement(
                 'div',
                 null,
                 React.createElement(_TabSelector2.default, { changeTab: this.changeTab.bind(this), tab: this.state.tab, buttons: this.getTabButtons() }),
                 React.createElement(
                     'div',
-                    { id: 'bel-country-list' },
+                    { className: 'bel-country-list' },
                     React.createElement(
                         'div',
                         { className: 'bel-col-1-2 text-right' },
@@ -2390,7 +2666,7 @@ var CountriesTab = function (_React$Component) {
 
 exports.default = CountriesTab;
 
-},{"../If":15,"./TabSelector":29}],25:[function(require,module,exports){
+},{"../If":15,"./TabSelector":28}],25:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2429,7 +2705,7 @@ var DivisionTab = function (_React$Component) {
     function DivisionTab() {
         _classCallCheck(this, DivisionTab);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(DivisionTab).apply(this, arguments));
+        return _possibleConstructorReturn(this, (DivisionTab.__proto__ || Object.getPrototypeOf(DivisionTab)).apply(this, arguments));
     }
 
     _createClass(DivisionTab, [{
@@ -2445,6 +2721,10 @@ var DivisionTab = function (_React$Component) {
     }, {
         key: 'render',
         value: function render() {
+            if (this.props.tab != 'div') {
+                return null;
+            }
+
             var left = this.props.data.left;
             var right = this.props.data.right;
             var settings = this.props.settings;
@@ -2675,70 +2955,6 @@ var DivisionTab = function (_React$Component) {
 exports.default = DivisionTab;
 
 },{"../If":15,"../elements/FloatValue":18,"../elements/ProgressBar":19,"../elements/TextValue":20}],26:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var OtherTab = function (_React$Component) {
-    _inherits(OtherTab, _React$Component);
-
-    function OtherTab() {
-        _classCallCheck(this, OtherTab);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(OtherTab).apply(this, arguments));
-    }
-
-    _createClass(OtherTab, [{
-        key: "render",
-        value: function render() {
-            if (battleEyeLive.nbpStats === null) {
-                return React.createElement(
-                    "div",
-                    { className: "bel-spinner" },
-                    React.createElement("div", { className: "rect1" }),
-                    React.createElement("div", { className: "rect2" }),
-                    React.createElement("div", { className: "rect3" }),
-                    React.createElement("div", { className: "rect4" }),
-                    React.createElement("div", { className: "rect5" })
-                );
-            }
-
-            return React.createElement(
-                "div",
-                { className: "text-left" },
-                React.createElement(
-                    "div",
-                    { className: "bel-col-1-3" },
-                    React.createElement(
-                        "b",
-                        null,
-                        "Highest hit:"
-                    ),
-                    " ",
-                    parseInt(battleEyeLive.nbpStats.maxHit).toLocaleString()
-                ),
-                React.createElement("div", { className: "bel-col-1-3" }),
-                React.createElement("div", { className: "bel-col-1-3" })
-            );
-        }
-    }]);
-
-    return OtherTab;
-}(React.Component);
-
-exports.default = OtherTab;
-
-},{}],27:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2773,7 +2989,7 @@ var OverallTab = function (_React$Component) {
     function OverallTab() {
         _classCallCheck(this, OverallTab);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(OverallTab).apply(this, arguments));
+        return _possibleConstructorReturn(this, (OverallTab.__proto__ || Object.getPrototypeOf(OverallTab)).apply(this, arguments));
     }
 
     _createClass(OverallTab, [{
@@ -2792,6 +3008,10 @@ var OverallTab = function (_React$Component) {
             var left = this.props.data.left;
             var right = this.props.data.right;
             var settings = this.props.settings;
+
+            if (this.props.tab != 'overall') {
+                return null;
+            }
 
             return React.createElement(
                 'div',
@@ -2958,14 +3178,26 @@ var OverallTab = function (_React$Component) {
 
 exports.default = OverallTab;
 
-},{"../If":15,"../elements/FloatValue":18,"../elements/ProgressBar":19}],28:[function(require,module,exports){
-"use strict";
+},{"../If":15,"../elements/FloatValue":18,"../elements/ProgressBar":19}],27:[function(require,module,exports){
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _If = require('../If');
+
+var _If2 = _interopRequireDefault(_If);
+
+var _TabSelector = require('./TabSelector');
+
+var _TabSelector2 = _interopRequireDefault(_TabSelector);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2979,72 +3211,271 @@ var SummaryTab = function (_React$Component) {
     function SummaryTab() {
         _classCallCheck(this, SummaryTab);
 
-        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SummaryTab).call(this));
+        var _this = _possibleConstructorReturn(this, (SummaryTab.__proto__ || Object.getPrototypeOf(SummaryTab)).call(this));
 
-        _this.loading = false;
+        _this.state = {
+            step: 0,
+            progress: {
+                current: 0,
+                max: SERVER_DATA.zoneId + 1,
+                status: "Fetching data"
+            },
+            tab: 'overall',
+            division: 'overall'
+        };
+
+        _this.data = {
+            left: null,
+            right: null,
+            data: null
+        };
+
         return _this;
     }
 
     _createClass(SummaryTab, [{
-        key: "renderSummary",
-        value: function renderSummary() {}
-    }, {
-        key: "renderButton",
-        value: function renderButton() {
+        key: 'renderIndex',
+        value: function renderIndex() {
             return React.createElement(
-                "div",
-                { id: "bel-summary", className: "text-center" },
+                'div',
+                null,
                 React.createElement(
-                    "div",
+                    'button',
+                    { onClick: this.generateSummary.bind(this), className: 'bel-btn bel-btn-info' },
+                    'Generate summary'
+                )
+            );
+        }
+    }, {
+        key: 'renderProgress',
+        value: function renderProgress() {
+            var style = {
+                width: Math.round(this.state.progress.current / this.state.progress.max * 100) + "%"
+            };
+
+            return React.createElement(
+                'div',
+                null,
+                React.createElement(
+                    'h4',
                     null,
-                    "This will generate a summary of this battle till this point. The process can take up to 20 seconds. ",
-                    React.createElement("br", null),
-                    "Please use this tool only when necessary, as it is quite a heavy process."
+                    this.state.progress.status
                 ),
                 React.createElement(
-                    "button",
-                    { id: "bel-generate-summary", onClick: this.showLoader, className: "bel-btn bel-btn-info" },
-                    "GENERATE"
+                    'div',
+                    { className: 'bel-progress' },
+                    React.createElement('div', { className: 'bel-progress-bar bel-teama', style: style })
                 )
             );
         }
     }, {
-        key: "showLoader",
-        value: function showLoader() {
-            this.loading = true;
-            console.log('Show loader');
+        key: 'generateSummary',
+        value: function generateSummary() {
+            var _this2 = this;
+
+            var self = this;
+            self.state.step = 1;
+            window.BattleEye.generateSummary();
+
+            window.BattleEye.events.on('summary.update', function (step) {
+                self.state.progress.status = 'Fetched round ' + step;
+                self.state.progress.current = step;
+            });
+
+            window.BattleEye.events.on('summary.finished', function (_ref) {
+                var _ref2 = _slicedToArray(_ref, 3);
+
+                var left = _ref2[0];
+                var right = _ref2[1];
+                var rounds = _ref2[2];
+
+                self.state.progress.status = 'Data fetching done. Organizing data';
+
+                self.data.left = left;
+                self.data.right = right;
+                self.data.rounds = rounds;
+
+                _this2.state.step = 2;
+            });
         }
     }, {
-        key: "renderLoader",
-        value: function renderLoader() {
-            return React.createElement(
-                "div",
-                { id: "bel-summary", className: "text-center" },
-                React.createElement(
-                    "div",
-                    { className: "bel-spinner text-center" },
-                    React.createElement("div", { className: "rect1" }),
-                    React.createElement("div", { className: "rect2" }),
-                    React.createElement("div", { className: "rect3" }),
-                    React.createElement("div", { className: "rect4" }),
-                    React.createElement("div", { className: "rect5" })
-                )
-            );
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            if (false) {
-                return this.renderSummary();
-            } else {
-                if (this.loading) {
-                    return this.renderLoader();
+        key: 'getStats',
+        value: function getStats(side) {
+            var content = [];
+            var countries = [];
+
+            // console.log(this.state.tab);
+
+            if (this.state.tab.startsWith('round')) {
+                var round = parseInt(this.state.tab.replace(/^\D+/g, ''));
+                if (this.state.division.startsWith('div')) {
+                    countries = this.data.rounds[round][side].divisions[this.state.division].countries;
                 } else {
-                    return this.renderButton();
+                    countries = this.data.rounds[round][side].countries;
                 }
+            } else {
+                if (this.state.division.startsWith('div')) {
+                    countries = this.data[side].divisions[this.state.division].countries;
+                } else {
+                    countries = this.data[side].countries;
+                }
+                // countries = this.data[side].divisions[this.state.tab].countries;
             }
 
-            return null;
+            for (var i in countries) {
+                var c = countries[i];
+
+                content.push(React.createElement(
+                    'div',
+                    null,
+                    React.createElement(
+                        _If2.default,
+                        { test: side == "right" },
+                        React.createElement('div', { style: this.getFlagStyle(i), className: 'bel-country' })
+                    ),
+                    React.createElement(
+                        _If2.default,
+                        { test: side != "right" },
+                        React.createElement(
+                            'span',
+                            { className: 'bel-stat-spacer' },
+                            React.createElement(
+                                'span',
+                                { className: 'tooltip-kills bel-value' },
+                                c.kills.toLocaleString()
+                            )
+                        ),
+                        React.createElement(
+                            'span',
+                            { className: 'bel-stat-spacer' },
+                            React.createElement(
+                                'span',
+                                { className: 'tooltip-damage bel-value' },
+                                c.damage.toLocaleString()
+                            )
+                        ),
+                        React.createElement('span', { className: 'bel-spacer-sm' })
+                    ),
+                    React.createElement(
+                        'b',
+                        { className: 'bel-color-belize' },
+                        i
+                    ),
+                    React.createElement(
+                        _If2.default,
+                        { test: side == "left" },
+                        React.createElement('div', { style: this.getFlagStyle(i), className: 'bel-country' })
+                    ),
+                    React.createElement(
+                        _If2.default,
+                        { test: side != "left" },
+                        React.createElement('span', { className: 'bel-spacer-sm' }),
+                        React.createElement(
+                            'span',
+                            { className: 'bel-stat-spacer' },
+                            React.createElement(
+                                'span',
+                                { className: 'tooltip-damage bel-value' },
+                                c.damage.toLocaleString()
+                            )
+                        ),
+                        React.createElement(
+                            'span',
+                            { className: 'bel-stat-spacer' },
+                            React.createElement(
+                                'span',
+                                { className: 'tooltip-kills bel-value' },
+                                c.kills.toLocaleString()
+                            )
+                        )
+                    ),
+                    React.createElement('hr', { className: 'bel' })
+                ));
+            }
+
+            return content;
+        }
+    }, {
+        key: 'getRoundButtons',
+        value: function getRoundButtons() {
+            var tabs = [['overall', 'Battle Total']];
+
+            for (var i = 1; i < SERVER_DATA.zoneId; i++) {
+                tabs.push(['round' + i, 'Round ' + i]);
+            }
+
+            return tabs;
+        }
+    }, {
+        key: 'getDivisionButtons',
+        value: function getDivisionButtons() {
+            var tabs = [['overall', 'Battle Total'], ['div1', 'DIV1'], ['div2', 'DIV2'], ['div3', 'DIV3'], ['div4', 'DIV4']];
+
+            return tabs;
+        }
+    }, {
+        key: 'changeRound',
+        value: function changeRound(tab) {
+            this.setState({
+                tab: tab
+            });
+        }
+    }, {
+        key: 'changeDivision',
+        value: function changeDivision(tab) {
+            this.setState({
+                division: tab
+            });
+        }
+    }, {
+        key: 'renderSummary',
+        value: function renderSummary() {
+            return React.createElement(
+                'div',
+                null,
+                React.createElement(_TabSelector2.default, { changeTab: this.changeRound.bind(this), tab: this.state.tab, buttons: this.getRoundButtons() }),
+                React.createElement(_TabSelector2.default, { changeTab: this.changeDivision.bind(this), tab: this.state.division, buttons: this.getDivisionButtons() }),
+                React.createElement(
+                    'div',
+                    { className: 'bel-country-list' },
+                    React.createElement(
+                        'div',
+                        { className: 'bel-col-1-2 text-right' },
+                        this.getStats('left')
+                    ),
+                    React.createElement(
+                        'div',
+                        { className: 'bel-col-1-2 text-left' },
+                        this.getStats('right')
+                    )
+                )
+            );
+        }
+    }, {
+        key: 'getFlagStyle',
+        value: function getFlagStyle(c) {
+            return {
+                backgroundImage: 'url(\'/images/flags_png/L/' + c + '.png\')',
+                backgroundPosition: "-4px -4px"
+            };
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            if (this.props.tab != 'summary') {
+                return null;
+            }
+
+            switch (this.state.step) {
+                case 0:
+                    return this.renderIndex();
+                case 1:
+                    return this.renderProgress();
+                case 2:
+                    return this.renderSummary();
+                default:
+                    return null;
+            }
         }
     }]);
 
@@ -3053,7 +3484,7 @@ var SummaryTab = function (_React$Component) {
 
 exports.default = SummaryTab;
 
-},{}],29:[function(require,module,exports){
+},{"../If":15,"./TabSelector":28}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3074,7 +3505,7 @@ var TabSelector = function (_React$Component) {
     function TabSelector() {
         _classCallCheck(this, TabSelector);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(TabSelector).apply(this, arguments));
+        return _possibleConstructorReturn(this, (TabSelector.__proto__ || Object.getPrototypeOf(TabSelector)).apply(this, arguments));
     }
 
     _createClass(TabSelector, [{
@@ -3118,7 +3549,7 @@ var TabSelector = function (_React$Component) {
 
 exports.default = TabSelector;
 
-},{}],30:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3130,10 +3561,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _DivisionTab = require('./DivisionTab');
 
 var _DivisionTab2 = _interopRequireDefault(_DivisionTab);
-
-var _OtherTab = require('./OtherTab');
-
-var _OtherTab2 = _interopRequireDefault(_OtherTab);
 
 var _CountriesTab = require('./CountriesTab');
 
@@ -3161,7 +3588,7 @@ var Tabs = function (_React$Component) {
     function Tabs() {
         _classCallCheck(this, Tabs);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(Tabs).apply(this, arguments));
+        return _possibleConstructorReturn(this, (Tabs.__proto__ || Object.getPrototypeOf(Tabs)).apply(this, arguments));
     }
 
     _createClass(Tabs, [{
@@ -3209,7 +3636,7 @@ var Tabs = function (_React$Component) {
                 divData.left = this.props.data.left.divisions['div' + info[0]];
                 divData.right = this.props.data.right.divisions['div' + info[0]];
 
-                divs.push(React.createElement(_DivisionTab2.default, { data: divData, div: info, settings: this.props.settings }));
+                divs.push(React.createElement(_DivisionTab2.default, { tab: this.props.tab, data: divData, div: info, settings: this.props.settings }));
             }
 
             return divs;
@@ -3221,7 +3648,7 @@ var Tabs = function (_React$Component) {
             data.left = this.props.data.left;
             data.right = this.props.data.right;
 
-            return React.createElement(_OverallTab2.default, { data: data, settings: this.props.settings });
+            return React.createElement(_OverallTab2.default, { tab: this.props.tab, data: data, settings: this.props.settings });
         }
     }, {
         key: 'renderCountries',
@@ -3230,32 +3657,32 @@ var Tabs = function (_React$Component) {
             data.left = this.props.data.left;
             data.right = this.props.data.right;
 
-            return React.createElement(_CountriesTab2.default, { data: data, settings: this.props.settings });
-        }
-    }, {
-        key: 'renderOther',
-        value: function renderOther() {
-            return React.createElement(_OtherTab2.default, null);
+            return React.createElement(_CountriesTab2.default, { tab: this.props.tab, data: data, settings: this.props.settings });
         }
     }, {
         key: 'renderSummary',
         value: function renderSummary() {
-            return React.createElement(_SummaryTab2.default, null);
+            return React.createElement(_SummaryTab2.default, { tab: this.props.tab });
         }
     }, {
         key: 'getContent',
         value: function getContent() {
-            if (this.props.tab == 'div') {
-                return this.renderDivisions();
-            } else if (this.props.tab == 'overall') {
-                return this.renderOverall();
-            } else if (this.props.tab == 'countries') {
-                return this.renderCountries();
-            } else if (this.props.tab == 'summary') {
-                return this.renderSummary();
-            }
-            // else if(this.props.tab == 'other'){
-            //     return this.renderOther();
+            return React.createElement(
+                'div',
+                null,
+                this.renderDivisions(),
+                this.renderOverall(),
+                this.renderCountries(),
+                this.renderSummary()
+            );
+            // if(this.props.tab == 'div'){
+            //     return this.renderDivisions();
+            // }else if(this.props.tab == 'overall'){
+            //     return this.renderOverall();
+            // }else if(this.props.tab == 'countries'){
+            //     return this.renderCountries();
+            // }else if(this.props.tab == 'summary'){
+            //     return this.renderSummary();
             // }
         }
     }, {
@@ -3274,7 +3701,7 @@ var Tabs = function (_React$Component) {
 
 exports.default = Tabs;
 
-},{"./CountriesTab":24,"./DivisionTab":25,"./OtherTab":26,"./OverallTab":27,"./SummaryTab":28}],31:[function(require,module,exports){
+},{"./CountriesTab":24,"./DivisionTab":25,"./OverallTab":26,"./SummaryTab":27}],30:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3301,7 +3728,7 @@ var AutoShooter = function (_Module) {
     function AutoShooter() {
         _classCallCheck(this, AutoShooter);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(AutoShooter).call(this, 'AutoShooter', 'Automatically shoots, when the FIGHT button is held'));
+        return _possibleConstructorReturn(this, (AutoShooter.__proto__ || Object.getPrototypeOf(AutoShooter)).call(this, 'AutoShooter', 'Automatically shoots, when the FIGHT button is held'));
     }
 
     /**
@@ -3439,7 +3866,7 @@ var AutoShooter = function (_Module) {
 
 exports.default = AutoShooter;
 
-},{"./Module":32}],32:[function(require,module,exports){
+},{"./Module":31}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3452,7 +3879,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Module = function () {
     function Module(name, description) {
-        var autoload = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+        var autoload = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 
         _classCallCheck(this, Module);
 
@@ -3479,7 +3906,7 @@ var Module = function () {
 
 exports.default = Module;
 
-},{}],33:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3540,7 +3967,7 @@ var ModuleLoader = function () {
 
 exports.default = ModuleLoader;
 
-},{"./Module":32}],34:[function(require,module,exports){
+},{"./Module":31}],33:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3567,7 +3994,7 @@ var Other = function (_Module) {
     function Other() {
         _classCallCheck(this, Other);
 
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(Other).call(this, 'Other', 'Other miscellaneous enhancements'));
+        return _possibleConstructorReturn(this, (Other.__proto__ || Object.getPrototypeOf(Other)).call(this, 'Other', 'Other miscellaneous enhancements'));
     }
 
     _createClass(Other, [{
@@ -3599,20 +4026,16 @@ var Other = function (_Module) {
 
 exports.default = Other;
 
-},{"./Module":32}],35:[function(require,module,exports){
+},{"./Module":31}],34:[function(require,module,exports){
 'use strict';
 
-var _BattleEye = require('./BattleEye');
-
-var _BattleEye2 = _interopRequireDefault(_BattleEye);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+window.BattleEye = require('./BattleEye');
 
 setTimeout(function () {
-    _BattleEye2.default.overridePomelo();
+    window.BattleEye.overridePomelo();
 }, 2000);
 
-},{"./BattleEye":1}]},{},[35])
+},{"./BattleEye":1}]},{},[34])
 
 
 //# sourceMappingURL=build.js.map

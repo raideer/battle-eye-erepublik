@@ -31,6 +31,28 @@ class StyleSheet{
                 }
             }
 
+            @keyframes connectionAlert{
+                49%{
+                    background-color: #34495e;
+                }
+                50%{
+                    background-color: #e74c3c;
+                }
+            }
+
+            .bel-disconnectedAlert{
+                animation: connectionAlert 1s infinite;
+            }
+
+            .bel-status-log{
+                padding: 2px;
+                text-align: right;
+                margin: 4px 0;
+                font-size: 0.8em;
+                color: #8c8c8c;
+                width: 100%;
+            }
+
             .bel-spinner {
               width: 50px;
               height: 20px;
@@ -91,6 +113,28 @@ class StyleSheet{
             hr.bel{
                  border: 0; height: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.3);
             }
+
+            .bel-stat-spacer{
+                padding-right: 2px;
+                padding-left: 2px;
+            }
+
+            .bel-color-emerald{
+                color: #2ecc71;
+            }
+
+            .bel-color-belize{
+                color: #2980b9;
+            }
+
+            .bel-color-amethyst{
+                color: #9b59b6;
+            }
+
+            .bel-spacer-sm{
+                display: inline-block;
+                width: 15px;
+            }
         `;
 
         this.addCSSRule('.clearfix:after', `
@@ -98,6 +142,22 @@ class StyleSheet{
             display: table;
             clear: both;
         `);
+
+        this.addCSSRule('.bel-alert', `
+            background-color: #34495e;
+            color:#ecf0f1;
+            padding: 3px 8px;
+            border-radius:4px;
+            margin-right:4px;
+        `);
+
+        this.addCSSRule('.bel-alert-danger', `
+            background-color: #e74c3c;
+        `);
+
+
+        // this.addCSSRule('.bel-version', 'background-color: #34495e;color:#ecf0f1;padding: 3px 8px;border-radius:4px;margin-right:4px;');
+        // this.addCSSRule('.bel-version-outdated', 'background-color: #e74c3c;');
 
         // this.addCSSRule('.belFeedValue:after', `
         //     content: "";
@@ -155,7 +215,7 @@ class StyleSheet{
             right: 0;
         `);
 
-        this.addCSSRule('#bel-country-list', `
+        this.addCSSRule('.bel-country-list', `
             max-height: 400px;
             overflow-y: scroll;
         `);

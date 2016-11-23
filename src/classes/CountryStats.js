@@ -3,7 +3,7 @@ export default class CountryStats{
         this.countries = {};
     }
 
-    handle(data){
+    handle(data, addKill = true, addDamage = true){
         var country = data.msg.permalink;
         if(!this.countries[country]){
             this.countries[country] = {
@@ -12,8 +12,13 @@ export default class CountryStats{
             }
         }
 
-        this.countries[country].damage += data.msg.damage;
-        this.countries[country].kills ++;
+        if(addDamage){
+            this.countries[country].damage += data.msg.damage;
+        }
+
+        if(addKill){
+            this.countries[country].kills += 1;
+        }
     }
 
     handleBare(data){
@@ -27,7 +32,18 @@ export default class CountryStats{
         ob.msg.damage = data.damage;
         ob.msg.permalink = data.permalink;
 
-        this.handle(ob);
+        this.handle(ob, false);
+    }
+
+    handleKills(country, value){
+        if(!this.countries[country]){
+            this.countries[country] = {
+                damage: 0,
+                kills: 0
+            }
+        }
+
+        this.countries[country].kills += value;
     }
 
     getAll(){

@@ -11,10 +11,17 @@ import AutoShooterModule from './classes/modules/AutoShooter';
 
 class BattleEye{
     constructor(){
+        var self = this;
+        window.BattleEye = this;
         window.storage = this.storage = new SettingsStorage();
+        window.viewData = {
+            connected: true
+        };
+
         if(this.storage === false){
             return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
         }
+
 
         this.defineDefaultSettings();
 
@@ -66,20 +73,29 @@ class BattleEye{
             }
         }
 
+        self.forceDisconnect = pomelo.disconnect;
+        pomelo.disconnect = () => {};
+
+        this.events.on('layout.ready', (layout)=>{
+            layout.update(self.getTeamStats());
+            self.checkForUpdates();
+            self.getNbpStats(SERVER_DATA.battleId).then((data)=>{
+                if(!data.zone_finished){
+                    self.loadBattleStats();
+                }else{
+                    $j('#bel-loading').hide();
+                }
+            });
+
+            modules.run();
+        });
+
         this.layout = new Layout({
             'teamAName': this.teamAName,
             'teamBName': this.teamBName,
             'version': GM_info.script.version,
             'revolutionCountry': this.revolutionCountry
-        });
-
-        this.layout.update(this.getTeamStats());
-
-        pomelo.disconnect = () => {};
-
-        this.checkForUpdates();
-
-        this.loadBattleStats();
+        }, this);
 
         this.defineListeners();
 
@@ -87,7 +103,7 @@ class BattleEye{
 
         this.handleEvents();
 
-        modules.run();
+        console.log('Constructor end');
     }
 
     defineListeners(){
@@ -103,12 +119,25 @@ class BattleEye{
                 value = input.value;
             }
             self.storage.set(input.name, value);
-            self.settings[input.name].value = value;
+            window.settings[input.name].value = value;
 
             var targetAtt = $j(this).attr('id');
 
+            self.events.emit('log', `Updated setting ${input.name} to ${value}`);
+
             $j("label[for=\""+targetAtt+"\"]").notify("Saved", {position: "right middle", className: "success"});
         });
+    }
+
+    sortByValue(obj){
+        var sorted = {};
+        var sortedKeys = Object.keys(obj).sort((a,b) => {return obj[a]-obj[b];}).reverse();
+
+        for(var i in sortedKeys){
+        	sorted[sortedKeys[i]] = obj[sortedKeys[i]];
+        }
+
+        return sorted;
     }
 
     defineDefaultSettings(){
@@ -120,7 +149,7 @@ class BattleEye{
         }
 
         var settings = [
-            ['showOtherDivs', true, 'Structure', "Show other divisions", "You can select what divisions you want to see with the settings below."],
+            ['showOtherDivs', false, 'Structure', "Show other divisions", "You can select what divisions you want to see with the settings below."],
             ['showDiv1', true, 'Structure', "Show DIV 1"],
             ['showDiv2', true, 'Structure', "Show DIV 2"],
             ['showDiv3', true, 'Structure', "Show DIV 3"],
@@ -145,10 +174,10 @@ class BattleEye{
         define(settings);
     }
 
-    updateNbpStats(cb){
+    getNbpStats(battleId, cb){
         var self = this;
         return new Promise((resolve, reject)=>{
-            $j.get('https://www.erepublik.com/en/military/nbp-stats/85503/2', function(data) {
+            $j.get('https://www.erepublik.com/en/military/nbp-stats/' + battleId, function(data) {
                 data = JSON.parse(data);
                 resolve(data);
                 if(typeof cb === 'function'){
@@ -160,17 +189,10 @@ class BattleEye{
         });
     }
 
-    loadBattleStats(){
-        var self = this;
-
-        if(!window.settings.gatherBattleStats.value){
-            return $j('#bel-loading').hide();
-        }
-
-        var processData = (data) => {
-            console.log('Processing data');
-            console.log(data);
+    processBattleStats(data, teamA, teamB){
+        return new Promise((resolve, reject)=>{
             var divs = [1,2,3,4,11];
+            var hit, dmg, i, bareData, killValue;
 
             for(var d in divs){
                 var div = divs[d];
@@ -179,58 +201,81 @@ class BattleEye{
                 var leftKl = 0;
                 var rightKl = 0;
 
-                for(var i in data.leftDamage['div' + div]){
-                    var hit = data.leftDamage['div' + div][i];
-                    var dmg = (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
+                for(i in data.leftDamage['div' + div]){
+                    hit = data.leftDamage['div' + div][i];
+                    dmg = (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
                     leftDmg += dmg;
 
-                    var bareData = {
-                        damage: dmg,
-                        permalink: hit.country_permalink
-                    }
-
-                    self.teamA.countries.handleBare(bareData);
-                    self.teamA.divisions.get('div' + div).countries.handleBare(bareData);
-                }
-
-                for(var i in data.rightDamage['div' + div]){
-                    var hit = data.rightDamage['div' + div][i];
-                    var dmg = (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
-                    rightDmg += dmg;
-
-                    var bareData = {
+                    bareData = {
                         damage: dmg,
                         permalink: hit.country_permalink
                     };
 
-                    self.teamB.countries.handleBare(bareData);
-                    self.teamB.divisions.get('div' + div).countries.handleBare(bareData);
+                    teamA.countries.handleBare(bareData);
+                    teamA.divisions.get('div' + div).countries.handleBare(bareData);
                 }
 
-                for(var i in data.leftKills['div' + div]){
-                    var hit = data.leftKills['div' + div][i];
-                    leftKl += (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
+                for(i in data.rightDamage['div' + div]){
+                    hit = data.rightDamage['div' + div][i];
+                    dmg = (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
+                    rightDmg += dmg;
+
+                    bareData = {
+                        damage: dmg,
+                        permalink: hit.country_permalink
+                    };
+
+                    teamB.countries.handleBare(bareData);
+                    teamB.divisions.get('div' + div).countries.handleBare(bareData);
                 }
 
-                for(var i in data.rightKills['div' + div]){
-                    var hit = data.rightKills['div' + div][i];
-                    rightKl += (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
+                for(i in data.leftKills['div' + div]){
+                    hit = data.leftKills['div' + div][i];
+                    killValue = (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
+                    leftKl += killValue;
+                    teamA.countries.handleKills(hit.country_permalink, killValue);
+                    teamA.divisions.get('div' + div).countries.handleKills(hit.country_permalink, killValue);
                 }
 
-                self.teamA.divisions.get('div' + div).damage += leftDmg;
-                self.teamB.divisions.get('div' + div).damage += rightDmg;
-                self.teamA.damage += leftDmg;
-                self.teamB.damage += rightDmg;
-                self.teamA.divisions.get('div' + div).hits += leftKl;
-                self.teamB.divisions.get('div' + div).hits += rightKl;
-                self.teamA.hits += leftKl;
-                self.teamB.hits += rightKl;
+                for(i in data.rightKills['div' + div]){
+                    hit = data.rightKills['div' + div][i];
+                    killValue = (Number.isInteger(hit.value))?hit.value:Number(hit.value.replace(/[,\.]/g,''));
+                    rightKl += killValue;
+                    teamB.countries.handleKills(hit.country_permalink, killValue);
+                    teamB.divisions.get('div' + div).countries.handleKills(hit.country_permalink, killValue);
+                }
+
+                teamA.divisions.get('div' + div).damage += leftDmg;
+                teamB.divisions.get('div' + div).damage += rightDmg;
+                teamA.damage += leftDmg;
+                teamB.damage += rightDmg;
+                teamA.divisions.get('div' + div).hits += leftKl;
+                teamB.divisions.get('div' + div).hits += rightKl;
+                teamA.hits += leftKl;
+                teamB.hits += rightKl;
             }
 
-            $j('#bel-loading').hide();
+
+            resolve();
+        });
+    }
+
+    loadBattleStats(){
+        var self = this;
+
+        if(!window.settings.gatherBattleStats.value){
+            self.events.emit('log', 'Battle stat fetching canceled since the battle is over.');
+            return $j('#bel-loading').hide();
         }
 
-        this.getBattleStats().then(processData);
+        self.getBattleStats().then((data)=>{
+            self.events.emit('log', 'Battle stats fetched. Processing...');
+            return self.processBattleStats(data, self.teamA, self.teamB);
+        }).then(()=>{
+            self.events.emit('log', 'Battle stats loaded.');
+            $j('#bel-loading').hide();
+            self.layout.update(self.getTeamStats());
+        });
     }
 
     resetSettings(){
@@ -249,15 +294,77 @@ class BattleEye{
                 var version = parseInt(data.version.replace(/\D/g,""));
                 var currentVersion = parseInt(GM_info.script.version.replace(/\D/g,""));
                 if(currentVersion != version){
-                    document.querySelector('.bel-version').classList.add('bel-version-outdated');
+                    document.querySelector('#bel-version .bel-alert').classList.add('bel-alert-danger');
                     document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="'+data.updateUrl+'">Update</a>';
                 }
 
                 console.log('[BATTLEEYE] Data JSON received and processed');
+                self.events.emit('log', 'Data.json synced');
                 resolve(data);
             }).error(function(error){
                 console.error('[BATTLEEYE] Failed to download data.json');
                 reject(error);
+            });
+        });
+    }
+
+    generateSummary(){
+        var self = this;
+        var data = [];
+        this.step = 1;
+        self.events.emit('log', 'Generating summary...');
+        var round = 1;
+        function getStats(cb){
+            var divRange = [1,2,3,4];
+            if(round % 4 === 0){
+                divRange = [11];
+            }
+
+            self.getBattleStats(round, divRange).then((stats)=>{
+                self.events.emit('summary.update', round);
+                data[round] = stats;
+                round++;
+                if(round <= SERVER_DATA.zoneId){
+                    getStats(cb);
+                }else{
+                    cb();
+                }
+            });
+        }
+
+        getStats(()=>{
+            // console.log(data);
+            var left = new Stats(SERVER_DATA.leftBattleId);
+            var right = new Stats(SERVER_DATA.rightBattleId);
+            var rounds = [];
+
+            left.defender = (SERVER_DATA.defenderId == SERVER_DATA.leftBattleId);
+            right.defender = (SERVER_DATA.defenderId != SERVER_DATA.leftBattleId);
+
+            async.eachOf(data, (roundStats, key, cb)=>{
+                if(!roundStats) cb();
+                self.processBattleStats(roundStats, left, right).then(()=>{
+                    rounds[key] = {
+                        left: new Stats(SERVER_DATA.leftBattleId),
+                        right: new Stats(SERVER_DATA.rightBattleId)
+                    };
+
+                    rounds[key].left.defender = (SERVER_DATA.defenderId == SERVER_DATA.leftBattleId);
+                    rounds[key].right.defender = (SERVER_DATA.defenderId != SERVER_DATA.leftBattleId);
+
+                    self.processBattleStats(roundStats, rounds[key].left, rounds[key].right).then(()=>{
+                        self.events.emit('log', 'Processed round ' + (key+1));
+                        cb();
+                    });
+                });
+            }, ()=>{
+                for(var i in rounds){
+                    rounds[i].left = rounds[i].left.toObject();
+                    rounds[i].right = rounds[i].right.toObject();
+                }
+
+                self.events.emit('summary.finished', [left.toObject(), right.toObject(), rounds, data]);
+                self.events.emit('log', 'Summary data fetching done');
             });
         });
     }
@@ -275,8 +382,8 @@ class BattleEye{
                 var cId = players[j];
                 if(erepublik.citizen.citizenId == cId){
                     $j('#battleConsole .left_player .player_name').css({
-                        textShadow: `0 0 10px ${color} !important`,
-                        color: `${color} !important`
+                        textShadow: `0 0 10px ${color}`,
+                        color: `${color}`
                     }).attr('original-title', "BattleEye contributor").tipsy();
                 }else if($j('li[data-citizen-id="'+cId+'"] .player_name a').length > 0){
                     $j('li[data-citizen-id="'+cId+'"] .player_name a').css({
@@ -295,7 +402,7 @@ class BattleEye{
         };
     }
 
-    getBattleStats(){
+    getBattleStats(round = SERVER_DATA.zoneId, divRange = null){
         var self = this;
 
         return new Promise((resolve, reject) => {
@@ -321,9 +428,9 @@ class BattleEye{
                         division: div,
                         leftPage: pageLeft,
                         rightPage: pageRight,
-                        round: SERVER_DATA.zoneId,
+                        round: round,
                         type: type,
-                        zoneId: parseInt(SERVER_DATA.zoneId, 10)
+                        zoneId: parseInt(round, 10)
                     }, function(data) {
                         resolve(data);
                     });
@@ -333,13 +440,14 @@ class BattleEye{
             var damageHandler = function(div, cb){
                 var page = 1;
                 var maxPage = 1;
+                var i;
 
                 async.doWhilst(function(whileCb){
                     request(div, page, page, 'damage').then((data) => {
-                        for(var i in data[attacker].fighterData){
+                        for(i in data[attacker].fighterData){
                             leftDamage['div'+div].push(data[attacker].fighterData[i]);
                         }
-                        for(var i in data[defender].fighterData){
+                        for(i in data[defender].fighterData){
                             rightDamage['div'+div].push(data[defender].fighterData[i]);
                         }
 
@@ -347,6 +455,7 @@ class BattleEye{
 
                         if(window.settings.enableLogging.value){
                             console.log('[BATTLEEYE] Finished damage page '+page+"/"+maxPage+" div"+div);
+                            self.events.emit('log', `Fetched damage ${page}/${maxPage} for div${div}`);
                         }
 
                         page++;
@@ -376,6 +485,7 @@ class BattleEye{
                         maxPage = Math.max(data[attacker].pages, data[defender].pages);
                         if(window.settings.enableLogging.value){
                             console.log('[BATTLEEYE] Finished kill page '+page+"/"+maxPage+" div"+div);
+                            self.events.emit('log', `Fetched kills ${page}/${maxPage} for div${div}`);
                         }
                         page++;
 
@@ -388,11 +498,12 @@ class BattleEye{
                 });
             };
 
-            var divRange = (SERVER_DATA.division == 11)?[11]:[1,2,3,4];
+            if(divRange === null){
+                divRange = (SERVER_DATA.division == 11)?[11]:[1,2,3,4];
+            }
 
             async.each(divRange, damageHandler.bind(self), function(){
                 async.each(divRange, killsHandler.bind(self), function(){
-                    console.log('Finished fetching data');
                     resolve({leftDamage, rightDamage, leftKills, rightKills});
                 });
             });
@@ -401,16 +512,17 @@ class BattleEye{
 
     runTicker(){
         var second = 0;
+        var self = this;
 
         var ticker = () => {
             second++;
-            this.events.emit('tick', {
+            self.events.emit('tick', {
                 second: second,
                 time: new Date().getTime()
             });
         };
 
-        this.interval = setInterval(ticker.call(this), 1000);
+        this.interval = setInterval(ticker, 1000);
     }
 
     handleEvents(){
@@ -437,9 +549,10 @@ class BattleEye{
         pomelo.on('onMessage', handler);
         pomelo.on('close', function(data){
             console.log('[BATTLEEYE] Socket closed ['+data.reason+']');
-            self.closed = true;
-            $j('#belClosed').show();
+            self.events.emit('log', `Connection to the battlefield was closed.`);
+            window.viewData.connected = false;
             clearTimeout(self.interval);
+            self.layout.update(self.getTeamStats());
         });
     }
 
@@ -450,7 +563,8 @@ class BattleEye{
         if(!settings.reduceLoad.value){
             self.layout.update(self.getTeamStats());
         }
+        window.viewData.connected = true;
     }
 }
 
-export default (new BattleEye());
+module.exports = new BattleEye();

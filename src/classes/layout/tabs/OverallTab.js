@@ -17,6 +17,10 @@ export default class OverallTab extends React.Component{
         var right = this.props.data.right;
         var settings = this.props.settings;
 
+        if(this.props.tab != 'overall'){
+            return null;
+        }
+
         return (
             <div>
                 <div className="bel-col-1-1 text-center bel-title bel-highlight-title">

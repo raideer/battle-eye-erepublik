@@ -14,6 +14,10 @@ export default class DivisionTab extends React.Component{
     }
 
     render(){
+        if(this.props.tab != 'div'){
+            return null;
+        }
+
         var left = this.props.data.left;
         var right = this.props.data.right;
         var settings = this.props.settings;

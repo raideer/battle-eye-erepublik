@@ -1,5 +1,4 @@
 import DivisionTab from './DivisionTab';
-import OtherTab from './OtherTab';
 import CountriesTab from './CountriesTab';
 import OverallTab from './OverallTab';
 import SummaryTab from './SummaryTab';
@@ -48,7 +47,7 @@ export default class Tabs extends React.Component{
                 divData.left = this.props.data.left.divisions['div' + info[0]];
                 divData.right = this.props.data.right.divisions['div' + info[0]];
 
-            divs.push(<DivisionTab data={divData} div={info} settings={this.props.settings}/>);
+            divs.push(<DivisionTab tab={this.props.tab} data={divData} div={info} settings={this.props.settings}/>);
         }
 
         return divs;
@@ -60,7 +59,7 @@ export default class Tabs extends React.Component{
         data.right = this.props.data.right;
 
         return (
-            <OverallTab data={data} settings={this.props.settings} />
+            <OverallTab tab={this.props.tab} data={data} settings={this.props.settings} />
         );
     }
 
@@ -70,35 +69,33 @@ export default class Tabs extends React.Component{
         data.right = this.props.data.right;
 
         return (
-            <CountriesTab data={data} settings={this.props.settings} />
-        );
-    }
-
-    renderOther(){
-        return (
-            <OtherTab />
+            <CountriesTab tab={this.props.tab} data={data} settings={this.props.settings} />
         );
     }
 
     renderSummary(){
         return (
-            <SummaryTab />
+            <SummaryTab tab={this.props.tab}/>
         );
     }
 
     getContent(){
-        if(this.props.tab == 'div'){
-            return this.renderDivisions();
-        }else if(this.props.tab == 'overall'){
-            return this.renderOverall();
-        }else if(this.props.tab == 'countries'){
-            return this.renderCountries();
-        }
-        else if(this.props.tab == 'summary'){
-            return this.renderSummary();
-        }
-        // else if(this.props.tab == 'other'){
-        //     return this.renderOther();
+        return (
+            <div>
+                {this.renderDivisions()}
+                {this.renderOverall()}
+                {this.renderCountries()}
+                {this.renderSummary()}
+            </div>
+        );
+        // if(this.props.tab == 'div'){
+        //     return this.renderDivisions();
+        // }else if(this.props.tab == 'overall'){
+        //     return this.renderOverall();
+        // }else if(this.props.tab == 'countries'){
+        //     return this.renderCountries();
+        // }else if(this.props.tab == 'summary'){
+        //     return this.renderSummary();
         // }
     }
 

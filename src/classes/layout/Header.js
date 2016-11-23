@@ -1,6 +1,17 @@
 import If from './If';
 
 export default class Header extends React.Component{
+    constructor(){
+        super();
+        var self = this;
+
+        this.state = {
+            log: null
+        };
+
+        this.listenerRegistered = false;
+    }
+
     getTeamElementStyle(){
         return {
             fontWeight: 700,
@@ -22,12 +33,33 @@ export default class Header extends React.Component{
         };
     }
 
+    componentDidUpdate(){
+        this.attachTooltip();
+    }
+
+    componentDidMount(){
+        this.attachTooltip();
+    }
+
+    attachTooltip(){
+        $j('.bel-disconnectedAlert').attr('original-title', 'Not connected to the battlefield!').tipsy();
+    }
+
     render(){
+        var self = this;
+
+        if(!this.listenerRegistered && window.BattleEye){
+            window.BattleEye.events.on('log', (text)=>{
+                self.state.log = text;
+            });
+
+            this.listenerRegistered = true;
+        }
         return (
             <div id="battle_eye_header">
                 <ul className="list-unstyled list-inline text-left bel-header-menu" style={this.getHeaderListStyle()}>
                     <li id="bel-version">
-                        <span className="bel-version">{this.props.data.version}</span> <a href="http://bit.ly/BattleEye" target="_blank">BATTLE EYE</a>
+                        <span className="bel-alert">{this.props.data.version}</span> <a href="http://bit.ly/BattleEye" target="_blank">BATTLE EYE</a>
                     </li>
 
                     <li id="bel-loading">
@@ -40,6 +72,12 @@ export default class Header extends React.Component{
                         </div>
                     </li>
 
+                    <If test={!window.viewData.connected}>
+                        <li>
+                            <span className="bel-alert bel-disconnectedAlert">Not connected!</span>
+                        </li>
+                    </If>
+
                     <li className="pull-right">
                         <ul className="list-unstyled list-inline">
                             <li><a className="bel-btn bel-btn-inverse" target="_blank" href="http://bit.ly/BattleEye">Homepage</a></li>
@@ -48,6 +86,9 @@ export default class Header extends React.Component{
                         </ul>
                     </li>
                 </ul>
+                <div className="bel-grid bel-status-log">
+                    {this.state.log}
+                </div>
                 <If test={SERVER_DATA.isCivilWar}>
                     <div className="bel-grid">
                         <div className="bel-col-1-3 text-left bel-teama-color" style={this.getTeamElementStyle()}>

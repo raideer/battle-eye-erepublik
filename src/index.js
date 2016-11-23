@@ -1,5 +1,5 @@
-import BattleEye from './BattleEye';
+window.BattleEye = require('./BattleEye');
 
 setTimeout(function(){
-    BattleEye.overridePomelo();
+    window.BattleEye.overridePomelo();
 }, 2000);

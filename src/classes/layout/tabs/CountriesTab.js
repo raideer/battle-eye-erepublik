@@ -20,6 +20,7 @@ export default class CountriesTab extends React.Component{
         var content = [];
         var countries = [];
 
+        // console.log(this.state.tab);
         if(this.state.tab == 'overall'){
             countries = this.props.data[side].countries;
         }else{
@@ -28,14 +29,25 @@ export default class CountriesTab extends React.Component{
 
         for(var i in countries){
             var c = countries[i];
+
             content.push(
                 <div>
                     <If test={side == "right"}>
                         <div style={this.getFlagStyle(i)} className="bel-country"></div>
                     </If>
-                    <b>{i}</b>: {c.damage.toLocaleString()}
+                    <If test={side != "right"}>
+                        <span className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
+                        <span className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
+                        <span className="bel-spacer-sm"></span>
+                    </If>
+                    <b className="bel-color-belize">{i}</b>
                     <If test={side == "left"}>
                         <div style={this.getFlagStyle(i)} className="bel-country"></div>
+                    </If>
+                    <If test={side != "left"}>
+                        <span className="bel-spacer-sm"></span>
+                        <span className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
+                        <span className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
                     </If>
                     <hr className="bel" />
                 </div>
@@ -45,9 +57,22 @@ export default class CountriesTab extends React.Component{
         return content;
     }
 
+    componentDidUpdate(){
+        this.attachTooltip();
+    }
+
+    componentDidMount(){
+        this.attachTooltip();
+    }
+
+    attachTooltip(){
+        $j('.tooltip-kills').attr('original-title', 'Kills').tipsy();
+        $j('.tooltip-damage').attr('original-title', 'Damage').tipsy();
+    }
+
     getTabButtons(){
         return [
-            ['overall', 'Total'],
+            ['overall', 'Round Total'],
             ['div1', 'DIV1'],
             ['div2', 'DIV2'],
             ['div3', 'DIV3'],
@@ -62,10 +87,19 @@ export default class CountriesTab extends React.Component{
     }
 
     render(){
+        if(this.props.tab != 'countries'
+            && this.props.tab != 'div1'
+            && this.props.tab != 'div2'
+            && this.props.tab != 'div3'
+            && this.props.tab != 'div4'
+        ){
+            return null;
+        }
+
         return (
             <div>
                 <TabSelector changeTab={this.changeTab.bind(this)} tab={this.state.tab} buttons={this.getTabButtons()} />
-                <div id="bel-country-list">
+                <div className="bel-country-list">
                     <div className="bel-col-1-2 text-right">
                         {this.getStats('left')}
                     </div>
