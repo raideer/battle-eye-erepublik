@@ -12,17 +12,17 @@ export default class Other extends Module{
     }
 
     run(){
-        if(settings.otherFixCometchat.value){
+        if(window.settings.otherFixCometchat.value){
             //Removing that annoying cometchat background
             var waitForCometchat = setInterval(fixCometchat, 500);
-            function fixCometchat(){
+            var fixCometchat = function(){
                 var cometchat = document.getElementById('cometchat_base');
                 if(cometchat !== null){
                     var style = "width:auto;position:aboslute;right:0;background:none;";
                     cometchat.setAttribute('style', style);
                     clearInterval(waitForCometchat);
                 }
-            }
+            };
         }
     }
 }
