@@ -7,93 +7,77 @@ export default class PercentageFixer extends Module{
 
     defineSettings(){
         return [
-            ['percFixEnabled', false, "Enable percentage fixer", "Temporary solution to eRepublik's battle stat inconsistencies"]
+            ['percFixEnabled', true, "Enable percentage fixer", "Temporary solution to eRepublik's battle stat inconsistencies"]
         ];
+    }
+
+    round(num, acc = 100000){
+        return Math.round(num*acc)/acc;
+    }
+
+    dif(target, a, b){
+        return Math.round(Math.abs(target - (a * 100 / (a + b)))*100000)/100000;
+    }
+
+    calculateFix(targetPerc, leftDamage, rightDamage){
+        if(SERVER_DATA.mustInvert){
+            targetPerc = 100 - targetPerc;
+        }
+        var leftPerc, fix;
+        var simulatedLeftDmg = leftDamage;
+        var totalFix = 0;
+        var loops = 0;
+
+        while(this.dif(targetPerc, simulatedLeftDmg, rightDamage) > 0.05){
+            leftPerc = simulatedLeftDmg * 100 / (simulatedLeftDmg + rightDamage);
+            fix = Math.round(simulatedLeftDmg * targetPerc / leftPerc - simulatedLeftDmg);
+            simulatedLeftDmg+=fix;
+            totalFix+=fix;
+            loops++;
+        }
+
+        var originalDif = this.dif(targetPerc, leftDamage, rightDamage);
+        var currentDif = this.dif(targetPerc, simulatedLeftDmg, rightDamage);
+
+        console.log('Improved from', originalDif, 'to', currentDif, 'Loops:', loops);
+
+        return Math.round(totalFix);
     }
 
     run(){
         var self = this;
-        battleEyeLive.events.on('battleConsoleLoaded', function() {
-            //Getting domination info from erepublik's nbp stats page
-            self.getNbpStats(function(data){
-                data = JSON.parse(data);
+        if(!window.settings.percFixEnabled.value){
+            return;
+        }
 
-                //Domination values for the defending side
-                var dom = data.division.domination;
+        window.BattleEye.events.on('battlestats.loaded', ()=>{
+            var left = window.BattleEye.teamA.toObject();
+            var right = window.BattleEye.teamB.toObject();
 
-                if(SERVER_DATA.division == 11){
-                    var divs = [11];
-                }else{
-                    var divs = [1,2,3,4];
-                }
-
-                //Checking each division seperately
-                for(var i in divs){
-                    var domination = dom[divs[i]];
-                    if(domination == 50){
-                        continue;
-                    }
-
-                    //Total damage left
-                    var aDamage = battleEyeLive.teamA.divisions.get('div'+divs[i]).damage;
-                    //Total damage right
-                    var bDamage = battleEyeLive.teamB.divisions.get('div'+divs[i]).damage;
-
-                    var totalDamage = 0;
-                        totalDamage += aDamage;
-                        totalDamage += bDamage;
-
-                    //Calculate BattleEye's damage percentage for the defending side
-                    if(SERVER_DATA.leftBattleId == SERVER_DATA.defenderId){
-                        var perc = (aDamage / totalDamage)*100;
-                        var left = true;
-                    }else{
-                        var perc = (bDamage / totalDamage)*100;
-                        var left = false;
-                    }
-
-                    //If percentages are not the same
-                    if(Math.round(perc) != Math.round(domination)){
-                        // log(perc, "be perc")
-                        // log(domination, 'domination perc');
-                        //
-                        // log((perc/100)*totalDamage, 'be division damage');
-                        // log((domination/100)*totalDamage, 'division damage');
-
-                        //Difference between BattleEye's expected damage and actual damage
-                        var diff = totalDamage * (perc/100) - totalDamage * (domination/100);
-                        log(diff, 'difference');
-
-                        if(diff > 0){
-                            //Adding missing damage to the defending side
-                            if(left){
-                                battleEyeLive.teamA.divisions.get('div'+divs[i]).damage += Math.round(Math.abs(diff));
-                            }else{
-                                battleEyeLive.teamB.divisions.get('div'+divs[i]).damage += Math.round(Math.abs(diff));
-                            }
-                        }else{
-                            //Adding missing damage to the attacking side
-                            if(!left){
-                                battleEyeLive.teamB.divisions.get('div'+divs[i]).damage += Math.round(Math.abs(diff));
-                            }else{
-                                battleEyeLive.teamA.divisions.get('div'+divs[i]).damage += Math.round(Math.abs(diff));
-                            }
-                        }
-
-                        log(`Div ${divs[i]} percentages fixed`);
-                    }else{
-                        log(`Div ${divs[i]} percentages are accurate`);
-                    }
-                }
-            })
-        });
-    }
-
-    getNbpStats(cb){
-        $j.get('https://www.erepublik.com/en/military/nbp-stats/'+SERVER_DATA.battleId+'/2', function (data) {
-            if(typeof cb == 'function'){
-                cb(data);
+            var divs, i, leftdmg, rightdmg;
+            if(SERVER_DATA.division === 11){
+                divs = [11];
+            }else{
+                divs = [1,2,3,4];
             }
+
+            window.BattleEye.getNbpStats(SERVER_DATA.battleId).then((stats)=>{
+                var currentInvader = stats.division.domination;
+                var fix, currentDomination, logmsg, inaccuracy, loops;
+
+                for(i in divs){
+                    leftdmg = left.divisions['div' + divs[i]].damage;
+                    rightdmg = right.divisions['div' + divs[i]].damage;
+
+                    fix = self.calculateFix(currentInvader[divs[i]], leftdmg, rightdmg);
+
+                    window.BattleEye.teamA.divisions.get('div' + divs[i]).damage += fix;
+                    logmsg = `[PERCFIX] Added ${fix.toLocaleString()} damage to div${divs[i]}`;
+                    window.BattleEye.events.emit('log', logmsg);
+                    console.log(logmsg);
+                }
+            });
+
         });
     }
 }
