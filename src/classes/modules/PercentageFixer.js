@@ -39,14 +39,14 @@ export default class PercentageFixer extends Module{
         var originalDif = this.dif(targetPerc, leftDamage, rightDamage);
         var currentDif = this.dif(targetPerc, simulatedLeftDmg, rightDamage);
 
-        console.log('Improved from', originalDif, 'to', currentDif, 'Loops:', loops);
+        belLog('Improved from', originalDif, 'to', currentDif, 'Loops:', loops);
 
         return Math.round(totalFix);
     }
 
     run(){
         var self = this;
-        if(!window.settings.percFixEnabled.value){
+        if(!window.BattleEyeSettings.percFixEnabled.value){
             return;
         }
 
@@ -72,9 +72,8 @@ export default class PercentageFixer extends Module{
                     fix = self.calculateFix(currentInvader[divs[i]], leftdmg, rightdmg);
 
                     window.BattleEye.teamA.divisions.get('div' + divs[i]).damage += fix;
-                    logmsg = `[PERCFIX] Added ${fix.toLocaleString()} damage to div${divs[i]}`;
-                    window.BattleEye.events.emit('log', logmsg);
-                    console.log(logmsg);
+                    logmsg = `Added ${fix.toLocaleString()} damage to div${divs[i]}`;
+                    belLog(logmsg);
                 }
             });
 

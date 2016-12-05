@@ -34,7 +34,6 @@ export default class Template extends React.Component{
     getTabButtons(){
         return [
             ['div', 'Divisions'],
-            ['overall', 'Total'],
             ['countries', 'Countries'],
             ['summary', 'Battle stats (beta)']
         ];
@@ -43,10 +42,10 @@ export default class Template extends React.Component{
     render(){
         return (
             <div>
-                <SettingsModal closeModal={this.closeModal.bind(this)} hidden={this.state.modalHidden} settings={this.props.settings}/>
+                <SettingsModal closeModal={this.closeModal.bind(this)} hidden={this.state.modalHidden}/>
                 <Header viewData={this.props.viewData} openModal={this.openModal.bind(this)} data={this.props.headerData}/>
                 <TabSelector changeTab={this.changeTab.bind(this)} tab={this.state.tab} buttons={this.getTabButtons()} />
-                <Tabs data={this.props.feedData} settings={this.props.settings} tab={this.state.tab} />
+                <Tabs data={this.props.feedData} tab={this.state.tab} />
                 <Footer />
             </div>
         );

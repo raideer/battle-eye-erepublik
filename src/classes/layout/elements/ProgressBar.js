@@ -16,7 +16,7 @@ export default class ProgressBar extends React.Component{
         };
 
         var progressStyle = {};
-        if(settings.largerBars.value){
+        if(window.BattleEyeSettings.largerBars.value){
             progressStyle.height = "8px";
         }
 

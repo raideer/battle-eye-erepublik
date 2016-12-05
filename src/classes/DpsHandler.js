@@ -10,7 +10,7 @@ export default class DpsHandler{
     }
 
     addHit(damage){
-        this.lastHit = new Date().getTime();
+        this.lastHit = window.BattleEye.second;
         this.hitHistory.add(damage);
     }
 
@@ -21,7 +21,7 @@ export default class DpsHandler{
         }
 
         this.dps = Math.round(recentDamage/this.hitStreakSeconds);
-        if(timeData.time - this.lastHit >= 10000){
+        if(timeData - this.lastHit >= 10){
             this.hitHistory.clear();
             this.hitStreakSeconds = 0;
         }

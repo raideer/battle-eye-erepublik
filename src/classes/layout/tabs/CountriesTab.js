@@ -16,6 +16,22 @@ export default class CountriesTab extends React.Component{
         };
     }
 
+    hashCode(str) {
+        var hash = 0;
+        for (var i = 0; i < str.length; i++) {
+           hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return hash;
+    }
+
+    intToRGB(i){
+        var c = (i & 0x00FFFFFF)
+            .toString(16)
+            .toUpperCase();
+
+        return "00000".substring(0, 6 - c.length) + c;
+    }
+
     getStats(side){
         var content = [];
         var countries = [];
@@ -27,6 +43,21 @@ export default class CountriesTab extends React.Component{
             countries = this.props.data[side].divisions[this.state.tab].countries;
         }
 
+        var chdata = [];
+        var chlabels = [];
+        var chcolors = [];
+        for(var i in countries){
+            var c = countries[i];
+            chdata.push(c.damage);
+            chlabels.push(i);
+            chcolors.push(this.intToRGB(this.hashCode(i)));
+        }
+
+        var googleImg = 'https://chart.googleapis.com/chart?chds=a&cht=p&chd=t:'+chdata.join(',')+'&chs=440x300&chco='+chcolors.join('|')+'&chl='+chlabels.join('|');
+        content.push(<div>
+            <img src={googleImg}/>
+        </div>);
+
         for(var i in countries){
             var c = countries[i];
 
@@ -36,18 +67,16 @@ export default class CountriesTab extends React.Component{
                         <div style={this.getFlagStyle(i)} className="bel-country"></div>
                     </If>
                     <If test={side != "right"}>
-                        <span className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
-                        <span className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
-                        <span className="bel-spacer-sm"></span>
+                        <span style={{float:'left'}} className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
+                        <span style={{float:'left'}} className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
                     </If>
                     <b className="bel-color-belize">{i}</b>
                     <If test={side == "left"}>
                         <div style={this.getFlagStyle(i)} className="bel-country"></div>
                     </If>
                     <If test={side != "left"}>
-                        <span className="bel-spacer-sm"></span>
-                        <span className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
-                        <span className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
+                        <span style={{float:'right'}} className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
+                        <span style={{float:'right'}} className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
                     </If>
                     <hr className="bel" />
                 </div>

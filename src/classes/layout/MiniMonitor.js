@@ -34,7 +34,7 @@ export default class MiniMonitor extends React.Component{
     }
 
     render(){
-        if(!settings.showMiniMonitor.value){
+        if(!window.BattleEyeSettings.showMiniMonitor.value){
             return null;
         }
 

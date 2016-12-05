@@ -11,11 +11,7 @@ export default class Storage{
     }
 
     set(id, value){
-        var self = this;
-        localStorage.setItem(`${self.prepend}${id}`, value);
-        // if(settings.enableLogging.value){
-            console.log(`[BATTLEEYE] ${self.prepend}${id} = ${value}`);
-        // }
+        localStorage.setItem(`${this.prepend}${id}`, value);
     }
 
     get(id){

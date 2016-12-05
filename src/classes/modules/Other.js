@@ -12,7 +12,7 @@ export default class Other extends Module{
     }
 
     run(){
-        if(window.settings.otherFixCometchat.value){
+        if(window.BattleEyeSettings.otherFixCometchat.value){
             //Removing that annoying cometchat background
             var waitForCometchat = setInterval(fixCometchat, 500);
             var fixCometchat = function(){

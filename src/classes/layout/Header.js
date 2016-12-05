@@ -45,6 +45,12 @@ export default class Header extends React.Component{
         $j('.bel-disconnectedAlert').attr('original-title', 'Not connected to the battlefield!').tipsy();
     }
 
+    getAlerts(){
+        var elements = [];
+
+        return elements;
+    }
+
     render(){
         var self = this;
 
@@ -86,6 +92,9 @@ export default class Header extends React.Component{
                         </ul>
                     </li>
                 </ul>
+                <div className="bel-grid">
+                    {this.getAlerts()}
+                </div>
                 <div className="bel-grid bel-status-log">
                     {this.state.log}
                 </div>

@@ -1,6 +1,10 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _Utils = require('./classes/Utils');
@@ -35,37 +39,42 @@ var _Other = require('./classes/modules/Other');
 
 var _Other2 = _interopRequireDefault(_Other);
 
-var _AutoShooter = require('./classes/modules/AutoShooter');
+var _PercentageFixer = require('./classes/modules/PercentageFixer');
 
-var _AutoShooter2 = _interopRequireDefault(_AutoShooter);
+var _PercentageFixer2 = _interopRequireDefault(_PercentageFixer);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+// import AutoShooterModule from './classes/modules/AutoShooter';
+
 var BattleEye = function () {
     function BattleEye() {
         _classCallCheck(this, BattleEye);
 
+        belTime('battleEyeConstructor');
         var self = this;
         window.BattleEye = this;
-        window.storage = this.storage = new _Storage2.default();
         window.viewData = {
             connected: true
         };
 
-        if (this.storage === false) {
+        this.second = 0;
+        this.contributors = {};
+        this.alerts = {};
+
+        if (window.BattleEyeStorage === false) {
             return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
         }
 
-        this.defineDefaultSettings();
-
-        var modules = new _ModuleLoader2.default(this.storage);
-        modules.load(new _AutoShooter2.default());
+        var modules = new _ModuleLoader2.default();
+        modules.load(new _PercentageFixer2.default());
         modules.load(new _Other2.default());
 
-        this.storage.loadSettings();
-        window.settings = this.storage.getAll();
+        window.BattleEyeStorage.loadSettings();
+        window.BattleEyeSettings = window.BattleEyeStorage.getAll();
+
         this.events = new _EventHandler2.default();
 
         this.teamA = new _Stats2.default(SERVER_DATA.leftBattleId);
@@ -137,8 +146,7 @@ var BattleEye = function () {
         this.runTicker();
 
         this.handleEvents();
-
-        console.log('Constructor end');
+        belTimeEnd('battleEyeConstructor');
     }
 
     _createClass(BattleEye, [{
@@ -155,8 +163,9 @@ var BattleEye = function () {
                 } else {
                     value = input.value;
                 }
-                self.storage.set(input.name, value);
-                window.settings[input.name].value = value;
+
+                window.BattleEyeStorage.set(input.name, value);
+                window.BattleEyeSettings[input.name].value = value;
 
                 var targetAtt = $j(this).attr('id');
 
@@ -180,20 +189,6 @@ var BattleEye = function () {
             return sorted;
         }
     }, {
-        key: 'defineDefaultSettings',
-        value: function defineDefaultSettings() {
-            var self = this;
-            function define(settings) {
-                for (var i in settings) {
-                    self.storage.define.apply(self.storage, settings[i]);
-                }
-            }
-
-            var settings = [['showOtherDivs', false, 'Structure', "Show other divisions", "You can select what divisions you want to see with the settings below."], ['showDiv1', true, 'Structure', "Show DIV 1"], ['showDiv2', true, 'Structure', "Show DIV 2"], ['showDiv3', true, 'Structure', "Show DIV 3"], ['showDiv4', true, 'Structure', "Show DIV 4"], ['showDomination', true, 'Structure', "Show domination", "Similar to damage, but takes domination bonus in count"], ['showAverageDamage', false, 'Structure', "Show average damage dealt"], ['showMiniMonitor', true, 'Structure', "Display a small division monitor on the battlefield"], ['showKills', false, 'Structure', "Show kills done by each division"], ['showDamagePerc', true, 'Structure', "Show Damage percentages"], ['moveToTop', false, 'Structure', "Display BattleEye above the battlefield", '*Requires a page refresh'], ['reduceLoad', false, 'Performance', "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance"], ['gatherBattleStats', true, 'Performance', "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time."], ['highlightDivision', true, 'Visual', "Highlight current division"], ['highlightValue', true, 'Visual', "Highlight winning side"], ['showDpsBar', true, 'Bars', "Show DPS bar"], ['showDamageBar', false, 'Bars', "Show Damage bar"], ['showDominationBar', true, 'Bars', "Show Domination bar"], ['largerBars', false, 'Bars', "Larger bars"], ['enableLogging', false, 'Other', "Enable logging to console"]];
-
-            define(settings);
-        }
-    }, {
         key: 'getNbpStats',
         value: function getNbpStats(battleId, cb) {
             var self = this;
@@ -215,6 +210,11 @@ var BattleEye = function () {
             return new Promise(function (resolve, reject) {
                 var divs = [1, 2, 3, 4, 11];
                 var hit, dmg, i, bareData, killValue;
+
+                if (!data) {
+                    belLog('undefined data - returning');
+                    return resolve();
+                }
 
                 for (var d in divs) {
                     var div = divs[d];
@@ -285,7 +285,7 @@ var BattleEye = function () {
         value: function loadBattleStats() {
             var self = this;
 
-            if (!window.settings.gatherBattleStats.value) {
+            if (!window.BattleEyeSettings.gatherBattleStats.value) {
                 self.events.emit('log', 'Battle stat fetching canceled since the battle is over.');
                 return $j('#bel-loading').hide();
             }
@@ -295,6 +295,7 @@ var BattleEye = function () {
                 return self.processBattleStats(data, self.teamA, self.teamB);
             }).then(function () {
                 self.events.emit('log', 'Battle stats loaded.');
+                self.events.emit('battlestats.loaded');
                 $j('#bel-loading').hide();
                 self.layout.update(self.getTeamStats());
             });
@@ -302,8 +303,8 @@ var BattleEye = function () {
     }, {
         key: 'resetSettings',
         value: function resetSettings() {
-            this.storage.loadDefaults();
-            window.settings = this.storage.getAll();
+            window.BattleEyeStorage.loadDefaults();
+            window.BattleEyeSettings = window.BattleEyeStorage.getAll();
         }
     }, {
         key: 'checkForUpdates',
@@ -313,6 +314,7 @@ var BattleEye = function () {
                 $j.get('https://dl.dropboxusercontent.com/u/86379644/data.json', function (data) {
                     data = JSON.parse(data);
                     self.contributors = data.contributors;
+                    self.alerts = data.alerts;
                     self.displayContributors();
 
                     var version = parseInt(data.version.replace(/\D/g, ""));
@@ -322,11 +324,11 @@ var BattleEye = function () {
                         document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="' + data.updateUrl + '">Update</a>';
                     }
 
-                    console.log('[BATTLEEYE] Data JSON received and processed');
+                    belLog('Data JSON received and processed');
                     self.events.emit('log', 'Data.json synced');
                     resolve(data);
                 }).error(function (error) {
-                    console.error('[BATTLEEYE] Failed to download data.json');
+                    console.error('Failed to download data.json');
                     reject(error);
                 });
             });
@@ -358,16 +360,18 @@ var BattleEye = function () {
             }
 
             getStats(function () {
-                // console.log(data);
+                // belLog(data);
                 var left = new _Stats2.default(SERVER_DATA.leftBattleId);
                 var right = new _Stats2.default(SERVER_DATA.rightBattleId);
-                var rounds = [];
+                var rounds = [],
+                    round;
 
                 left.defender = SERVER_DATA.defenderId == SERVER_DATA.leftBattleId;
                 right.defender = SERVER_DATA.defenderId != SERVER_DATA.leftBattleId;
 
                 async.eachOf(data, function (roundStats, key, cb) {
-                    if (!roundStats) cb();
+                    if (!roundStats) return cb();
+                    // belLog('round',key,roundStats);
                     self.processBattleStats(roundStats, left, right).then(function () {
                         rounds[key] = {
                             left: new _Stats2.default(SERVER_DATA.leftBattleId),
@@ -482,8 +486,8 @@ var BattleEye = function () {
 
                             maxPage = Math.max(data[attacker].pages, data[defender].pages);
 
-                            if (window.settings.enableLogging.value) {
-                                console.log('[BATTLEEYE] Finished damage page ' + page + "/" + maxPage + " div" + div);
+                            if (window.BattleEyeSettings.enableLogging.value) {
+                                belLog('Finished damage page ' + page + "/" + maxPage + " div" + div);
                                 self.events.emit('log', 'Fetched damage ' + page + '/' + maxPage + ' for div' + div);
                             }
 
@@ -512,8 +516,8 @@ var BattleEye = function () {
                             }
 
                             maxPage = Math.max(data[attacker].pages, data[defender].pages);
-                            if (window.settings.enableLogging.value) {
-                                console.log('[BATTLEEYE] Finished kill page ' + page + "/" + maxPage + " div" + div);
+                            if (window.BattleEyeSettings.enableLogging.value) {
+                                belLog('Finished kill page ' + page + "/" + maxPage + " div" + div);
                                 self.events.emit('log', 'Fetched kills ' + page + '/' + maxPage + ' for div' + div);
                             }
                             page++;
@@ -541,61 +545,53 @@ var BattleEye = function () {
     }, {
         key: 'runTicker',
         value: function runTicker() {
-            var second = 0;
-            var self = this;
+            var _this = this;
 
             var ticker = function ticker() {
-                second++;
-                self.events.emit('tick', {
-                    second: second,
-                    time: new Date().getTime()
-                });
+                _this.second++;
+                _this.events.emit('tick', _this.second);
             };
 
-            this.interval = setInterval(ticker, 1000);
+            this.interval = setInterval(ticker.bind(this), 1000);
         }
     }, {
         key: 'handleEvents',
         value: function handleEvents() {
-            var self = this;
-            this.events.on('tick', function (timeData) {
-                if (timeData.second % 3 === 0 && self.updateContributors) {
-                    self.updateContributors = false;
-                    self.displayContributors();
+            var handleTick = function handleTick(second) {
+                if (second % 3 === 0 && self.updateContributors) {
+                    this.updateContributors = false;
+                    this.displayContributors();
                 }
-                self.teamA.updateDps(timeData);
-                self.teamB.updateDps(timeData);
-                self.layout.update(self.getTeamStats());
-            });
+                this.teamA.updateDps(second);
+                this.teamB.updateDps(second);
+                this.layout.update(this.getTeamStats());
+            };
+
+            this.events.on('tick', handleTick.bind(this));
         }
     }, {
         key: 'overridePomelo',
         value: function overridePomelo() {
-            var self = this;
-
-            var handler = function handler(data) {
-                self.updateContributors = true;
-                self.handle(data);
+            var messageHandler = function messageHandler(data) {
+                this.updateContributors = true;
+                this.handle(data);
             };
 
-            pomelo.on('onMessage', handler);
-            pomelo.on('close', function (data) {
-                console.log('[BATTLEEYE] Socket closed [' + data.reason + ']');
-                self.events.emit('log', 'Connection to the battlefield was closed.');
+            var closeHandler = function closeHandler(data) {
+                belLog('Socket closed [' + data.reason + ']');
                 window.viewData.connected = false;
-                clearTimeout(self.interval);
-                self.layout.update(self.getTeamStats());
-            });
+                this.layout.update(this.getTeamStats());
+            };
+
+            pomelo.on('onMessage', messageHandler.bind(this));
+            pomelo.on('close', closeHandler.bind(this));
         }
     }, {
         key: 'handle',
         value: function handle(data) {
-            var self = this;
-            self.teamA.handle(data);
-            self.teamB.handle(data);
-            if (!settings.reduceLoad.value) {
-                self.layout.update(self.getTeamStats());
-            }
+            this.teamA.handle(data);
+            this.teamB.handle(data);
+            this.layout.update(this.getTeamStats());
             window.viewData.connected = true;
         }
     }]);
@@ -603,9 +599,9 @@ var BattleEye = function () {
     return BattleEye;
 }();
 
-module.exports = new BattleEye();
+exports.default = BattleEye;
 
-},{"./classes/EventHandler":6,"./classes/Layout":8,"./classes/Stats":9,"./classes/Storage":10,"./classes/Stylesheet":11,"./classes/Utils":12,"./classes/modules/AutoShooter":30,"./classes/modules/ModuleLoader":32,"./classes/modules/Other":33}],2:[function(require,module,exports){
+},{"./classes/EventHandler":6,"./classes/Layout":8,"./classes/Stats":9,"./classes/Storage":10,"./classes/Stylesheet":11,"./classes/Utils":12,"./classes/modules/ModuleLoader":31,"./classes/modules/Other":32,"./classes/modules/PercentageFixer":33}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -864,7 +860,7 @@ var DpsHandler = function () {
     _createClass(DpsHandler, [{
         key: 'addHit',
         value: function addHit(damage) {
-            this.lastHit = new Date().getTime();
+            this.lastHit = window.BattleEye.second;
             this.hitHistory.add(damage);
         }
     }, {
@@ -876,7 +872,7 @@ var DpsHandler = function () {
             }
 
             this.dps = Math.round(recentDamage / this.hitStreakSeconds);
-            if (timeData.time - this.lastHit >= 10000) {
+            if (timeData - this.lastHit >= 10) {
                 this.hitHistory.clear();
                 this.hitStreakSeconds = 0;
             }
@@ -1033,32 +1029,33 @@ var Layout = function () {
 
         var self = this;
         self.headerData = headerData;
-        self.canRender = true;
 
-        var battleEye = document.createElement('div');
-        battleEye.setAttribute('id', 'battle_eye_live');
+        this.battleEye = document.createElement('div');
+        this.battleEye.setAttribute('id', 'battle_eye_live');
 
-        if (window.settings.moveToTop.value) {
-            $j('#content').prepend(battleEye);
+        this.miniMonitor = document.createElement('div');
+        this.miniMonitor.setAttribute('id', 'bel-minimonitor');
+
+        if (window.BattleEyeSettings.moveToTop.value) {
+            $j('#content').prepend(this.battleEye);
         } else {
-            $j('#content').append(battleEye);
+            $j('#content').append(this.battleEye);
         }
 
-        $j('#battleConsole').append('<div id="bel-minimonitor"></div>');
+        $j('#battleConsole').append(this.miniMonitor);
 
         _Stylesheet2.default.load();
 
         window.BattleEye.events.emit('layout.ready', this);
+        // this.minimonitor = document.getElementById('bel-minimonitor');
+        // this.bel = document.getElementById('battle_eye_live');
     }
 
     _createClass(Layout, [{
         key: 'update',
         value: function update(feedData) {
-            if (!this.canRender) return;
-
-            ReactDOM.render(React.createElement(_Template2.default, { settings: window.settings, viewData: window.viewData, feedData: feedData, headerData: this.headerData }), document.getElementById('battle_eye_live'));
-
-            ReactDOM.render(React.createElement(_MiniMonitor2.default, { settings: window.settings, feedData: feedData }), document.getElementById('bel-minimonitor'));
+            ReactDOM.render(React.createElement(_Template2.default, { settings: window.BattleEyeSettings, viewData: window.viewData, feedData: feedData, headerData: this.headerData }), this.battleEye);
+            ReactDOM.render(React.createElement(_MiniMonitor2.default, { settings: window.BattleEyeSettings, feedData: feedData }), this.miniMonitor);
         }
     }]);
 
@@ -1155,6 +1152,7 @@ var Stats = function (_DpsHandler) {
     }, {
         key: 'toObject',
         value: function toObject() {
+            // console.log('dps', this.dps);
             return {
                 'damage': this.damage,
                 'id': this.id,
@@ -1201,11 +1199,7 @@ var Storage = function () {
     _createClass(Storage, [{
         key: 'set',
         value: function set(id, value) {
-            var self = this;
-            localStorage.setItem('' + self.prepend + id, value);
-            // if(settings.enableLogging.value){
-            console.log('[BATTLEEYE] ' + self.prepend + id + ' = ' + value);
-            // }
+            localStorage.setItem('' + this.prepend + id, value);
         }
     }, {
         key: 'get',
@@ -1649,6 +1643,13 @@ var Header = function (_React$Component) {
             $j('.bel-disconnectedAlert').attr('original-title', 'Not connected to the battlefield!').tipsy();
         }
     }, {
+        key: 'getAlerts',
+        value: function getAlerts() {
+            var elements = [];
+
+            return elements;
+        }
+    }, {
         key: 'render',
         value: function render() {
             var self = this;
@@ -1742,6 +1743,11 @@ var Header = function (_React$Component) {
                             )
                         )
                     )
+                ),
+                React.createElement(
+                    'div',
+                    { className: 'bel-grid' },
+                    this.getAlerts()
                 ),
                 React.createElement(
                     'div',
@@ -1921,7 +1927,7 @@ var MiniMonitor = function (_React$Component) {
     }, {
         key: 'render',
         value: function render() {
-            if (!settings.showMiniMonitor.value) {
+            if (!window.BattleEyeSettings.showMiniMonitor.value) {
                 return null;
             }
 
@@ -2014,7 +2020,7 @@ var Template = function (_React$Component) {
     }, {
         key: 'getTabButtons',
         value: function getTabButtons() {
-            return [['div', 'Divisions'], ['overall', 'Total'], ['countries', 'Countries'], ['summary', 'Battle stats (beta)']];
+            return [['div', 'Divisions'], ['countries', 'Countries'], ['summary', 'Battle stats (beta)']];
         }
     }, {
         key: 'render',
@@ -2022,10 +2028,10 @@ var Template = function (_React$Component) {
             return React.createElement(
                 'div',
                 null,
-                React.createElement(_SettingsModal2.default, { closeModal: this.closeModal.bind(this), hidden: this.state.modalHidden, settings: this.props.settings }),
+                React.createElement(_SettingsModal2.default, { closeModal: this.closeModal.bind(this), hidden: this.state.modalHidden }),
                 React.createElement(_Header2.default, { viewData: this.props.viewData, openModal: this.openModal.bind(this), data: this.props.headerData }),
                 React.createElement(_TabSelector2.default, { changeTab: this.changeTab.bind(this), tab: this.state.tab, buttons: this.getTabButtons() }),
-                React.createElement(_Tabs2.default, { data: this.props.feedData, settings: this.props.settings, tab: this.state.tab }),
+                React.createElement(_Tabs2.default, { data: this.props.feedData, tab: this.state.tab }),
                 React.createElement(_Footer2.default, null)
             );
         }
@@ -2128,7 +2134,7 @@ var ProgressBar = function (_React$Component) {
             };
 
             var progressStyle = {};
-            if (settings.largerBars.value) {
+            if (window.BattleEyeSettings.largerBars.value) {
                 progressStyle.height = "8px";
             }
 
@@ -2375,7 +2381,7 @@ var SettingsModal = function (_React$Component) {
     _createClass(SettingsModal, [{
         key: 'renderGroups',
         value: function renderGroups() {
-            var settings = this.props.settings;
+            var settings = window.BattleEyeSettings;
             var components = [];
             var groups = {};
             var i;
@@ -2519,6 +2525,22 @@ var CountriesTab = function (_React$Component) {
             };
         }
     }, {
+        key: 'hashCode',
+        value: function hashCode(str) {
+            var hash = 0;
+            for (var i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return hash;
+        }
+    }, {
+        key: 'intToRGB',
+        value: function intToRGB(i) {
+            var c = (i & 0x00FFFFFF).toString(16).toUpperCase();
+
+            return "00000".substring(0, 6 - c.length) + c;
+        }
+    }, {
         key: 'getStats',
         value: function getStats(side) {
             var content = [];
@@ -2530,6 +2552,23 @@ var CountriesTab = function (_React$Component) {
             } else {
                 countries = this.props.data[side].divisions[this.state.tab].countries;
             }
+
+            var chdata = [];
+            var chlabels = [];
+            var chcolors = [];
+            for (var i in countries) {
+                var c = countries[i];
+                chdata.push(c.damage);
+                chlabels.push(i);
+                chcolors.push(this.intToRGB(this.hashCode(i)));
+            }
+
+            var googleImg = 'https://chart.googleapis.com/chart?chds=a&cht=p&chd=t:' + chdata.join(',') + '&chs=440x300&chco=' + chcolors.join('|') + '&chl=' + chlabels.join('|');
+            content.push(React.createElement(
+                'div',
+                null,
+                React.createElement('img', { src: googleImg })
+            ));
 
             for (var i in countries) {
                 var c = countries[i];
@@ -2547,23 +2586,22 @@ var CountriesTab = function (_React$Component) {
                         { test: side != "right" },
                         React.createElement(
                             'span',
-                            { className: 'bel-stat-spacer' },
-                            React.createElement(
-                                'span',
-                                { className: 'tooltip-kills bel-value' },
-                                c.kills.toLocaleString()
-                            )
-                        ),
-                        React.createElement(
-                            'span',
-                            { className: 'bel-stat-spacer' },
+                            { style: { float: 'left' }, className: 'bel-stat-spacer' },
                             React.createElement(
                                 'span',
                                 { className: 'tooltip-damage bel-value' },
                                 c.damage.toLocaleString()
                             )
                         ),
-                        React.createElement('span', { className: 'bel-spacer-sm' })
+                        React.createElement(
+                            'span',
+                            { style: { float: 'left' }, className: 'bel-stat-spacer' },
+                            React.createElement(
+                                'span',
+                                { className: 'tooltip-kills bel-value' },
+                                c.kills.toLocaleString()
+                            )
+                        )
                     ),
                     React.createElement(
                         'b',
@@ -2578,10 +2616,9 @@ var CountriesTab = function (_React$Component) {
                     React.createElement(
                         _If2.default,
                         { test: side != "left" },
-                        React.createElement('span', { className: 'bel-spacer-sm' }),
                         React.createElement(
                             'span',
-                            { className: 'bel-stat-spacer' },
+                            { style: { float: 'right' }, className: 'bel-stat-spacer' },
                             React.createElement(
                                 'span',
                                 { className: 'tooltip-damage bel-value' },
@@ -2590,7 +2627,7 @@ var CountriesTab = function (_React$Component) {
                         ),
                         React.createElement(
                             'span',
-                            { className: 'bel-stat-spacer' },
+                            { style: { float: 'right' }, className: 'bel-stat-spacer' },
                             React.createElement(
                                 'span',
                                 { className: 'tooltip-kills bel-value' },
@@ -2712,7 +2749,8 @@ var DivisionTab = function (_React$Component) {
         key: 'getPerc',
         value: function getPerc(a, b) {
             var ap = 0;
-            if (a + b != 0) {
+
+            if (a + b !== 0) {
                 ap = Math.round(a * 1000 / (a + b)) / 10;
             }
 
@@ -2727,20 +2765,22 @@ var DivisionTab = function (_React$Component) {
 
             var left = this.props.data.left;
             var right = this.props.data.right;
-            var settings = this.props.settings;
             var highlightDivision = false;
-            if (settings.highlightDivision.value && SERVER_DATA.division == this.props.div[0]) {
+            if (window.BattleEyeSettings.highlightDivision.value && SERVER_DATA.division == this.props.div[0]) {
                 highlightDivision = true;
             }
 
             var leftDomination = left.damage * window.leftDetBonus;
             var rightDomination = right.damage * window.rightDetBonus;
 
-            var leftDmgPerPercent = Math.round(parseFloat(left.damage) / parseFloat(this.getPerc(leftDomination, rightDomination)));
-            var rightDmgPerPercent = Math.round(parseFloat(right.damage) / parseFloat(this.getPerc(rightDomination, leftDomination)));
-            if (window.leftDetBonus == window.rightDetBonus) {
-                // rightDmgPerPercent = leftDmgPerPercent;
-            }
+            var leftDmgPerPercent = Math.round(left.damage / this.getPerc(leftDomination, rightDomination));
+            var rightDmgPerPercent = Math.round(right.damage / this.getPerc(rightDomination, leftDomination));
+            if (window.leftDetBonus == window.rightDetBonus) {}
+            // rightDmgPerPercent = leftDmgPerPercent;
+
+
+            // console.log(left.dps);
+            // console.log(this.props.data.left.dps);
 
             return React.createElement(
                 'div',
@@ -2760,7 +2800,7 @@ var DivisionTab = function (_React$Component) {
                             'li',
                             { className: 'bel-col-1-3 text-right' },
                             React.createElement(_TextValue2.default, { a: "1% = " + leftDmgPerPercent.toLocaleString() + " dmg" }),
-                            React.createElement(_FloatValue2.default, { green: true, a: this.getPerc(leftDomination, rightDomination), b: this.getPerc(rightDomination, leftDomination), highlight: settings.highlightValue.value, text: "%" })
+                            React.createElement(_FloatValue2.default, { green: true, a: this.getPerc(leftDomination, rightDomination), b: this.getPerc(rightDomination, leftDomination), highlight: window.BattleEyeSettings.highlightValue.value, text: "%" })
                         ),
                         React.createElement(
                             'li',
@@ -2770,7 +2810,7 @@ var DivisionTab = function (_React$Component) {
                         React.createElement(
                             'li',
                             { className: 'bel-col-1-3 text-left' },
-                            React.createElement(_FloatValue2.default, { b: this.getPerc(leftDomination, rightDomination), a: this.getPerc(rightDomination, leftDomination), highlight: settings.highlightValue.value, text: "%" }),
+                            React.createElement(_FloatValue2.default, { b: this.getPerc(leftDomination, rightDomination), a: this.getPerc(rightDomination, leftDomination), highlight: window.BattleEyeSettings.highlightValue.value, text: "%" }),
                             React.createElement(_TextValue2.default, { a: "1% = " + rightDmgPerPercent.toLocaleString() + " dmg" })
                         )
                     )
@@ -2786,15 +2826,15 @@ var DivisionTab = function (_React$Component) {
                             { className: 'bel-col-1-3 text-right' },
                             React.createElement(
                                 _If2.default,
-                                { test: settings.showKills.value },
-                                React.createElement(_FloatValue2.default, { green: true, a: left.hits, b: right.hits, highlight: settings.highlightValue.value, text: "kills" })
+                                { test: window.BattleEyeSettings.showKills.value },
+                                React.createElement(_FloatValue2.default, { green: true, a: left.hits, b: right.hits, highlight: window.BattleEyeSettings.highlightValue.value, text: "kills" })
                             ),
                             React.createElement(
                                 _If2.default,
-                                { test: settings.showDamagePerc.value },
-                                React.createElement(_FloatValue2.default, { green: true, a: this.getPerc(left.damage, right.damage), b: this.getPerc(right.damage, left.damage), highlight: settings.highlightValue.value, text: "%" })
+                                { test: window.BattleEyeSettings.showDamagePerc.value },
+                                React.createElement(_FloatValue2.default, { green: true, a: this.getPerc(left.damage, right.damage), b: this.getPerc(right.damage, left.damage), highlight: window.BattleEyeSettings.highlightValue.value, text: "%" })
                             ),
-                            React.createElement(_FloatValue2.default, { green: true, a: left.damage, b: right.damage, highlight: settings.highlightValue.value })
+                            React.createElement(_FloatValue2.default, { green: true, a: left.damage, b: right.damage, highlight: window.BattleEyeSettings.highlightValue.value })
                         ),
                         React.createElement(
                             'li',
@@ -2804,16 +2844,16 @@ var DivisionTab = function (_React$Component) {
                         React.createElement(
                             'li',
                             { className: 'bel-col-1-3 text-left' },
-                            React.createElement(_FloatValue2.default, { a: right.damage, b: left.damage, highlight: settings.highlightValue.value }),
+                            React.createElement(_FloatValue2.default, { a: right.damage, b: left.damage, highlight: window.BattleEyeSettings.highlightValue.value }),
                             React.createElement(
                                 _If2.default,
-                                { test: settings.showDamagePerc.value },
-                                React.createElement(_FloatValue2.default, { b: this.getPerc(left.damage, right.damage), a: this.getPerc(right.damage, left.damage), highlight: settings.highlightValue.value, text: "%" })
+                                { test: window.BattleEyeSettings.showDamagePerc.value },
+                                React.createElement(_FloatValue2.default, { b: this.getPerc(left.damage, right.damage), a: this.getPerc(right.damage, left.damage), highlight: window.BattleEyeSettings.highlightValue.value, text: "%" })
                             ),
                             React.createElement(
                                 _If2.default,
-                                { test: settings.showKills.value },
-                                React.createElement(_FloatValue2.default, { a: right.hits, b: left.hits, text: "kills", highlight: settings.highlightValue.value })
+                                { test: window.BattleEyeSettings.showKills.value },
+                                React.createElement(_FloatValue2.default, { a: right.hits, b: left.hits, text: "kills", highlight: window.BattleEyeSettings.highlightValue.value })
                             )
                         )
                     )
@@ -2823,14 +2863,14 @@ var DivisionTab = function (_React$Component) {
                     { className: 'belFeedValue' },
                     React.createElement(
                         _If2.default,
-                        { test: settings.showAverageDamage.value },
+                        { test: window.BattleEyeSettings.showAverageDamage.value },
                         React.createElement(
                             'ul',
                             { className: 'list-unstyled' },
                             React.createElement(
                                 'li',
                                 { className: 'bel-col-1-3 text-right' },
-                                React.createElement(_FloatValue2.default, { green: true, a: left.avgHit, b: right.avgHit, highlight: settings.highlightValue.value })
+                                React.createElement(_FloatValue2.default, { green: true, a: left.avgHit, b: right.avgHit, highlight: window.BattleEyeSettings.highlightValue.value })
                             ),
                             React.createElement(
                                 'li',
@@ -2840,7 +2880,7 @@ var DivisionTab = function (_React$Component) {
                             React.createElement(
                                 'li',
                                 { className: 'bel-col-1-3 text-left' },
-                                React.createElement(_FloatValue2.default, { a: right.avgHit, b: left.avgHit, highlight: settings.highlightValue.value })
+                                React.createElement(_FloatValue2.default, { a: right.avgHit, b: left.avgHit, highlight: window.BattleEyeSettings.highlightValue.value })
                             )
                         )
                     )
@@ -2854,7 +2894,7 @@ var DivisionTab = function (_React$Component) {
                         React.createElement(
                             'li',
                             { className: 'bel-col-1-3 text-right' },
-                            React.createElement(_FloatValue2.default, { green: true, a: left.dps, b: right.dps, highlight: settings.highlightValue.value })
+                            React.createElement(_FloatValue2.default, { green: true, a: left.dps, b: right.dps, highlight: window.BattleEyeSettings.highlightValue.value })
                         ),
                         React.createElement(
                             'li',
@@ -2864,7 +2904,7 @@ var DivisionTab = function (_React$Component) {
                         React.createElement(
                             'li',
                             { className: 'bel-col-1-3 text-left' },
-                            React.createElement(_FloatValue2.default, { a: right.dps, b: left.dps, highlight: settings.highlightValue.value })
+                            React.createElement(_FloatValue2.default, { a: right.dps, b: left.dps, highlight: window.BattleEyeSettings.highlightValue.value })
                         )
                     )
                 ),
@@ -2873,7 +2913,7 @@ var DivisionTab = function (_React$Component) {
                     { className: 'bel-col-1-1' },
                     React.createElement(
                         _If2.default,
-                        { test: settings.showDominationBar.value },
+                        { test: window.BattleEyeSettings.showDominationBar.value },
                         React.createElement(
                             'div',
                             { className: 'text-left bel-text-tiny' },
@@ -2895,7 +2935,7 @@ var DivisionTab = function (_React$Component) {
                     ),
                     React.createElement(
                         _If2.default,
-                        { test: settings.showDamageBar.value },
+                        { test: window.BattleEyeSettings.showDamageBar.value },
                         React.createElement(
                             'div',
                             { className: 'text-left bel-text-tiny' },
@@ -2911,21 +2951,13 @@ var DivisionTab = function (_React$Component) {
                                     ' '
                                 ),
                                 ' difference)'
-                            ),
-                            ' ',
-                            React.createElement(
-                                'span',
-                                { className: 'color-silver' },
-                                '(1% ~ ',
-                                React.createElement('strong', null),
-                                ')'
                             )
                         ),
                         React.createElement(_ProgressBar2.default, { a: left.damage, b: right.damage })
                     ),
                     React.createElement(
                         _If2.default,
-                        { test: settings.showDpsBar.value },
+                        { test: window.BattleEyeSettings.showDpsBar.value },
                         React.createElement(
                             'div',
                             { className: 'text-left bel-text-tiny' },
@@ -3299,6 +3331,22 @@ var SummaryTab = function (_React$Component) {
             });
         }
     }, {
+        key: 'hashCode',
+        value: function hashCode(str) {
+            var hash = 0;
+            for (var i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return hash;
+        }
+    }, {
+        key: 'intToRGB',
+        value: function intToRGB(i) {
+            var c = (i & 0x00FFFFFF).toString(16).toUpperCase();
+
+            return "00000".substring(0, 6 - c.length) + c;
+        }
+    }, {
         key: 'getStats',
         value: function getStats(side) {
             var content = [];
@@ -3322,6 +3370,23 @@ var SummaryTab = function (_React$Component) {
                 // countries = this.data[side].divisions[this.state.tab].countries;
             }
 
+            var chdata = [];
+            var chlabels = [];
+            var chcolors = [];
+            for (var i in countries) {
+                var c = countries[i];
+                chdata.push(c.damage);
+                chlabels.push(i);
+                chcolors.push(this.intToRGB(this.hashCode(i)));
+            }
+
+            var googleImg = 'https://chart.googleapis.com/chart?chds=a&cht=p&chd=t:' + chdata.join(',') + '&chs=440x300&chco=' + chcolors.join('|') + '&chl=' + chlabels.join('|');
+            content.push(React.createElement(
+                'div',
+                null,
+                React.createElement('img', { src: googleImg })
+            ));
+
             for (var i in countries) {
                 var c = countries[i];
 
@@ -3338,23 +3403,22 @@ var SummaryTab = function (_React$Component) {
                         { test: side != "right" },
                         React.createElement(
                             'span',
-                            { className: 'bel-stat-spacer' },
-                            React.createElement(
-                                'span',
-                                { className: 'tooltip-kills bel-value' },
-                                c.kills.toLocaleString()
-                            )
-                        ),
-                        React.createElement(
-                            'span',
-                            { className: 'bel-stat-spacer' },
+                            { style: { float: 'left' }, className: 'bel-stat-spacer' },
                             React.createElement(
                                 'span',
                                 { className: 'tooltip-damage bel-value' },
                                 c.damage.toLocaleString()
                             )
                         ),
-                        React.createElement('span', { className: 'bel-spacer-sm' })
+                        React.createElement(
+                            'span',
+                            { style: { float: 'left' }, className: 'bel-stat-spacer' },
+                            React.createElement(
+                                'span',
+                                { className: 'tooltip-kills bel-value' },
+                                c.kills.toLocaleString()
+                            )
+                        )
                     ),
                     React.createElement(
                         'b',
@@ -3369,10 +3433,9 @@ var SummaryTab = function (_React$Component) {
                     React.createElement(
                         _If2.default,
                         { test: side != "left" },
-                        React.createElement('span', { className: 'bel-spacer-sm' }),
                         React.createElement(
                             'span',
-                            { className: 'bel-stat-spacer' },
+                            { style: { float: 'right' }, className: 'bel-stat-spacer' },
                             React.createElement(
                                 'span',
                                 { className: 'tooltip-damage bel-value' },
@@ -3381,7 +3444,7 @@ var SummaryTab = function (_React$Component) {
                         ),
                         React.createElement(
                             'span',
-                            { className: 'bel-stat-spacer' },
+                            { style: { float: 'right' }, className: 'bel-stat-spacer' },
                             React.createElement(
                                 'span',
                                 { className: 'tooltip-kills bel-value' },
@@ -3607,49 +3670,51 @@ var Tabs = function (_React$Component) {
                 divInfo = [[1, 'Division 1'], [2, 'Division 2'], [3, 'Division 3'], [4, 'Division 4']];
             }
 
+            var divData = {};
             for (var d in divInfo) {
-                var info = divInfo[d];
-
-                if (!this.props.settings.showOtherDivs.value) {
-                    if (info[0] != SERVER_DATA.division) {
+                if (!window.BattleEyeSettings.showOtherDivs.value) {
+                    if (divInfo[d][0] != SERVER_DATA.division) {
                         continue;
                     }
                 }
 
-                if (!this.props.settings.showDiv1.value && info[0] == 1) {
+                if (!window.BattleEyeSettings.showDiv1.value && divInfo[d][0] == 1) {
                     continue;
                 }
 
-                if (!this.props.settings.showDiv2.value && info[0] == 2) {
+                if (!window.BattleEyeSettings.showDiv2.value && divInfo[d][0] == 2) {
                     continue;
                 }
 
-                if (!this.props.settings.showDiv3.value && info[0] == 3) {
+                if (!window.BattleEyeSettings.showDiv3.value && divInfo[d][0] == 3) {
                     continue;
                 }
 
-                if (!this.props.settings.showDiv4.value && info[0] == 4) {
+                if (!window.BattleEyeSettings.showDiv4.value && divInfo[d][0] == 4) {
                     continue;
                 }
 
-                var divData = {};
-                divData.left = this.props.data.left.divisions['div' + info[0]];
-                divData.right = this.props.data.right.divisions['div' + info[0]];
+                divData = {
+                    left: this.props.data.left.divisions['div' + divInfo[d][0]],
+                    right: this.props.data.right.divisions['div' + divInfo[d][0]]
+                };
 
-                divs.push(React.createElement(_DivisionTab2.default, { tab: this.props.tab, data: divData, div: info, settings: this.props.settings }));
+                divs.push(React.createElement(_DivisionTab2.default, { tab: this.props.tab, data: divData, div: divInfo[d] }));
             }
 
             return divs;
         }
-    }, {
-        key: 'renderOverall',
-        value: function renderOverall() {
-            var data = {};
-            data.left = this.props.data.left;
-            data.right = this.props.data.right;
 
-            return React.createElement(_OverallTab2.default, { tab: this.props.tab, data: data, settings: this.props.settings });
-        }
+        // renderOverall(){
+        //     var data = {};
+        //     data.left = this.props.data.left;
+        //     data.right = this.props.data.right;
+        //
+        //     return (
+        //         <OverallTab tab={this.props.tab} data={data} />
+        //     );
+        // }
+
     }, {
         key: 'renderCountries',
         value: function renderCountries() {
@@ -3657,7 +3722,7 @@ var Tabs = function (_React$Component) {
             data.left = this.props.data.left;
             data.right = this.props.data.right;
 
-            return React.createElement(_CountriesTab2.default, { tab: this.props.tab, data: data, settings: this.props.settings });
+            return React.createElement(_CountriesTab2.default, { tab: this.props.tab, data: data });
         }
     }, {
         key: 'renderSummary',
@@ -3671,7 +3736,6 @@ var Tabs = function (_React$Component) {
                 'div',
                 null,
                 this.renderDivisions(),
-                this.renderOverall(),
                 this.renderCountries(),
                 this.renderSummary()
             );
@@ -3702,171 +3766,6 @@ var Tabs = function (_React$Component) {
 exports.default = Tabs;
 
 },{"./CountriesTab":24,"./DivisionTab":25,"./OverallTab":26,"./SummaryTab":27}],30:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _Module2 = require('./Module');
-
-var _Module3 = _interopRequireDefault(_Module2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var AutoShooter = function (_Module) {
-    _inherits(AutoShooter, _Module);
-
-    function AutoShooter() {
-        _classCallCheck(this, AutoShooter);
-
-        return _possibleConstructorReturn(this, (AutoShooter.__proto__ || Object.getPrototypeOf(AutoShooter)).call(this, 'AutoShooter', 'Automatically shoots, when the FIGHT button is held'));
-    }
-
-    /**
-     * Defining settings for autoshooter
-     */
-
-
-    _createClass(AutoShooter, [{
-        key: 'defineSettings',
-        value: function defineSettings() {
-            return [['autoShooterEnabled', false, "Enable AutoShooter", "Automatically shoots, when the FIGHT button is held"], ['autoShooterStart', false, "Start AutoShooter immediately after the button is pressed.", "Otherwise, AutoShooter will start after the shot delay"], ['autoShooterEnter', true, "Shoot while holding ENTER"], ['autoShooterSpace', true, "Shoot while holding SPACE"], ['autoShooterDelay', 1500, "Delay between shots (in ms)"]];
-        }
-    }, {
-        key: 'run',
-        value: function run() {
-            /**
-             * Holds the timer interval data
-             */
-            var tid;
-
-            var lastEvent;
-
-            /**
-             * eRepublik number format
-             */
-            function format(str) {
-                return ("" + str).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            }
-
-            /**
-             * Button click handler
-             */
-            document.getElementById("fight_btn").addEventListener("mousedown", function () {
-                handle();
-            });
-
-            /**
-             * Key press handler
-             */
-            document.onkeydown = function (e) {
-                if (lastEvent && lastEvent.keyCode == e.keyCode) {
-                    return;
-                }
-
-                if ((settings.autoShooterEnter.value && e.keyCode == 13 || settings.autoShooterSpace.value && e.keyCode == 32) && settings.autoShooterEnabled.value) {
-                    lastEvent = e;
-                    handle();
-                    $j('#fight_btn').notify('AutoShooter started', { position: "top center", className: "info" });
-                }
-            };
-
-            /**
-             * Clears the delay, when the button is released
-             */
-            document.addEventListener("mouseup", function () {
-                clearInterval(tid);
-            });
-
-            /**
-             * Clears the delay, when the key is released
-             */
-            document.onkeyup = function (e) {
-                if (settings.autoShooterEnter.value && e.keyCode == 13 || settings.autoShooterSpace.value && e.keyCode == 32) {
-                    lastEvent = null;
-                    clearInterval(tid);
-                }
-            };
-
-            /**
-             * AutoShooter handler
-             */
-            var handle = function handle() {
-                //Checking if enabled
-                if (!settings.autoShooterEnabled.value) {
-                    return;
-                }
-
-                //Posts fight request
-                var action = function action() {
-                    $j.post("/" + erepublik.settings.culture + "/military/fight-shoo" + (SERVER_DATA.onAirforceBattlefield ? "oo" : "o") + "t/" + SERVER_DATA.battleId, {
-                        sideId: SERVER_DATA.countryId,
-                        battleId: SERVER_DATA.battleId,
-                        _token: SERVER_DATA.csrfToken
-                    }, function (data) {
-                        if (settings.enableLogging.value) {
-                            console.log("[BATTLEEYE] Request sent. Received: " + data.message);
-                        }
-
-                        if (data.message == "ENEMY_KILLED") {
-                            window.totalPrestigePoints += data.hits;
-                            globalNS.updateSideBar(data.details);
-                            $j("#rank_min").text(format(data.rank.points) + " Rank Points");
-                            $j("#rank_status_gained").css("width", data.rank.percentage + "%");
-
-                            $j("#prestige_value").text(format(window.totalPrestigePoints));
-                            $j("#side_bar_currency_account_value").text(format(data.details.currency));
-                            $j(".left_player .energy_progress").css("width", data.details.current_energy_ratio + "%");
-                            $j(".right_player .energy_progress").css("width", data.enemy.energyRatio + "%");
-                            $j(".weapon_no").text(data.user.weaponQuantity);
-
-                            if ($j('#eRS_options').length <= 0) {
-                                var td = parseInt($j('#total_damage strong').text().replace(/,/g, ''));
-                                $j('#total_damage strong').text(format(td + data.user.givenDamage));
-                            }
-                        } else if (data.message == "ENEMY_ATTACKED" || data.message == "LOW_HEALTH") {
-                            $j('#fight_btn').notify('Low health. AutoShooter stopped', { position: "top center", className: "info" });
-                            if (tid) clearInterval(tid);
-                        } else if (data.message == "ZONE_INACTIVE") {
-                            $j('#fight_btn').notify('Zone is inactive. AutoShooter stopped', { position: "top center", className: "info" });
-                            if (tid) clearInterval(tid);
-                        } else if (data.message == "SHOOT_LOCKOUT") {
-                            $j('#fight_btn').notify('Shoot lockout (Shooting too fast?). AutoShooter stopped.', { position: "top center", className: "info" });
-                            if (tid) clearInterval(tid);
-                        } else {
-                            $j('#fight_btn').notify('AutoShooter stopped. Received: "' + data.message + '"', { position: "top center", className: "warn" });
-                            if (tid) clearInterval(tid);
-                        }
-                    });
-                };
-
-                if (settings.autoShooterStart.value) {
-                    action();
-                }
-                tid = setInterval(action, Number(settings.autoShooterDelay.value));
-
-                if (settings.enableLogging.value) {
-                    console.log("[BATTLEEYE] AutoShooter started");
-                }
-            };
-        }
-    }]);
-
-    return AutoShooter;
-}(_Module3.default);
-
-exports.default = AutoShooter;
-
-},{"./Module":31}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3906,7 +3805,7 @@ var Module = function () {
 
 exports.default = Module;
 
-},{}],32:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3938,7 +3837,7 @@ var ModuleLoader = function () {
                 var settings = module.defineSettings();
                 for (var i in settings) {
                     var s = settings[i];
-                    window.storage.define(s[0], s[1], module.name, s[2], s[3]);
+                    window.BattleEyeStorage.define(s[0], s[1], module.name, s[2], s[3]);
                 }
             }
         }
@@ -3967,7 +3866,7 @@ var ModuleLoader = function () {
 
 exports.default = ModuleLoader;
 
-},{"./Module":31}],33:[function(require,module,exports){
+},{"./Module":30}],32:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4005,7 +3904,9 @@ var Other = function (_Module) {
     }, {
         key: 'run',
         value: function run() {
-            if (settings.otherFixCometchat.value) {
+            if (window.BattleEyeSettings.otherFixCometchat.value) {
+                //Removing that annoying cometchat background
+                var waitForCometchat = setInterval(fixCometchat, 500);
                 var fixCometchat = function fixCometchat() {
                     var cometchat = document.getElementById('cometchat_base');
                     if (cometchat !== null) {
@@ -4014,9 +3915,6 @@ var Other = function (_Module) {
                         clearInterval(waitForCometchat);
                     }
                 };
-
-                //Removing that annoying cometchat background
-                var waitForCometchat = setInterval(fixCometchat, 500);
             }
         }
     }]);
@@ -4026,16 +3924,179 @@ var Other = function (_Module) {
 
 exports.default = Other;
 
-},{"./Module":31}],34:[function(require,module,exports){
+},{"./Module":30}],33:[function(require,module,exports){
 'use strict';
 
-window.BattleEye = require('./BattleEye');
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Module2 = require('./Module');
+
+var _Module3 = _interopRequireDefault(_Module2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var PercentageFixer = function (_Module) {
+    _inherits(PercentageFixer, _Module);
+
+    function PercentageFixer() {
+        _classCallCheck(this, PercentageFixer);
+
+        return _possibleConstructorReturn(this, (PercentageFixer.__proto__ || Object.getPrototypeOf(PercentageFixer)).call(this, 'Percentage Fixer', ''));
+    }
+
+    _createClass(PercentageFixer, [{
+        key: 'defineSettings',
+        value: function defineSettings() {
+            return [['percFixEnabled', true, "Enable percentage fixer", "Temporary solution to eRepublik's battle stat inconsistencies"]];
+        }
+    }, {
+        key: 'round',
+        value: function round(num) {
+            var acc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 100000;
+
+            return Math.round(num * acc) / acc;
+        }
+    }, {
+        key: 'dif',
+        value: function dif(target, a, b) {
+            return Math.round(Math.abs(target - a * 100 / (a + b)) * 100000) / 100000;
+        }
+    }, {
+        key: 'calculateFix',
+        value: function calculateFix(targetPerc, leftDamage, rightDamage) {
+            if (SERVER_DATA.mustInvert) {
+                targetPerc = 100 - targetPerc;
+            }
+            var leftPerc, fix;
+            var simulatedLeftDmg = leftDamage;
+            var totalFix = 0;
+            var loops = 0;
+
+            while (this.dif(targetPerc, simulatedLeftDmg, rightDamage) > 0.05) {
+                leftPerc = simulatedLeftDmg * 100 / (simulatedLeftDmg + rightDamage);
+                fix = Math.round(simulatedLeftDmg * targetPerc / leftPerc - simulatedLeftDmg);
+                simulatedLeftDmg += fix;
+                totalFix += fix;
+                loops++;
+            }
+
+            var originalDif = this.dif(targetPerc, leftDamage, rightDamage);
+            var currentDif = this.dif(targetPerc, simulatedLeftDmg, rightDamage);
+
+            belLog('Improved from', originalDif, 'to', currentDif, 'Loops:', loops);
+
+            return Math.round(totalFix);
+        }
+    }, {
+        key: 'run',
+        value: function run() {
+            var self = this;
+            if (!window.BattleEyeSettings.percFixEnabled.value) {
+                return;
+            }
+
+            window.BattleEye.events.on('battlestats.loaded', function () {
+                var left = window.BattleEye.teamA.toObject();
+                var right = window.BattleEye.teamB.toObject();
+
+                var divs, i, leftdmg, rightdmg;
+                if (SERVER_DATA.division === 11) {
+                    divs = [11];
+                } else {
+                    divs = [1, 2, 3, 4];
+                }
+
+                window.BattleEye.getNbpStats(SERVER_DATA.battleId).then(function (stats) {
+                    var currentInvader = stats.division.domination;
+                    var fix, currentDomination, logmsg, inaccuracy, loops;
+
+                    for (i in divs) {
+                        leftdmg = left.divisions['div' + divs[i]].damage;
+                        rightdmg = right.divisions['div' + divs[i]].damage;
+
+                        fix = self.calculateFix(currentInvader[divs[i]], leftdmg, rightdmg);
+
+                        window.BattleEye.teamA.divisions.get('div' + divs[i]).damage += fix;
+                        logmsg = 'Added ' + fix.toLocaleString() + ' damage to div' + divs[i];
+                        belLog(logmsg);
+                    }
+                });
+            });
+        }
+    }]);
+
+    return PercentageFixer;
+}(_Module3.default);
+
+exports.default = PercentageFixer;
+
+},{"./Module":30}],34:[function(require,module,exports){
+'use strict';
+
+var _Storage = require('./classes/Storage');
+
+var _Storage2 = _interopRequireDefault(_Storage);
+
+var _BattleEye = require('./BattleEye');
+
+var _BattleEye2 = _interopRequireDefault(_BattleEye);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function defineDefaultSettings() {
+    var self = this;
+    function define(settings) {
+        for (var i in settings) {
+            window.BattleEyeStorage.define.apply(window.BattleEyeStorage, settings[i]);
+        }
+    }
+
+    var settings = [['showOtherDivs', false, 'Structure', "Show other divisions", "You can select what divisions you want to see with the settings below."], ['showDiv1', true, 'Structure', "Show DIV 1"], ['showDiv2', true, 'Structure', "Show DIV 2"], ['showDiv3', true, 'Structure', "Show DIV 3"], ['showDiv4', true, 'Structure', "Show DIV 4"], ['showDomination', true, 'Structure', "Show domination", "Similar to damage, but takes domination bonus in count"], ['showAverageDamage', false, 'Structure', "Show average damage dealt"], ['showMiniMonitor', true, 'Structure', "Display a small division monitor on the battlefield"], ['showKills', false, 'Structure', "Show kills done by each division"], ['showDamagePerc', true, 'Structure', "Show Damage percentages"], ['moveToTop', false, 'Structure', "Display BattleEye above the battlefield", '*Requires a page refresh'], ['gatherBattleStats', true, 'Performance', "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time."], ['highlightDivision', true, 'Visual', "Highlight current division"], ['highlightValue', true, 'Visual', "Highlight winning side"], ['showDpsBar', true, 'Bars', "Show DPS bar"], ['showDamageBar', false, 'Bars', "Show Damage bar"], ['showDominationBar', true, 'Bars', "Show Domination bar"], ['largerBars', false, 'Bars', "Larger bars"], ['enableLogging', false, 'Other', "Enable logging to console"], ['enableBenchmarking', false, 'Other', "Enable performance logging to console"]];
+
+    define(settings);
+}
+
+window.BattleEyeStorage = new _Storage2.default();
+defineDefaultSettings();
+window.BattleEyeStorage.loadSettings();
+window.BattleEyeSettings = window.BattleEyeStorage.getAll();
+
+window.belLog = function () {
+    [].unshift.call(arguments, '[BE]');
+    if (window.BattleEyeSettings.enableLogging.value) {
+        console.log.apply(undefined, arguments);
+    }
+};
+
+window.belTime = function (name) {
+    if (window.BattleEyeSettings.enableBenchmarking.value) {
+        console.time(name);
+    }
+};
+
+window.belTimeEnd = function (name) {
+    if (window.BattleEyeSettings.enableBenchmarking.value) {
+        console.timeEnd(name);
+    }
+};
+
+window.BattleEye = new _BattleEye2.default();
 
 setTimeout(function () {
     window.BattleEye.overridePomelo();
 }, 2000);
 
-},{"./BattleEye":1}]},{},[34])
+},{"./BattleEye":1,"./classes/Storage":10}]},{},[34])
 
 
 //# sourceMappingURL=build.js.map

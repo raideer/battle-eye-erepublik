@@ -18,50 +18,50 @@ export default class Tabs extends React.Component{
             divInfo = [[1,'Division 1'], [2,'Division 2'], [3,'Division 3'], [4,'Division 4']];
         }
 
+        var divData = {};
         for(var d in divInfo){
-            var info = divInfo[d];
-
-            if(!this.props.settings.showOtherDivs.value){
-                if(info[0] != SERVER_DATA.division){
+            if(!window.BattleEyeSettings.showOtherDivs.value){
+                if(divInfo[d][0] != SERVER_DATA.division){
                     continue;
                 }
             }
 
-            if(!this.props.settings.showDiv1.value && info[0] == 1){
+            if(!window.BattleEyeSettings.showDiv1.value && divInfo[d][0] == 1){
                 continue;
             }
 
-            if(!this.props.settings.showDiv2.value && info[0] == 2){
+            if(!window.BattleEyeSettings.showDiv2.value && divInfo[d][0] == 2){
                 continue;
             }
 
-            if(!this.props.settings.showDiv3.value && info[0] == 3){
+            if(!window.BattleEyeSettings.showDiv3.value && divInfo[d][0] == 3){
                 continue;
             }
 
-            if(!this.props.settings.showDiv4.value && info[0] == 4){
+            if(!window.BattleEyeSettings.showDiv4.value && divInfo[d][0] == 4){
                 continue;
             }
 
-            var divData = {};
-                divData.left = this.props.data.left.divisions['div' + info[0]];
-                divData.right = this.props.data.right.divisions['div' + info[0]];
+            divData = {
+                left: this.props.data.left.divisions['div' + divInfo[d][0]],
+                right: this.props.data.right.divisions['div' + divInfo[d][0]]
+            };
 
-            divs.push(<DivisionTab tab={this.props.tab} data={divData} div={info} settings={this.props.settings}/>);
+            divs.push(<DivisionTab tab={this.props.tab} data={divData} div={divInfo[d]}/>);
         }
 
         return divs;
     }
 
-    renderOverall(){
-        var data = {};
-        data.left = this.props.data.left;
-        data.right = this.props.data.right;
-
-        return (
-            <OverallTab tab={this.props.tab} data={data} settings={this.props.settings} />
-        );
-    }
+    // renderOverall(){
+    //     var data = {};
+    //     data.left = this.props.data.left;
+    //     data.right = this.props.data.right;
+    //
+    //     return (
+    //         <OverallTab tab={this.props.tab} data={data} />
+    //     );
+    // }
 
     renderCountries(){
         var data = {};
@@ -69,7 +69,7 @@ export default class Tabs extends React.Component{
         data.right = this.props.data.right;
 
         return (
-            <CountriesTab tab={this.props.tab} data={data} settings={this.props.settings} />
+            <CountriesTab tab={this.props.tab} data={data} />
         );
     }
 
@@ -83,7 +83,6 @@ export default class Tabs extends React.Component{
         return (
             <div>
                 {this.renderDivisions()}
-                {this.renderOverall()}
                 {this.renderCountries()}
                 {this.renderSummary()}
             </div>

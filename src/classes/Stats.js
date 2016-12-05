@@ -48,6 +48,7 @@ export default class Stats extends DpsHandler{
     }
 
     toObject(){
+        // console.log('dps', this.dps);
         return {
             'damage': this.damage,
             'id': this.id,

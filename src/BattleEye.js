@@ -7,30 +7,33 @@ import EventHandler from './classes/EventHandler';
 import ModuleLoader from './classes/modules/ModuleLoader';
 
 import OtherModule from './classes/modules/Other';
-import AutoShooterModule from './classes/modules/AutoShooter';
+import PercentageFixer from './classes/modules/PercentageFixer';
+// import AutoShooterModule from './classes/modules/AutoShooter';
 
-class BattleEye{
+export default class BattleEye{
     constructor(){
+        belTime('battleEyeConstructor');
         var self = this;
         window.BattleEye = this;
-        window.storage = this.storage = new SettingsStorage();
         window.viewData = {
             connected: true
         };
 
-        if(this.storage === false){
+        this.second = 0;
+        this.contributors = {};
+        this.alerts = {};
+
+        if(window.BattleEyeStorage === false){
             return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
         }
 
-
-        this.defineDefaultSettings();
-
-        const modules = new ModuleLoader(this.storage);
-              modules.load(new AutoShooterModule());
+        const modules = new ModuleLoader();
+              modules.load(new PercentageFixer());
               modules.load(new OtherModule());
 
-        this.storage.loadSettings();
-        window.settings = this.storage.getAll();
+        window.BattleEyeStorage.loadSettings();
+        window.BattleEyeSettings = window.BattleEyeStorage.getAll();
+
         this.events = new EventHandler();
 
         this.teamA = new Stats(SERVER_DATA.leftBattleId);
@@ -102,8 +105,7 @@ class BattleEye{
         this.runTicker();
 
         this.handleEvents();
-
-        console.log('Constructor end');
+        belTimeEnd('battleEyeConstructor');
     }
 
     defineListeners(){
@@ -118,8 +120,9 @@ class BattleEye{
             }else{
                 value = input.value;
             }
-            self.storage.set(input.name, value);
-            window.settings[input.name].value = value;
+
+            window.BattleEyeStorage.set(input.name, value);
+            window.BattleEyeSettings[input.name].value = value;
 
             var targetAtt = $j(this).attr('id');
 
@@ -138,40 +141,6 @@ class BattleEye{
         }
 
         return sorted;
-    }
-
-    defineDefaultSettings(){
-        var self = this;
-        function define(settings){
-            for(var i in settings){
-                self.storage.define.apply(self.storage, settings[i]);
-            }
-        }
-
-        var settings = [
-            ['showOtherDivs', false, 'Structure', "Show other divisions", "You can select what divisions you want to see with the settings below."],
-            ['showDiv1', true, 'Structure', "Show DIV 1"],
-            ['showDiv2', true, 'Structure', "Show DIV 2"],
-            ['showDiv3', true, 'Structure', "Show DIV 3"],
-            ['showDiv4', true, 'Structure', "Show DIV 4"],
-            ['showDomination', true, 'Structure', "Show domination", "Similar to damage, but takes domination bonus in count"],
-            ['showAverageDamage', false, 'Structure', "Show average damage dealt"],
-            ['showMiniMonitor', true, 'Structure', "Display a small division monitor on the battlefield"],
-            ['showKills', false, 'Structure', "Show kills done by each division"],
-            ['showDamagePerc', true, 'Structure', "Show Damage percentages"],
-            ['moveToTop', false, 'Structure', "Display BattleEye above the battlefield", '*Requires a page refresh'],
-            ['reduceLoad', false, 'Performance', "Render every second", "Stats will be refreshed every second instead of after every kill. This can improve performance"],
-            ['gatherBattleStats', true, 'Performance', "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time."],
-            ['highlightDivision', true, 'Visual', "Highlight current division"],
-            ['highlightValue', true, 'Visual', "Highlight winning side"],
-            ['showDpsBar', true, 'Bars', "Show DPS bar"],
-            ['showDamageBar', false, 'Bars', "Show Damage bar"],
-            ['showDominationBar', true, 'Bars', "Show Domination bar"],
-            ['largerBars', false, 'Bars', "Larger bars"],
-            ['enableLogging', false, 'Other', "Enable logging to console"]
-        ];
-
-        define(settings);
     }
 
     getNbpStats(battleId, cb){
@@ -193,6 +162,11 @@ class BattleEye{
         return new Promise((resolve, reject)=>{
             var divs = [1,2,3,4,11];
             var hit, dmg, i, bareData, killValue;
+
+            if(!data){
+                belLog('undefined data - returning');
+                return resolve();
+            }
 
             for(var d in divs){
                 var div = divs[d];
@@ -263,7 +237,7 @@ class BattleEye{
     loadBattleStats(){
         var self = this;
 
-        if(!window.settings.gatherBattleStats.value){
+        if(!window.BattleEyeSettings.gatherBattleStats.value){
             self.events.emit('log', 'Battle stat fetching canceled since the battle is over.');
             return $j('#bel-loading').hide();
         }
@@ -273,14 +247,15 @@ class BattleEye{
             return self.processBattleStats(data, self.teamA, self.teamB);
         }).then(()=>{
             self.events.emit('log', 'Battle stats loaded.');
+            self.events.emit('battlestats.loaded');
             $j('#bel-loading').hide();
             self.layout.update(self.getTeamStats());
         });
     }
 
     resetSettings(){
-        this.storage.loadDefaults();
-        window.settings = this.storage.getAll();
+        window.BattleEyeStorage.loadDefaults();
+        window.BattleEyeSettings = window.BattleEyeStorage.getAll();
     }
 
     checkForUpdates(){
@@ -289,6 +264,7 @@ class BattleEye{
             $j.get('https://dl.dropboxusercontent.com/u/86379644/data.json', function(data) {
                 data = JSON.parse(data);
                 self.contributors = data.contributors;
+                self.alerts = data.alerts;
                 self.displayContributors();
 
                 var version = parseInt(data.version.replace(/\D/g,""));
@@ -298,11 +274,11 @@ class BattleEye{
                     document.querySelector('#bel-version').innerHTML += '<a class="bel-btn" href="'+data.updateUrl+'">Update</a>';
                 }
 
-                console.log('[BATTLEEYE] Data JSON received and processed');
+                belLog('Data JSON received and processed');
                 self.events.emit('log', 'Data.json synced');
                 resolve(data);
             }).error(function(error){
-                console.error('[BATTLEEYE] Failed to download data.json');
+                console.error('Failed to download data.json');
                 reject(error);
             });
         });
@@ -333,16 +309,17 @@ class BattleEye{
         }
 
         getStats(()=>{
-            // console.log(data);
+            // belLog(data);
             var left = new Stats(SERVER_DATA.leftBattleId);
             var right = new Stats(SERVER_DATA.rightBattleId);
-            var rounds = [];
+            var rounds = [], round;
 
             left.defender = (SERVER_DATA.defenderId == SERVER_DATA.leftBattleId);
             right.defender = (SERVER_DATA.defenderId != SERVER_DATA.leftBattleId);
 
             async.eachOf(data, (roundStats, key, cb)=>{
-                if(!roundStats) cb();
+                if(!roundStats) return cb();
+                // belLog('round',key,roundStats);
                 self.processBattleStats(roundStats, left, right).then(()=>{
                     rounds[key] = {
                         left: new Stats(SERVER_DATA.leftBattleId),
@@ -435,7 +412,7 @@ class BattleEye{
                         resolve(data);
                     });
                 });
-            }
+            };
 
             var damageHandler = function(div, cb){
                 var page = 1;
@@ -453,8 +430,8 @@ class BattleEye{
 
                         maxPage = Math.max(data[attacker].pages, data[defender].pages);
 
-                        if(window.settings.enableLogging.value){
-                            console.log('[BATTLEEYE] Finished damage page '+page+"/"+maxPage+" div"+div);
+                        if(window.BattleEyeSettings.enableLogging.value){
+                            belLog('Finished damage page '+page+"/"+maxPage+" div"+div);
                             self.events.emit('log', `Fetched damage ${page}/${maxPage} for div${div}`);
                         }
 
@@ -483,17 +460,17 @@ class BattleEye{
                         }
 
                         maxPage = Math.max(data[attacker].pages, data[defender].pages);
-                        if(window.settings.enableLogging.value){
-                            console.log('[BATTLEEYE] Finished kill page '+page+"/"+maxPage+" div"+div);
+                        if(window.BattleEyeSettings.enableLogging.value){
+                            belLog('Finished kill page '+page+"/"+maxPage+" div"+div);
                             self.events.emit('log', `Fetched kills ${page}/${maxPage} for div${div}`);
                         }
                         page++;
 
                         whileCb();
                     });
-                },function(){
+                }, function(){
                     return page <= maxPage;
-                },function() {
+                }, function() {
                     cb();
                 });
             };
@@ -511,60 +488,48 @@ class BattleEye{
     }
 
     runTicker(){
-        var second = 0;
-        var self = this;
-
         var ticker = () => {
-            second++;
-            self.events.emit('tick', {
-                second: second,
-                time: new Date().getTime()
-            });
+            this.second++;
+            this.events.emit('tick', this.second);
         };
 
-        this.interval = setInterval(ticker, 1000);
+        this.interval = setInterval(ticker.bind(this), 1000);
     }
 
     handleEvents(){
-        var self = this;
-        this.events.on('tick', (timeData) => {
-            if(timeData.second % 3 === 0 && self.updateContributors){
-                self.updateContributors = false;
-                self.displayContributors();
+        var handleTick = function(second){
+            if(second % 3 === 0 && self.updateContributors){
+                this.updateContributors = false;
+                this.displayContributors();
             }
-            self.teamA.updateDps(timeData);
-            self.teamB.updateDps(timeData);
-            self.layout.update(self.getTeamStats());
-        });
+            this.teamA.updateDps(second);
+            this.teamB.updateDps(second);
+            this.layout.update(this.getTeamStats());
+        };
+
+        this.events.on('tick', handleTick.bind(this));
     }
 
     overridePomelo(){
-        var self = this;
-
-        var handler = function(data) {
-            self.updateContributors = true;
-            self.handle(data);
+        var messageHandler = function(data) {
+            this.updateContributors = true;
+            this.handle(data);
 		};
 
-        pomelo.on('onMessage', handler);
-        pomelo.on('close', function(data){
-            console.log('[BATTLEEYE] Socket closed ['+data.reason+']');
-            self.events.emit('log', `Connection to the battlefield was closed.`);
+        var closeHandler = function(data){
+            belLog('Socket closed ['+data.reason+']');
             window.viewData.connected = false;
-            clearTimeout(self.interval);
-            self.layout.update(self.getTeamStats());
-        });
+            this.layout.update(this.getTeamStats());
+        };
+
+        pomelo.on('onMessage', messageHandler.bind(this));
+        pomelo.on('close', closeHandler.bind(this));
     }
 
     handle(data){
-        var self = this;
-        self.teamA.handle(data);
-        self.teamB.handle(data);
-        if(!settings.reduceLoad.value){
-            self.layout.update(self.getTeamStats());
-        }
+        this.teamA.handle(data);
+        this.teamB.handle(data);
+        this.layout.update(this.getTeamStats());
         window.viewData.connected = true;
     }
 }
-
-module.exports = new BattleEye();

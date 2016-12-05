@@ -7,29 +7,31 @@ export default class Layout{
     constructor(headerData){
         var self = this;
         self.headerData = headerData;
-        self.canRender = true;
 
-        var battleEye = document.createElement('div');
-            battleEye.setAttribute('id', 'battle_eye_live');
+        this.battleEye = document.createElement('div');
+        this.battleEye.setAttribute('id', 'battle_eye_live');
 
-        if(window.settings.moveToTop.value){
-            $j('#content').prepend(battleEye);
+        this.miniMonitor = document.createElement('div');
+        this.miniMonitor.setAttribute('id', 'bel-minimonitor');
+
+        if(window.BattleEyeSettings.moveToTop.value){
+            $j('#content').prepend(this.battleEye);
         }else{
-            $j('#content').append(battleEye);
+            $j('#content').append(this.battleEye);
         }
 
-        $j('#battleConsole').append('<div id="bel-minimonitor"></div>')
+
+        $j('#battleConsole').append(this.miniMonitor);
 
         StyleSheet.load();
 
         window.BattleEye.events.emit('layout.ready', this);
+        // this.minimonitor = document.getElementById('bel-minimonitor');
+        // this.bel = document.getElementById('battle_eye_live');
     }
 
     update(feedData){
-        if(!this.canRender) return;
-
-        ReactDOM.render(<Template settings={window.settings} viewData={window.viewData} feedData={feedData} headerData={this.headerData} />, document.getElementById('battle_eye_live'));
-
-        ReactDOM.render(<MiniMonitor settings={window.settings} feedData={feedData} />, document.getElementById('bel-minimonitor'));
+        ReactDOM.render(<Template settings={window.BattleEyeSettings} viewData={window.viewData} feedData={feedData} headerData={this.headerData} />, this.battleEye);
+        ReactDOM.render(<MiniMonitor settings={window.BattleEyeSettings} feedData={feedData} />, this.miniMonitor);
     }
 }

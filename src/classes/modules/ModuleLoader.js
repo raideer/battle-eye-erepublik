@@ -11,7 +11,7 @@ export default class ModuleLoader{
             var settings = module.defineSettings();
             for(var i in settings){
                 var s = settings[i];
-                window.storage.define(s[0], s[1], module.name, s[2], s[3]);
+                window.BattleEyeStorage.define(s[0], s[1], module.name, s[2], s[3]);
             }
         }
     }
