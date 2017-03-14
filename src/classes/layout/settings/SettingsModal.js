@@ -1,4 +1,5 @@
 import SettingsGroup from './SettingsGroup';
+import React from 'react';
 
 export default class SettingsModal extends React.Component{
     renderGroups(){
@@ -19,9 +20,9 @@ export default class SettingsModal extends React.Component{
         }
 
         for(i in groups){
-            var group = groups[i];
-            components.push(<SettingsGroup name={i} settings={group}/>);
+            components.push(<SettingsGroup key={i} name={i} settings={groups[i]} />);
         }
+
         return components;
     }
 

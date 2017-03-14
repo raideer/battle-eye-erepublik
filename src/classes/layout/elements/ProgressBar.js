@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default class ProgressBar extends React.Component{
     render(){
         var aPerc = 0, bPerc = 0;

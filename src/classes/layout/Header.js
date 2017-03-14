@@ -1,3 +1,4 @@
+import React from 'react';
 import If from './If';
 
 export default class Header extends React.Component{

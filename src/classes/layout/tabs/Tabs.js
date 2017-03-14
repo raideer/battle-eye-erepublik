@@ -2,6 +2,7 @@ import DivisionTab from './DivisionTab';
 import CountriesTab from './CountriesTab';
 import OverallTab from './OverallTab';
 import SummaryTab from './SummaryTab';
+import React from 'react';
 
 export default class Tabs extends React.Component{
     renderDivisions(){
@@ -47,7 +48,7 @@ export default class Tabs extends React.Component{
                 right: this.props.data.right.divisions['div' + divInfo[d][0]]
             };
 
-            divs.push(<DivisionTab tab={this.props.tab} data={divData} div={divInfo[d]}/>);
+            divs.push(<DivisionTab key={d} tab={this.props.tab} data={divData} div={divInfo[d]}/>);
         }
 
         return divs;

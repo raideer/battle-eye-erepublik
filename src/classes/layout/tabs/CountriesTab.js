@@ -1,7 +1,30 @@
 import If from '../If';
 import TabSelector from './TabSelector';
+import { PieChart, Pie, Sector, Cell, Tooltip} from 'recharts';
+import React from 'react';
 
-export default class CountriesTab extends React.Component{
+class CustomTooltip extends React.Component
+{
+    render()
+    {
+        const { active } = this.props;
+
+        if (active) {
+          const { payload, label } = this.props;
+
+          return (
+            <div className="bel-chart-tooltip">
+              {`${payload[0].name} : ${payload[0].value.toLocaleString()}`}
+            </div>
+          );
+        }
+
+        return null;
+    }
+}
+
+export default class CountriesTab extends React.Component
+{
     constructor(){
         super();
 
@@ -43,40 +66,62 @@ export default class CountriesTab extends React.Component{
             countries = this.props.data[side].divisions[this.state.tab].countries;
         }
 
-        var chdata = [];
-        var chlabels = [];
-        var chcolors = [];
-        for(var i in countries){
-            var c = countries[i];
-            chdata.push(c.damage);
-            chlabels.push(i);
-            chcolors.push(this.intToRGB(this.hashCode(i)));
+        var chartData = [];
+        var chartColors = [];
+
+        for (var i in countries) {
+            chartData.push({
+                name: i,
+                value: countries[i].damage
+            });
+
+            chartColors.push("#" + this.intToRGB(this.hashCode(i)));
         }
 
-        var googleImg = 'https://chart.googleapis.com/chart?chds=a&cht=p&chd=t:'+chdata.join(',')+'&chs=440x300&chco='+chcolors.join('|')+'&chl='+chlabels.join('|');
-        content.push(<div>
-            <img src={googleImg}/>
-        </div>);
+        if (window.BattleEyeSettings.showDamageGraph.value) {
+            content.push(
+                <div key={side + "chart"}>
+                    <PieChart width={440} height={300}>
+                        <Pie
+                            data={chartData}
+                            cx={200}
+                            cy={150}
+                        >
+                            { chartData.map((entry, index) => <Cell key={index} fill={chartColors[index % chartColors.length]}/>) }
+                        </Pie>
+                        <Tooltip content={<CustomTooltip/>}/>
+                    </PieChart>
+                </div>
+            );
+        }
 
         for(var i in countries){
             var c = countries[i];
+            var countryName = i;
 
+            if (countryName == "Republic-of-Macedonia-FYROM") {
+                countryName = "Republic of Macedonia";
+            }
+
+            var perc = Math.round((c.damage / this.props.data[side].damage) * 1000)/10;
             content.push(
-                <div>
+                <div key={i + side}>
                     <If test={side == "right"}>
                         <div style={this.getFlagStyle(i)} className="bel-country"></div>
                     </If>
                     <If test={side != "right"}>
                         <span style={{float:'left'}} className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
                         <span style={{float:'left'}} className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
+                        <span style={{float:'left'}} className="bel-stat-spacer"><span className="bel-value">{perc.toLocaleString()} %</span></span>
                     </If>
-                    <b className="bel-color-belize">{i}</b>
+                    <b className="bel-color-belize">{countryName}</b>
                     <If test={side == "left"}>
                         <div style={this.getFlagStyle(i)} className="bel-country"></div>
                     </If>
                     <If test={side != "left"}>
                         <span style={{float:'right'}} className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
                         <span style={{float:'right'}} className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
+                        <span style={{float:'right'}} className="bel-stat-spacer"><span className="bel-value">{perc.toLocaleString()} %</span></span>
                     </If>
                     <hr className="bel" />
                 </div>

@@ -1,5 +1,6 @@
 import StyleSheet from './Stylesheet';
-
+import React from 'react';
+import ReactDOM from 'react-dom';
 import Template from './layout/Template';
 import MiniMonitor from './layout/MiniMonitor';
 

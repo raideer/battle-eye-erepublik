@@ -1,3 +1,4 @@
+import React from 'react';
 import If from '../If';
 import TabSelector from './TabSelector';
 
@@ -14,7 +15,7 @@ export default class SummaryTab extends React.Component{
             },
             tab: 'overall',
             division: 'overall'
-        }
+        };
 
         this.data = {
             left: null,
@@ -116,10 +117,12 @@ export default class SummaryTab extends React.Component{
             chcolors.push(this.intToRGB(this.hashCode(i)));
         }
 
-        var googleImg = 'https://chart.googleapis.com/chart?chds=a&cht=p&chd=t:'+chdata.join(',')+'&chs=440x300&chco='+chcolors.join('|')+'&chl='+chlabels.join('|');
-        content.push(<div>
-            <img src={googleImg}/>
-        </div>);
+        if(window.BattleEyeSettings.showDamageGraph.value){
+            var googleImg = 'https://chart.googleapis.com/chart?chds=a&cht=p&chd=t:'+chdata.join(',')+'&chs=440x300&chco='+chcolors.join('|')+'&chl='+chlabels.join('|');
+            content.push(<div>
+                <img src={googleImg}/>
+            </div>);
+        }
 
         for(var i in countries){
             var c = countries[i];
@@ -153,7 +156,7 @@ export default class SummaryTab extends React.Component{
     getRoundButtons(){
         var tabs = [['overall', 'Battle Total']];
 
-        for(var i = 1; i < SERVER_DATA.zoneId; i++){
+        for(var i = 1; i <= SERVER_DATA.zoneId; i++){
             tabs.push([`round${i}`, `Round ${i}`]);
         }
 
@@ -162,7 +165,7 @@ export default class SummaryTab extends React.Component{
 
     getDivisionButtons(){
         var tabs = [
-            ['overall', 'Battle Total'],
+            ['overall', 'Round Total'],
             ['div1', 'DIV1'],
             ['div2', 'DIV2'],
             ['div3', 'DIV3'],

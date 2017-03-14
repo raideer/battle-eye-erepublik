@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default class MiniMonitor extends React.Component{
 
     getPerc(a, b){
@@ -27,7 +29,7 @@ export default class MiniMonitor extends React.Component{
             var leftDamage = left.divisions['div'+div].damage * window.leftDetBonus;
             var rightDamage = right.divisions['div'+div].damage * window.rightDetBonus;
 
-            data.push(<div><div className={"bel-div bel-div"+div}></div> {this.getPerc(leftDamage, rightDamage)}% - {this.getPerc(rightDamage, leftDamage)}%</div>);
+            data.push(<div key={i}><div className={"bel-div bel-div"+div}></div> {this.getPerc(leftDamage, rightDamage)}% - {this.getPerc(rightDamage, leftDamage)}%</div>);
         }
 
         return data;

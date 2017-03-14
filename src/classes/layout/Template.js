@@ -3,6 +3,7 @@ import TabSelector from './tabs/TabSelector';
 import Tabs from './tabs/Tabs';
 import Header from './Header';
 import Footer from './Footer';
+import React from 'react';
 
 export default class Template extends React.Component{
     constructor(){
@@ -35,7 +36,7 @@ export default class Template extends React.Component{
         return [
             ['div', 'Divisions'],
             ['countries', 'Countries'],
-            ['summary', 'Battle stats (beta)']
+            ['summary', 'Battle stats']
         ];
     }
 

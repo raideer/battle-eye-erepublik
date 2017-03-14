@@ -1,4 +1,5 @@
 import SettingsField from './SettingsField';
+import React from 'react';
 
 export default class SettingsGroup extends React.Component{
 
@@ -7,8 +8,7 @@ export default class SettingsGroup extends React.Component{
         var components = [];
 
         for(var i in settings){
-            var setting = settings[i];
-            components.push(<SettingsField setting={setting}/>);
+            components.push(<SettingsField key={i} setting={settings[i]} />);
         }
 
         return components;

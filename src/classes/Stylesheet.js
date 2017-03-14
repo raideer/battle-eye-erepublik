@@ -135,6 +135,13 @@ class StyleSheet{
                 display: inline-block;
                 width: 15px;
             }
+
+            .bel-chart-tooltip{
+                background-color: #fff;
+                padding: 5px;
+                border-radius: 5px;
+                border: 2px solid #e0e0e0;
+            }
         `;
 
         this.addCSSRule('.clearfix:after', `
@@ -226,7 +233,7 @@ class StyleSheet{
             background-color: rgba(52, 73, 94, 0.7);
             right: 0;
             color: #ecf0f1;
-            top: 10px;
+            top: 60px;
             padding: 2px;
         `);
 

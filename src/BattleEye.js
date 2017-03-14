@@ -319,7 +319,6 @@ export default class BattleEye{
 
             async.eachOf(data, (roundStats, key, cb)=>{
                 if(!roundStats) return cb();
-                // belLog('round',key,roundStats);
                 self.processBattleStats(roundStats, left, right).then(()=>{
                     rounds[key] = {
                         left: new Stats(SERVER_DATA.leftBattleId),

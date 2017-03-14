@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default class SettingsField extends React.Component{
     getInput(){
         var setting = this.props.setting;

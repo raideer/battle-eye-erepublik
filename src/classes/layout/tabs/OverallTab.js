@@ -1,6 +1,7 @@
 import FloatValue from '../elements/FloatValue';
 import If from '../If';
 import ProgressBar from '../elements/ProgressBar';
+import React from 'react';
 
 export default class OverallTab extends React.Component{
     getPerc(a, b){

@@ -2,13 +2,14 @@ import FloatValue from '../elements/FloatValue';
 import TextValue from '../elements/TextValue';
 import ProgressBar from '../elements/ProgressBar';
 import If from '../If';
+import React from 'react';
 
 export default class DivisionTab extends React.Component{
     getPerc(a, b){
         var ap = 0;
 
         if(a+b !== 0){
-            ap = Math.round(a * 1000 / (a+b))/10;
+            ap = Math.round(a * 10000 / (a+b))/100;
         }
 
         return ap;

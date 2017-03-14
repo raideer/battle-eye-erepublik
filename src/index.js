@@ -24,6 +24,7 @@ function defineDefaultSettings(){
         ['gatherBattleStats', true, 'Performance', "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time."],
         ['highlightDivision', true, 'Visual', "Highlight current division"],
         ['highlightValue', true, 'Visual', "Highlight winning side"],
+        ['showDamageGraph', true, 'Structure', "Show damage pie charts", 'At the moment this feature is very unoptimized. May cause a preformance drop'],
         ['showDpsBar', true, 'Bars', "Show DPS bar"],
         ['showDamageBar', false, 'Bars', "Show Damage bar"],
         ['showDominationBar', true, 'Bars', "Show Domination bar"],

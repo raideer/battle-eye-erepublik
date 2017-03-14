@@ -1,10 +1,12 @@
+import React from 'react';
+
 export default class TabSelector extends React.Component{
     getButtons(){
         var buttons = [];
 
         for(var i in this.props.buttons){
             var a = this.props.buttons[i];
-            buttons.push(<button data-tab={a[0]} onClick={this.props.changeTab.bind(this, a[0])} className={this.getStyle(a[0])}>{a[1]}</button>);
+            buttons.push(<button key={i} data-tab={a[0]} onClick={this.props.changeTab.bind(this, a[0])} className={this.getStyle(a[0])}>{a[1]}</button>);
         }
 
         return buttons;
