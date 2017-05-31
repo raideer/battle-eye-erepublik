@@ -1,4 +1,3 @@
-import Utils from './classes/Utils';
 import Stats from './classes/Stats';
 import Layout from './classes/Layout';
 import SettingsStorage from './classes/Storage';
@@ -76,9 +75,14 @@ export default class BattleEye{
             }
         }
 
-        self.forceDisconnect = pomelo.disconnect;
-        pomelo.disconnect = () => {};
+        pomelo.disconnect = () => {
+            //tried to dc
+            setTimeout(() => {
+                window.viewData.connected = true;
+            }, 2000);
 
+            return;
+        };
         this.events.on('layout.ready', (layout)=>{
             layout.update(self.getTeamStats());
             self.checkForUpdates();
@@ -261,7 +265,7 @@ export default class BattleEye{
     checkForUpdates(){
         var self = this;
         return new Promise((resolve, reject)=>{
-            $j.get('https://dl.dropboxusercontent.com/u/86379644/data.json', function(data) {
+            $j.get('https://dl.dropbox.com/s/mz1p3g7pyiu69qx/data.json', function(data) {
                 data = JSON.parse(data);
                 self.contributors = data.contributors;
                 self.alerts = data.alerts;
@@ -510,12 +514,12 @@ export default class BattleEye{
     }
 
     overridePomelo(){
-        var messageHandler = function(data) {
+        var messageHandler = data => {
             this.updateContributors = true;
             this.handle(data);
 		};
 
-        var closeHandler = function(data){
+        var closeHandler = data => {
             belLog('Socket closed ['+data.reason+']');
             window.viewData.connected = false;
             this.layout.update(this.getTeamStats());
@@ -528,7 +532,7 @@ export default class BattleEye{
     handle(data){
         this.teamA.handle(data);
         this.teamB.handle(data);
-        this.layout.update(this.getTeamStats());
+        // this.layout.update(this.getTeamStats());
         window.viewData.connected = true;
     }
 }

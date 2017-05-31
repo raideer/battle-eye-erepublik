@@ -53,17 +53,7 @@ export default class Tabs extends React.Component{
 
         return divs;
     }
-
-    // renderOverall(){
-    //     var data = {};
-    //     data.left = this.props.data.left;
-    //     data.right = this.props.data.right;
-    //
-    //     return (
-    //         <OverallTab tab={this.props.tab} data={data} />
-    //     );
-    // }
-
+    
     renderCountries(){
         var data = {};
         data.left = this.props.data.left;
@@ -88,15 +78,6 @@ export default class Tabs extends React.Component{
                 {this.renderSummary()}
             </div>
         );
-        // if(this.props.tab == 'div'){
-        //     return this.renderDivisions();
-        // }else if(this.props.tab == 'overall'){
-        //     return this.renderOverall();
-        // }else if(this.props.tab == 'countries'){
-        //     return this.renderCountries();
-        // }else if(this.props.tab == 'summary'){
-        //     return this.renderSummary();
-        // }
     }
 
     render(){

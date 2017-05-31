@@ -1,23 +1,27 @@
+import Utils from './Utils';
+
 export default class CountryStats{
     constructor(){
         this.countries = {};
     }
 
     handle(data, addKill = true, addDamage = true){
-        var country = data.msg.permalink;
-        if(!this.countries[country]){
-            this.countries[country] = {
+        var countrySlug = data.msg.permalink;
+
+        if(!this.countries[countrySlug]){
+            this.countries[countrySlug] = {
                 damage: 0,
-                kills: 0
+                kills: 0,
+                name: Utils.prettifyCountryName(countrySlug)
             }
         }
 
         if(addDamage){
-            this.countries[country].damage += data.msg.damage;
+            this.countries[countrySlug].damage += data.msg.damage;
         }
 
         if(addKill){
-            this.countries[country].kills += 1;
+            this.countries[countrySlug].kills += 1;
         }
     }
 

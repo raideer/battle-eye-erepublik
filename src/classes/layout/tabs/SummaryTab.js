@@ -113,7 +113,7 @@ export default class SummaryTab extends React.Component{
         for(var i in countries){
             var c = countries[i];
             chdata.push(c.damage);
-            chlabels.push(i);
+            chlabels.push(c.name);
             chcolors.push(this.intToRGB(this.hashCode(i)));
         }
 
@@ -136,7 +136,7 @@ export default class SummaryTab extends React.Component{
                         <span style={{float:'left'}} className="bel-stat-spacer"><span className="tooltip-damage bel-value">{c.damage.toLocaleString()}</span></span>
                         <span style={{float:'left'}} className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
                     </If>
-                    <b className="bel-color-belize">{i}</b>
+                    <b className="bel-color-belize">{c.name}</b>
                     <If test={side == "left"}>
 
                         <div style={this.getFlagStyle(i)} className="bel-country"></div>

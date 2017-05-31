@@ -86,6 +86,8 @@ export default class CountriesTab extends React.Component
                             data={chartData}
                             cx={200}
                             cy={150}
+                            isAnimationActive={false}
+                            animationDuration={0}
                         >
                             { chartData.map((entry, index) => <Cell key={index} fill={chartColors[index % chartColors.length]}/>) }
                         </Pie>
@@ -99,10 +101,6 @@ export default class CountriesTab extends React.Component
             var c = countries[i];
             var countryName = i;
 
-            if (countryName == "Republic-of-Macedonia-FYROM") {
-                countryName = "Republic of Macedonia";
-            }
-
             var perc = Math.round((c.damage / this.props.data[side].damage) * 1000)/10;
             content.push(
                 <div key={i + side}>
@@ -114,7 +112,7 @@ export default class CountriesTab extends React.Component
                         <span style={{float:'left'}} className="bel-stat-spacer"><span className="tooltip-kills bel-value">{c.kills.toLocaleString()}</span></span>
                         <span style={{float:'left'}} className="bel-stat-spacer"><span className="bel-value">{perc.toLocaleString()} %</span></span>
                     </If>
-                    <b className="bel-color-belize">{countryName}</b>
+                    <b className="bel-color-belize">{c.name}</b>
                     <If test={side == "left"}>
                         <div style={this.getFlagStyle(i)} className="bel-country"></div>
                     </If>

@@ -205,7 +205,7 @@ class StyleSheet{
             left: 5px;
             width: 35px;
             height: 35px;
-            background-image: url("https://dl.dropboxusercontent.com/u/86379644/sprites.png");
+            background-image: url("https://dl.dropbox.com/s/atksgh3abnxh1qm/sprites.png");
             background-repeat: no-repeat;
             background-position: 0 0;
             content: " ";
@@ -238,7 +238,7 @@ class StyleSheet{
         `);
 
         this.addCSSRule('.bel-div', `
-            background-image: url("https://dl.dropboxusercontent.com/u/86379644/divs.png");
+            background-image: url("https://dl.dropbox.com/s/qitlbj5b0dokpk8/divs.png");
             background-repeat: no-repeat;
             height: 22px;
             width: 19px;
