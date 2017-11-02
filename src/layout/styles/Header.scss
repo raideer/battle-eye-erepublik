@@ -1,0 +1,48 @@
+.bo__Header {
+    width: 100%;
+    height: $headerHeight;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: $headerBgColor;
+    color: #e7e7e7;
+
+    a {
+        color: #e7e7e7;
+        font-weight: 700;
+    }
+
+    &__item {
+        a {
+            display: block;
+            height: $headerHeight;
+            padding: 0 15px;
+            line-height: $headerHeight;
+            transition: background-color 0.4s;
+            background-color: $headerBgColor;
+
+            &:hover {
+                background-color: lighten($headerBgColor, 5px);
+            }
+        }
+
+        & > span, & > div {
+            padding: 0 15px;
+
+            &.version {
+                padding: 5px 10px;
+                margin-right: 10px;
+                background-color: $mainColor;
+            }
+        }
+    }
+
+    &__flex {
+        display: flex;
+    }
+
+    &__logo {
+        font-size: 1.5em;
+        font-weight: 700;
+    }
+}

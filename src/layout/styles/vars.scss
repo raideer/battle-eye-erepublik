@@ -1,0 +1,14 @@
+$headerHeight: 45px;
+$headerBgColor: #323232;
+$mainColor: #7e4eff;
+
+@mixin clearfix {
+    &:before,
+    &:after {
+        content: "";
+        display: table;
+    }
+    &:after {
+        clear: both;
+    }
+}

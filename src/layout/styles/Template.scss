@@ -1,0 +1,25 @@
+#battle_observer {
+    width: 954px;
+    float: left;
+    position: relative;
+
+    *, *:before, *:after {
+        box-sizing: border-box;
+    }
+}
+
+.bo {
+    &__Container {
+        width: 100%;
+        max-height: 600px;
+    }
+
+    &__flex {
+        display: flex;
+        align-items: center;
+    }
+
+    &__hidden {
+        display: none;
+    }
+}
