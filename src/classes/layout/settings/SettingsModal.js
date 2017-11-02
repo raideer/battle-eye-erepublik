@@ -41,8 +41,7 @@ export default class SettingsModal extends React.Component{
                 <div className="clearfix">
                     <ul className="list-unstyled list-inline pull-right bel-header-menu">
                         <li><a id="bel-reset-settings" onClick={this.resetSettings} href="javascript:void(0);" className="bel-btn bel-btn-inverse bel-btn-alert-success">Reset to defaults</a></li>
-                        <li><a href="https://dl.dropboxusercontent.com/u/86379644/battle-eye-live.user.js" className="bel-btn bel-btn-inverse">Update</a></li>
-                        <li><button onClick={this.disconnect} className="bel-btn bel-btn-danger">Disconnect</button></li>
+                        <li><a href="https://dl.dropbox.com/s/9tehe0tvmpm2ho8/battle-eye-live.user.js" className="bel-btn bel-btn-inverse">Update</a></li>
                         <li><button id="bel-close-modal" onClick={this.props.closeModal} className="bel-btn bel-btn-danger">Close</button></li>
                     </ul>
                 </div>

@@ -160,7 +160,13 @@ export default class SummaryTab extends React.Component{
             tabs.push([`round${i}`, `Round ${i}`]);
         }
 
+        tabs.push(['export', 'Export data', 'bel-btn bel-btn-inverse']);
+
         return tabs;
+    }
+
+    exportData(type){
+        window.BattleEye.exportStats(type, this.data);
     }
 
     getDivisionButtons(){
@@ -191,16 +197,22 @@ export default class SummaryTab extends React.Component{
         return (
             <div>
                 <TabSelector changeTab={this.changeRound.bind(this)} tab={this.state.tab} buttons={this.getRoundButtons()} />
-                <TabSelector changeTab={this.changeDivision.bind(this)} tab={this.state.division} buttons={this.getDivisionButtons()} />
-                <div className="bel-country-list">
+                <If test={this.state.tab != 'export'}>
+                    <TabSelector changeTab={this.changeDivision.bind(this)} tab={this.state.division} buttons={this.getDivisionButtons()} />
+                    <div className="bel-country-list">
 
-                    <div className="bel-col-1-2 text-right">
-                        {this.getStats('left')}
+                        <div className="bel-col-1-2 text-right">
+                            {this.getStats('left')}
+                        </div>
+                        <div className="bel-col-1-2 text-left">
+                            {this.getStats('right')}
+                        </div>
                     </div>
-                    <div className="bel-col-1-2 text-left">
-                        {this.getStats('right')}
-                    </div>
-                </div>
+                </If>
+
+                <If test={this.state.tab == 'export'}>
+                    <button onClick={this.exportData.bind(this, 'excel')} className="bel-btn bel-btn-info bel-margin-r-10">Generate EXCEL file</button>
+                </If>
             </div>
         );
     }

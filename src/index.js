@@ -19,7 +19,6 @@ function defineDefaultSettings(){
         ['showAverageDamage', false, 'Structure', "Show average damage dealt"],
         ['showMiniMonitor', true, 'Structure', "Display a small division monitor on the battlefield"],
         ['showKills', false, 'Structure', "Show kills done by each division"],
-        ['showDamagePerc', true, 'Structure', "Show Damage percentages"],
         ['moveToTop', false, 'Structure', "Display BattleEye above the battlefield", '*Requires a page refresh'],
         ['gatherBattleStats', true, 'Performance', "Gather battle stats", "Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time."],
         ['highlightDivision', true, 'Visual', "Highlight current division"],

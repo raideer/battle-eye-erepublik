@@ -7,9 +7,8 @@ import ModuleLoader from './classes/modules/ModuleLoader';
 
 import OtherModule from './classes/modules/Other';
 import PercentageFixer from './classes/modules/PercentageFixer';
-// import AutoShooterModule from './classes/modules/AutoShooter';
 
-export default class BattleEye{
+export default class BattleEye {
     constructor(){
         belTime('battleEyeConstructor');
         var self = this;
@@ -56,25 +55,6 @@ export default class BattleEye{
             }
         }
 
-        var resistanceBonusAttacker = $j('#pvp_header .domination span.resistance_influence_value.attacker em');
-        var resistanceBonusDefender = $j('#pvp_header .domination span.resistance_influence_value.defender em');
-        window.leftDetBonus = 1;
-        window.rightDetBonus = 1;
-
-        if(resistanceBonusAttacker.length > 0){
-            if(!this.teamA.defender){
-                window.leftDetBonus = parseFloat(resistanceBonusAttacker.html());
-            }else{
-                window.rightDetBonus = parseFloat(resistanceBonusAttacker.html());
-            }
-        }else if(resistanceBonusDefender.length > 0){
-            if(this.teamA.defender){
-                window.leftDetBonus = parseFloat(resistanceBonusDefender.html());
-            }else{
-                window.rightDetBonus = parseFloat(resistanceBonusDefender.html());
-            }
-        }
-
         pomelo.disconnect = () => {
             //tried to dc
             setTimeout(() => {
@@ -83,6 +63,7 @@ export default class BattleEye{
 
             return;
         };
+
         this.events.on('layout.ready', (layout)=>{
             layout.update(self.getTeamStats());
             self.checkForUpdates();
@@ -147,19 +128,172 @@ export default class BattleEye{
         return sorted;
     }
 
-    getNbpStats(battleId, cb){
-        var self = this;
-        return new Promise((resolve, reject)=>{
-            $j.get('https://www.erepublik.com/en/military/nbp-stats/' + battleId, function(data) {
-                data = JSON.parse(data);
-                resolve(data);
-                if(typeof cb === 'function'){
-                    cb(data);
+    async getNbpStats(battleId) {
+        const data = await $j.getJSON(`https://www.erepublik.com/en/military/nbp-stats/${battleId}`);
+        return data;
+    }
+
+    exportStats(type, data){
+        XlsxPopulate.fromBlankAsync()
+        .then(workbook => {
+            // Modify the workbook.
+            var sheet = workbook.addSheet('Overall stats');
+                sheet = this.statsToSheet(sheet, data);
+
+            for (var i in data.rounds) {
+                var round = data.rounds[i];
+
+                var sheetName = `Round ${i} stats`;
+                if (i%4 == 0){
+                    sheetName += ' (AIR)';
                 }
-            }).error((e) => {
-                reject(e);
+
+                var roundSheet = workbook.addSheet(sheetName);
+                roundSheet = this.statsToSheet(roundSheet, round, i);
+            }
+
+            // Delete default sheet
+            workbook.deleteSheet("Sheet1");
+
+            workbook.outputAsync().then(blob => {
+                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                    // If IE, you must uses a different method.
+                    window.navigator.msSaveOrOpenBlob(blob, `Battle${SERVER_DATA.battleId}_stats.xlsx`);
+                } else {
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = `Battle${SERVER_DATA.battleId}_stats.xlsx`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                }
             });
         });
+    }
+
+    statsToSheet(sheet, stats, round) {
+        var headingStyle = {
+            fontSize: 20,
+            verticalAlignment: 'center',
+            horizontalAlignment: 'center'
+        };
+
+        sheet.range('A1:C1').merged(true).value(this.teamAName).style(headingStyle).style({'fontColor': '27ad60', 'bold': true});
+        sheet.range('I1:K1').merged(true).value(this.teamBName).style(headingStyle).style({'fontColor': 'c1392b', 'bold': true});
+
+        if (round%4 != 0){
+            sheet.range('E1:G1').merged(true).value('Divisions').style(headingStyle).style({'fontColor': '27ad60', 'bold': true});
+            sheet.range('M1:O1').merged(true).value('Divisions').style(headingStyle).style({'fontColor': 'c1392b', 'bold': true});
+        }
+
+        function setOverallStats(sheet, side, left = true){
+            var titleRange = (left)?'A3:C3':'I3:K3';
+            var valueRange = (left)?'A4:C4':'I4:K4';
+
+            sheet.range(titleRange).value([
+                ['Total damage', 'Total kills', 'Average damage']
+            ]).style({bold: true, horizontalAlignment: 'center', fontColor: 'f7ad6f'});
+
+            sheet.range(valueRange).value([
+                [side.damage, side.hits, side.avgHit]
+            ]).style({horizontalAlignment: 'center'});
+        }
+
+        setOverallStats(sheet, stats.left);
+        setOverallStats(sheet, stats.right, false);
+
+        sheet.range('B6:C6').value([['Damage', 'Kills']]).style({horizontalAlignment: 'center', fontColor: '68b5fc', bold: true});
+        sheet.range('J6:K6').value([['Damage', 'Kills']]).style({horizontalAlignment: 'center', fontColor: '68b5fc', bold: true});
+
+        function setCountryStats(sheet, side, left = true, air = false) {
+            function range(row){
+                if (air) {
+                    return (left)?'A'+row+":C"+row:'E'+row+":G"+row;
+                }
+
+                return (left)?'A'+row+":C"+row:'I'+row+":K"+row;
+            }
+
+            function cell(a,b,i){
+                return (left)?a + i:b + i;
+            }
+
+            var row = 7;
+            for(var i in side.countries){
+                var country = side.countries[i];
+
+                sheet.range(range(row)).value([[country.name, country.damage, country.kills]]);
+
+                if (air) {
+                    sheet.cell(cell('A', 'E', row)).style({bold: true});
+                } else {
+                    sheet.cell(cell('A', 'I', row)).style({bold: true});
+                }
+
+                row++;
+            }
+        }
+
+        function setDivisionStats(sheet, side, left = true) {
+            function range(row){
+                return (left)?'E'+row+":G"+row:'M'+row+":O"+row;
+            }
+
+            function cell(a,b,i){
+                return (left)?a + i:b + i;
+            }
+
+            var row = 3;
+            for (var i in side.divisions) {
+                if (i == 'div11') continue;
+                var div = side.divisions[i];
+
+                sheet.range(range(row)).merged(true).value(i.toUpperCase()).style({verticalAlignment: 'center', horizontalAlignment: 'center', bold: true});
+                row+=2;
+                sheet.range(range(row)).value([['Total damage', 'Total kills', 'Average damage']]).style({horizontalAlignment: 'center', bold: true, fontColor: 'f7ad6f'});
+                row+=1;
+                sheet.range(range(row)).value([[div.damage, div.hits, div.avgHit]]).style({horizontalAlignment: 'center'});
+                row+=2;
+
+                sheet.range(range(row)).value([['','Damage','Kills']]).style({horizontalAlignment: 'center', fontColor: '68b5fc', bold: true});
+                row+=1;
+
+                for(var j in div.countries){
+                    var country = div.countries[j];
+
+                    sheet.range(range(row)).value([[country.name, country.damage, country.kills]]);
+                    sheet.cell(cell('E', 'M', row)).style({bold: true});
+                    row+=1;
+                }
+                row+=2;
+            }
+        }
+
+        setCountryStats(sheet, stats.left, true);
+        setCountryStats(sheet, stats.right, false);
+
+        if (round%4 != 0){
+            setDivisionStats(sheet, stats.left);
+            setDivisionStats(sheet, stats.right, false);
+        }
+
+        sheet.row(1).height(30);
+
+        for(var i = 1; i <= 16; i++){
+            sheet.column(i).width(20);
+        }
+
+        // if air battle
+        if (round % 4 == 0){
+            var collapse = [5,6,7,8,13,14,16];
+            for(var i in collapse){
+                sheet.column(collapse[i]).width(1);
+            }
+        }
+
+        return sheet;
     }
 
     processBattleStats(data, teamA, teamB){

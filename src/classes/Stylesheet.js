@@ -89,6 +89,10 @@ class StyleSheet{
               background-color: #3498db;
             }
 
+            .bel-margin-r-10 {
+                margin-right: 10px;
+            }
+
             .bel-spinner .rect5 {
               -webkit-animation-delay: -0.8s;
               animation-delay: -0.8s;
@@ -229,7 +233,7 @@ class StyleSheet{
 
         this.addCSSRule('.bel-minimonitor', `
             position: absolute;
-            width: 118px;
+            width: 140px;
             background-color: rgba(52, 73, 94, 0.7);
             right: 0;
             color: #ecf0f1;

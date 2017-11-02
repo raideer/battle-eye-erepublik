@@ -27,8 +27,8 @@ export default class DivisionTab extends React.Component{
             highlightDivision = true;
         }
 
-        var leftDomination = left.damage * window.leftDetBonus;
-        var rightDomination = right.damage * window.rightDetBonus;
+        var leftDomination = left.damage;
+        var rightDomination = right.damage;
 
         var leftDmgPerPercent = Math.round(left.damage / this.getPerc(leftDomination, rightDomination));
         var rightDmgPerPercent = Math.round(right.damage / this.getPerc(rightDomination, leftDomination));
@@ -66,19 +66,11 @@ export default class DivisionTab extends React.Component{
                                 <FloatValue green={true} a={left.hits} b={right.hits} highlight={window.BattleEyeSettings.highlightValue.value} text={"kills"}/>
                             </If>
 
-                            <If test={window.BattleEyeSettings.showDamagePerc.value}>
-                                <FloatValue green={true} a={this.getPerc(left.damage, right.damage)} b={this.getPerc(right.damage, left.damage)} highlight={window.BattleEyeSettings.highlightValue.value} text={"%"}/>
-                            </If>
-
                             <FloatValue green={true} a={left.damage} b={right.damage} highlight={window.BattleEyeSettings.highlightValue.value}/>
                         </li>
                         <li className="bel-col-1-3 text-center">Total Damage</li>
                         <li className="bel-col-1-3 text-left">
                             <FloatValue a={right.damage} b={left.damage} highlight={window.BattleEyeSettings.highlightValue.value}/>
-
-                            <If test={window.BattleEyeSettings.showDamagePerc.value}>
-                                <FloatValue b={this.getPerc(left.damage, right.damage)} a={this.getPerc(right.damage, left.damage)} highlight={window.BattleEyeSettings.highlightValue.value} text={"%"}/>
-                            </If>
 
                             <If test={window.BattleEyeSettings.showKills.value}>
                                 <FloatValue a={right.hits} b={left.hits} text={"kills"} highlight={window.BattleEyeSettings.highlightValue.value}/>

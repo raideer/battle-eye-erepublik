@@ -23,14 +23,14 @@ export default class PercentageFixer extends Module{
         if(SERVER_DATA.mustInvert){
             targetPerc = 100 - targetPerc;
         }
-        var leftPerc, fix;
+
         var simulatedLeftDmg = leftDamage;
         var totalFix = 0;
         var loops = 0;
 
         while(this.dif(targetPerc, simulatedLeftDmg, rightDamage) > 0.05){
-            leftPerc = simulatedLeftDmg * 100 / (simulatedLeftDmg + rightDamage);
-            fix = Math.round(simulatedLeftDmg * targetPerc / leftPerc - simulatedLeftDmg);
+            var leftPerc = simulatedLeftDmg * 100 / (simulatedLeftDmg + rightDamage);
+            var fix = Math.round(simulatedLeftDmg * targetPerc / leftPerc - simulatedLeftDmg);
             simulatedLeftDmg+=fix;
             totalFix+=fix;
             loops++;
@@ -69,7 +69,8 @@ export default class PercentageFixer extends Module{
                     leftdmg = left.divisions['div' + divs[i]].damage;
                     rightdmg = right.divisions['div' + divs[i]].damage;
 
-                    fix = self.calculateFix(currentInvader[divs[i]], leftdmg, rightdmg);
+                    var targetPerc = currentInvader[divs[i]];
+                    fix = self.calculateFix(targetPerc, leftdmg, rightdmg);
 
                     window.BattleEye.teamA.divisions.get('div' + divs[i]).damage += fix;
                     logmsg = `Added ${fix.toLocaleString()} damage to div${divs[i]}`;
