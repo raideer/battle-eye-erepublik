@@ -60,7 +60,6 @@ window.belTimeEnd = function(name){
 };
 
 window.BattleEye = new BattleEye();
-
-setTimeout(function(){
+window.onload = () => {
     window.BattleEye.overridePomelo();
-}, 2000);
+}
