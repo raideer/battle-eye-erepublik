@@ -1,29 +1,37 @@
-import HitHistory from './HitHistory';
-
-export default class DpsHandler{
-    constructor(rem){
-        this.rememberDpsFor = rem;
-        this.hitHistory = new HitHistory(rem * 1000);
-        this.hitStreakSeconds = 0;
-        this.lastHit = 0;
+export default class DpsHandler {
+    constructor(rem) {
         this.dps = 0;
+
+        this._rememberKillFor = rem;
+        this._recentDamage = [];
+        this._hitStreakSeconds = 0;
+        this._lastHitTime = 0;
     }
 
-    addHit(damage){
-        this.lastHit = window.BattleEye.second;
-        this.hitHistory.add(damage);
+    addHit(damage) {
+        this._lastHitTime = window.BattleEye.second;
+        this._recentDamage.push({ damage, time: window.BattleEye.second });
     }
 
-    updateDps(timeData){
-        var recentDamage = this.hitHistory.getTotal();
-        if(this.hitStreakSeconds < this.rememberDpsFor){
-            this.hitStreakSeconds++;
+    updateDps(currentSecond) {
+        this._recentDamage = this._recentDamage.filter(data => {
+            return (currentSecond - data.time) <= this._rememberKillFor;
+        });
+
+        if (this._hitStreakSeconds < this._rememberKillFor) {
+            this._hitStreakSeconds++;
         }
 
-        this.dps = Math.round(recentDamage/this.hitStreakSeconds);
-        if(timeData - this.lastHit >= 10){
-            this.hitHistory.clear();
-            this.hitStreakSeconds = 0;
+        const recentDamage = this._recentDamage.reduce((sum, value) => {
+            return sum + value.damage;
+        }, 0);
+
+        this.dps = Math.round(recentDamage / this._hitStreakSeconds);
+
+        // Resetting dps if no kills have been done for the last 10 seconds
+        if (currentSecond - this._lastHitTime >= this._rememberKillFor) {
+            this._recentDamage = [];
+            this._hitStreakSeconds = 0;
         }
     }
 }

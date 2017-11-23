@@ -1,60 +1,53 @@
-export default class Storage{
-    constructor(){
-        var self = this;
-        if(!self.checkIfStorageAvailable()){
+export default class Storage {
+    constructor() {
+        if (!this.checkIfStorageAvailable()) {
             return false;
         }
 
-        self.prepend = "battle_eye_";
-        self.fields = {};
-        self.defaults = {};
+        this.prepend = 'battle_eye_';
+        this.fields = {};
+        this.defaults = {};
     }
 
-    set(id, value){
+    set(id, value) {
         localStorage.setItem(`${this.prepend}${id}`, value);
     }
 
-    get(id){
-        var self = this;
-        var val = localStorage.getItem(`${self.prepend}${id}`);
+    get(id) {
+        let val = localStorage.getItem(`${this.prepend}${id}`);
 
-        switch(val){
-            case 'true':
-                val = true;
-                break;
-            case 'false':
-                val = false;
-                break;
+        switch (val) {
+        case 'true':
+            val = true;
+            break;
+        case 'false':
+            val = false;
+            break;
         }
 
         return val;
     }
 
-    has(field){
-        var self = this;
-        if(localStorage.getItem(`${self.prepend}${field}`)){
+    has(field) {
+        if (localStorage.getItem(`${this.prepend}${field}`)) {
             return true;
         }
 
         return false;
     }
 
-    define(id, value, group, name, desc){
-        var self = this;
-
-        self.defaults[id] = {
+    define(id, value, group, name, desc) {
+        this.defaults[id] = {
             id, name, desc, group, value
-        }
+        };
     }
 
-    loadSettings(){
-        var self = this;
+    loadSettings() {
+        for (const i in this.defaults) {
+            const field = this.defaults[i];
 
-        for(var i in self.defaults){
-            var field = self.defaults[i];
-
-            if(self.fields[i] === undefined){
-                self.fields[i] = {
+            if (this.fields[i] === undefined) {
+                this.fields[i] = {
                     id: field.id,
                     name: field.name,
                     desc: field.desc,
@@ -62,35 +55,31 @@ export default class Storage{
                 };
             }
 
-            if(!self.has(i)){
-                self.set(i, field.value);
+            if (!this.has(i)) {
+                this.set(i, field.value);
             }
         }
     }
 
-    loadDefaults(){
-        var self = this;
-
-        for(var i in self.defaults){
-            self.set(i, self.defaults[i].value);
+    loadDefaults() {
+        for (const i in this.defaults) {
+            this.set(i, this.defaults[i].value);
         }
     }
 
-    getAll(){
-        var self = this;
+    getAll() {
+        const object = {};
 
-        var object = {};
+        for (const i in this.fields) {
+            const f = this.fields[i];
 
-        for(var i in self.fields){
-            var f = self.fields[i];
-
-            object[i] = {field: f, value: self.get(f.id)};
+            object[i] = { field: f, value: this.get(f.id) };
         }
 
         return object;
     }
 
-    checkIfStorageAvailable(){
-        return (typeof(Storage) !== "undefined");
+    checkIfStorageAvailable() {
+        return typeof Storage !== 'undefined';
     }
 }

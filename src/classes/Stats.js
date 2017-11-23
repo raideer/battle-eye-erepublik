@@ -2,10 +2,10 @@ import DpsHandler from './DpsHandler';
 import CountryStats from './CountryStats';
 import Divisions from './Divisions';
 
-export default class Stats extends DpsHandler{
-    constructor(id){
+export default class Stats extends DpsHandler {
+    constructor(id) {
         super(10);
-
+        this.name = SERVER_DATA.countries[id];
         this.countries = new CountryStats();
         this.id = id;
         this.damage = 0;
@@ -15,7 +15,7 @@ export default class Stats extends DpsHandler{
         this.defender = false;
     }
 
-    constructDivisions(){
+    constructDivisions() {
         this.divisions = new Divisions();
 
         this.divisions.create('div1', 1);
@@ -25,17 +25,17 @@ export default class Stats extends DpsHandler{
         this.divisions.create('div11', 11);
     }
 
-    isSide(side){
+    isSide(side) {
         return this.id == side;
     }
 
-    updateDps(timeData){
+    updateDps(timeData) {
         super.updateDps(timeData);
         this.divisions.updateDps(timeData);
     }
 
-    handle(data){
-        if(!this.isSide(data.side)){
+    handle(data) {
+        if (!this.isSide(data.side)) {
             return;
         }
 
@@ -47,17 +47,17 @@ export default class Stats extends DpsHandler{
         this.countries.handle(data);
     }
 
-    toObject(){
+    toObject() {
         // console.log('dps', this.dps);
         return {
-            'damage': this.damage,
-            'id': this.id,
-            'dps': this.dps,
-            'hits': this.hits,
-            'avgHit': Math.round(this.damage/this.hits),
-            'divisions': this.divisions.toObject(),
-            'countries': this.countries.getAll(),
-            'revolution': this.revolution
+            damage: this.damage,
+            id: this.id,
+            dps: this.dps,
+            hits: this.hits,
+            avgHit: Math.round(this.damage / this.hits),
+            divisions: this.divisions.toObject(),
+            countries: this.countries.getAll(),
+            revolution: this.revolution
         };
     }
 }

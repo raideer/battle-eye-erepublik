@@ -1,8 +1,8 @@
 import DpsHandler from './DpsHandler';
 import CountryStats from './CountryStats';
 
-export default class DivisionStats extends DpsHandler{
-    constructor(division){
+export default class DivisionStats extends DpsHandler {
+    constructor(division) {
         super(10);
         this.division = division;
         this.hits = 0;
@@ -10,8 +10,8 @@ export default class DivisionStats extends DpsHandler{
         this.countries = new CountryStats();
     }
 
-    handle(data){
-        if(data.division != this.division){
+    handle(data) {
+        if (data.division != this.division) {
             return;
         }
 
@@ -21,14 +21,14 @@ export default class DivisionStats extends DpsHandler{
         this.countries.handle(data);
     }
 
-    toObject(){
+    toObject() {
         return {
-            'damage': this.damage,
-            'id': this.id,
-            'dps': this.dps,
-            'hits': this.hits,
-            'avgHit': Math.round(this.damage/this.hits) | 0,
-            'countries': this.countries.getAll()
+            damage: this.damage,
+            id: this.id,
+            dps: this.dps,
+            hits: this.hits,
+            avgHit: Math.round(this.damage / this.hits) | 0,
+            countries: this.countries.getAll()
         };
     }
 }

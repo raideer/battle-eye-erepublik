@@ -1,34 +1,34 @@
 import Utils from './Utils';
 
-export default class CountryStats{
-    constructor(){
+export default class CountryStats {
+    constructor() {
         this.countries = {};
     }
 
-    handle(data, addKill = true, addDamage = true){
-        var countrySlug = data.msg.permalink;
+    handle(data, addKill = true, addDamage = true) {
+        const countrySlug = data.msg.permalink;
 
-        if(!this.countries[countrySlug]){
+        if (!this.countries[countrySlug]) {
             this.countries[countrySlug] = {
                 damage: 0,
                 kills: 0,
                 name: Utils.prettifyCountryName(countrySlug)
-            }
+            };
         }
 
-        if(addDamage){
+        if (addDamage) {
             this.countries[countrySlug].damage += data.msg.damage;
         }
 
-        if(addKill){
+        if (addKill) {
             this.countries[countrySlug].kills += 1;
         }
     }
 
-    handleBare(data){
-        var ob = {
+    handleBare(data) {
+        const ob = {
             msg: {
-                permalink: "",
+                permalink: '',
                 damage: 0
             }
         };
@@ -39,29 +39,29 @@ export default class CountryStats{
         this.handle(ob, false);
     }
 
-    handleKills(country, value){
-        if(!this.countries[country]){
+    handleKills(country, value) {
+        if (!this.countries[country]) {
             this.countries[country] = {
                 damage: 0,
                 kills: 0
-            }
+            };
         }
 
         this.countries[country].kills += value;
     }
 
-    getAll(){
-        var self = this;
-        var sorted = {};
+    getAll() {
+        const sorted = {};
 
-        var keysSorted = Object.keys(self.countries).sort(function(a,b) {
-            return self.countries[b].damage - self.countries[a].damage;
+        const keysSorted = Object.keys(this.countries).sort((a, b) => {
+            return this.countries[b].damage - this.countries[a].damage;
         });
 
-        for(var i in keysSorted){
-            var key = keysSorted[i];
-            sorted[key] = self.countries[key];
+        for (const i in keysSorted) {
+            const key = keysSorted[i];
+            sorted[key] = this.countries[key];
         }
+
         return sorted;
     }
 }
