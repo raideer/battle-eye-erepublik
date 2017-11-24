@@ -79,11 +79,11 @@ class BattleStatsLoader {
                     if (side == 'left') {
                         leftDmg += dmg;
                         teamA.countries.handleBare(bareData);
-                        teamA.divisions.get(`div${div}`);
+                        teamA.divisions.get(`div${div}`).countries.handleBare(bareData);
                     } else {
                         rightDmg += dmg;
                         teamB.countries.handleBare(bareData);
-                        teamB.divisions.get(`div${div}`);
+                        teamB.divisions.get(`div${div}`).countries.handleBare(bareData);
                     }
                 });
 
