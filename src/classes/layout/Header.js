@@ -2,11 +2,9 @@ import React from 'react';
 import If from './If';
 import Utils from '../Utils';
 
-export default class Header extends React.Component{
-    constructor(){
+export default class Header extends React.Component {
+    constructor() {
         super();
-        var self = this;
-
         this.state = {
             log: null
         };
@@ -14,51 +12,49 @@ export default class Header extends React.Component{
         this.listenerRegistered = false;
     }
 
-    getTeamElementStyle(){
+    getTeamElementStyle() {
         return {
             fontWeight: 700,
             fontSize: '1.3em'
         };
     }
 
-    getHeaderListStyle(){
+    getHeaderListStyle() {
         return {
-            paddingBottom: "6px",
-            borderBottom: "1px solid #ecf0f1"
+            paddingBottom: '6px',
+            borderBottom: '1px solid #ecf0f1'
         };
     }
 
-    getFlagStyle(c){
+    getFlagStyle(c) {
         return {
             backgroundImage: `url('/images/flags_png/L/${c}.png')`,
-            backgroundPosition: "-4px -4px"
+            backgroundPosition: '-4px -4px'
         };
     }
 
-    componentDidUpdate(){
+    componentDidUpdate() {
         this.attachTooltip();
     }
 
-    componentDidMount(){
+    componentDidMount() {
         this.attachTooltip();
     }
 
-    attachTooltip(){
+    attachTooltip() {
         $j('.bel-disconnectedAlert').attr('original-title', 'Not connected to the battlefield!').tipsy();
     }
 
-    getAlerts(){
+    getAlerts() {
         var elements = [];
 
         return elements;
     }
 
-    render(){
-        var self = this;
-
-        if(!this.listenerRegistered && window.BattleEye){
-            window.BattleEye.events.on('log', (text)=>{
-                self.state.log = text;
+    render() {
+        if (!this.listenerRegistered && window.BattleEye) {
+            window.BattleEye.events.on('log', text => {
+                this.state.log = text;
             });
 
             this.listenerRegistered = true;

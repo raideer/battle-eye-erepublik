@@ -15,14 +15,13 @@ function defineDefaultSettings() {
         ['showDiv2', true, 'Structure', 'Show DIV 2'],
         ['showDiv3', true, 'Structure', 'Show DIV 3'],
         ['showDiv4', true, 'Structure', 'Show DIV 4'],
-        ['showDomination', true, 'Structure', 'Show domination', 'Similar to damage, but takes domination bonus in count'],
-        ['showAverageDamage', false, 'Structure', 'Show average damage dealt'],
-        ['showMiniMonitor', true, 'Structure', 'Display a small division monitor on the battlefield'],
-        ['showKills', false, 'Structure', 'Show kills done by each division'],
+        ['showDomination', true, 'Stats', 'Show domination', 'Similar to damage, but takes domination bonus in count'],
+        ['showAverageDamage', false, 'Stats', 'Show average damage dealt'],
+        ['showMiniMonitor', true, 'Stats', 'Display a small division monitor on the battlefield'],
+        ['showKills', false, 'Stats', 'Show kills done by each division'],
         ['moveToTop', false, 'Structure', 'Display BattleEye above the battlefield', '*Requires a page refresh'],
-        ['gatherBattleStats', true, 'Performance', 'Gather battle stats', 'Displays total damage and kills since the beginning of the round. Disabling this will reduce the load time.'],
-        ['highlightDivision', true, 'Visual', 'Highlight current division'],
-        ['highlightValue', true, 'Visual', 'Highlight winning side'],
+        ['gatherBattleStats', true, 'Stats', 'Gather battle stats', 'Displays total damage and kills since the beginning of the round.'],
+        ['fixPercentages', true, 'Stats', 'Sync percentages', 'Makes sure BattleEye percentages are in sync with current battle\'s domination'],
         ['showDamageGraph', true, 'Structure', 'Show damage pie charts', 'At the moment this feature is very unoptimized. May cause a preformance drop'],
         ['showDpsBar', true, 'Bars', 'Show DPS bar'],
         ['showDamageBar', false, 'Bars', 'Show Damage bar'],
@@ -61,8 +60,9 @@ window.belTimeEnd = name => {
 
 // erep Stuff++ event handler for get requests
 if (window.ajaxSuccess) {
-    console.log('Using stuff++ ajax listener');
+    belLog('Using stuff++ ajax listener');
 } else {
+    belLog('Defining ajax listener');
     window.ajaxSuccess = [];
     const send = window.XMLHttpRequest.prototype.send;
 

@@ -1,16 +1,16 @@
 import React from 'react';
 
-export default class TextValue extends React.Component{
-    constructor(props){
+export default class TextValue extends React.Component {
+    constructor(props) {
         super(props);
 
         this.state = {
-            text: "",
+            text: '',
             green: false
         };
     }
 
-    render(){
+    render() {
         return (
             <span className="bel-value">{this.props.a} {this.state.text}</span>
         );

@@ -70,20 +70,27 @@ export default class BattleEye {
                 return;
             }
 
-            const stats = await BattleStatsLoader.loadStats();
-            BattleStatsLoader.processStats(stats, this.teamA, this.teamB);
-            this.events.emit('log', 'Battle stats loaded.');
-            $j('#bel-loading').hide();
-            BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB);
+            if (BattleEyeSettings.gatherBattleStats.value) {
+                const stats = await BattleStatsLoader.loadStats();
+                BattleStatsLoader.processStats(stats, this.teamA, this.teamB);
+                this.events.emit('log', 'Battle stats loaded.');
+            }
+
+            if (BattleEyeSettings.fixPercentages.value) {
+                BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB);
+            }
         })
         .then(() => {
+            $j('#bel-loading').hide();
             this.layout.update(this.getTeamStats());
 
             window.ajaxSuccess.push((data, url) => {
                 // If data is nbp-stats
                 if (url.match('nbp-stats')) {
-                    BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB);
-                    belLog('Fixed dif');
+                    if (BattleEyeSettings.fixPercentages.value) {
+                        BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB);
+                        belLog('Fixed dif');
+                    }
                 }
             });
         });
@@ -274,8 +281,8 @@ export default class BattleEye {
     }
 
     displayContributors() {
-        $j('.bel-contributor').each((i, el) => {
-            el.removeClass('bel-contributor')
+        $j('.bel-contributor').each(() => {
+            $j(this).removeClass('bel-contributor')
             .removeAttr('style')
             .removeAttr('original-title');
         });
@@ -337,6 +344,7 @@ export default class BattleEye {
         };
 
         const closeHandler = data => {
+            console.log(data);
             belLog(`Socket closed [${data.reason}]`);
             window.viewData.connected = false;
             this.layout.update(this.getTeamStats());

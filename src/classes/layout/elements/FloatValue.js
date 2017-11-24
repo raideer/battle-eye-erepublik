@@ -1,17 +1,24 @@
 import React from 'react';
 
-export default class FloatValue extends React.Component{
-    constructor(props){
+export default class FloatValue extends React.Component {
+    constructor(props) {
         super(props);
 
         this.state = {
-            text: ""
+            text: ''
         };
     }
 
-    render(){
+    render() {
+        let className = '';
+        if (this.props.a > this.props.b) {
+            className = this.props.green ? 'bel-value-hl-w' : 'bel-value-hl-l';
+        }
+
         return (
-            <span className={"bel-value " + ((this.props.a > this.props.b && this.props.highlight)?((this.props.green === true)?"bel-value-hl-w":"bel-value-hl-l"):"")}>{parseFloat(this.props.a).toLocaleString()} {this.state.text}</span>
+            <span className={`bel-value ${className}`}>
+                {parseFloat(this.props.a).toLocaleString()} {this.state.text}
+            </span>
         );
     }
 }

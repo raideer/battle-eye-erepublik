@@ -29,6 +29,7 @@
   "author": "Raideer",
   "license": "ISC",
   "dependencies": {
+    "bignumber.js": "^4.1.0",
     "dotenv": "^4.0.0",
     "react": "^15.6.2",
     "react-dom": "^15.6.2",

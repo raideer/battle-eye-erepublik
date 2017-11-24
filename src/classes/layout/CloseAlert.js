@@ -1,7 +1,7 @@
 import React from 'react';
 
-export default class CloseAlert extends React.Component{
-    render(){
+export default class CloseAlert extends React.Component {
+    render() {
         return null;
         // return (
         //     <div id="belClosed" className="bel-closed">

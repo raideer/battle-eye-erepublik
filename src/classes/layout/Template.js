@@ -5,8 +5,8 @@ import Header from './Header';
 import Footer from './Footer';
 import React from 'react';
 
-export default class Template extends React.Component{
-    constructor(){
+export default class Template extends React.Component {
+    constructor() {
         super();
         this.state = {
             modalHidden: true,
@@ -14,25 +14,25 @@ export default class Template extends React.Component{
         };
     }
 
-    openModal(){
+    openModal() {
         this.setState({
-            'modalHidden': false
+            modalHidden: false
         });
     }
 
-    closeModal(){
+    closeModal() {
         this.setState({
-            'modalHidden': true
+            modalHidden: true
         });
     }
 
-    changeTab(tab){
+    changeTab(tab) {
         this.setState({
-            'tab': tab
+            tab
         });
     }
 
-    getTabButtons(){
+    getTabButtons() {
         return [
             ['div', 'Divisions'],
             ['countries', 'Countries'],
@@ -40,7 +40,7 @@ export default class Template extends React.Component{
         ];
     }
 
-    render(){
+    render() {
         return (
             <div>
                 <SettingsModal closeModal={this.closeModal.bind(this)} hidden={this.state.modalHidden}/>

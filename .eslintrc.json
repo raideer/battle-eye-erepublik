@@ -23,7 +23,8 @@
       "belTimeEnd": false,
       "belLog": false,
       "XlsxPopulate": false,
-      "localStorage": false
+      "localStorage": false,
+      "BattleEyeSettings": false
   },
   "plugins": ["react"],
   "rules": {

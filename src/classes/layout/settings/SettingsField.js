@@ -1,10 +1,10 @@
 import React from 'react';
 
-export default class SettingsField extends React.Component{
-    getInput(){
+export default class SettingsField extends React.Component {
+    getInput() {
         var setting = this.props.setting;
         // console.log(setting.value);
-        if(typeof(setting.value) == "boolean"){
+        if (typeof setting.value == 'boolean') {
             return (
                 <div>
                     <input type="checkbox" defaultChecked={setting.value} className="bel-settings-field" id={setting.field.id} name={setting.field.id} />
@@ -13,7 +13,7 @@ export default class SettingsField extends React.Component{
                     </label>
                 </div>
             );
-        }else{
+        } else {
             return (
                 <div>
                     <label htmlFor={setting.field.id}>
@@ -27,7 +27,7 @@ export default class SettingsField extends React.Component{
         }
     }
 
-    render(){
+    render() {
         var setting = this.props.setting;
         return (
             <div className="bel-checkbox">

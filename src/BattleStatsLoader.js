@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+
 class BattleStatsLoader {
     async loadStats(round = SERVER_DATA.zoneId, divs = null) {
         const leftData = new Map();
@@ -29,7 +31,7 @@ class BattleStatsLoader {
 
                 maxPage = Math.max(stats[leftId].pages, stats[rightId].pages);
 
-                console.log(`Processed ${type} for division ${div} round ${round} | ${page}/${maxPage}`);
+                belLog(`Processed ${type} for division ${div} round ${round} | ${page}/${maxPage}`);
                 page++;
             } while (page <= maxPage);
         };
@@ -112,57 +114,30 @@ class BattleStatsLoader {
     }
 
     fixDamageDifference(nbpstats, leftTeam, rightTeam) {
-        function dif(target, a, b) {
-            return Math.round(Math.abs(target - (a * 100 / (a + b))) * 100000) / 100000;
+        function round(num) {
+            return Math.round(num * 100000000) / 100000000;
         }
 
-        function calculateFix(targetPerc, leftDamage, rightDamage) {
-            if (SERVER_DATA.mustInvert) {
-                targetPerc = 100 - targetPerc;
-            }
+        if (!nbpstats) return;
 
-            var simulatedLeftDmg = leftDamage;
-            var totalFix = 0;
-            var loops = 0;
-
-            while (dif(targetPerc, simulatedLeftDmg, rightDamage) > 0.05) {
-                var leftPerc = simulatedLeftDmg * 100 / (simulatedLeftDmg + rightDamage);
-                var fix = Math.round((simulatedLeftDmg * targetPerc / leftPerc) - simulatedLeftDmg);
-                simulatedLeftDmg += fix;
-                totalFix += fix;
-                loops++;
-            }
-
-            var originalDif = dif(targetPerc, leftDamage, rightDamage);
-            var currentDif = dif(targetPerc, simulatedLeftDmg, rightDamage);
-
-            belLog('Improved from', originalDif, 'to', currentDif, 'Loops:', loops);
-
-            return Math.round(totalFix);
-        }
         const invaderDomination = nbpstats.division.domination;
         const divs = SERVER_DATA.division === 11 ? [11] : [1, 2, 3, 4];
 
         divs.forEach(div => {
             const left = leftTeam.divisions.get(`div${div}`);
             const right = rightTeam.divisions.get(`div${div}`);
+            const leftDamage = new BigNumber(left.damage);
+            const rightDamage = new BigNumber(right.damage);
+            const totalDamage = leftDamage.plus(rightDamage);
 
-            const targetPerc = Math.round((SERVER_DATA.mustInvert ? 100 - invaderDomination[div] : invaderDomination[div]) * 10000) / 10000;
-            const currentPerc = Math.round(left.damage * 100 * 10000 / (left.damage + right.damage)) / 10000;
+            const targetPerc = new BigNumber(round(SERVER_DATA.mustInvert ? 100 - invaderDomination[div] : invaderDomination[div]));
+            const currentPerc = leftDamage.times(100).dividedBy(totalDamage);
 
-            if (targetPerc === currentPerc) {
-                return;
-            }
-
-            console.log(targetPerc, currentPerc);
-
-            const fix = calculateFix(invaderDomination[div], left.damage, right.damage);
-            left.damage += fix;
-
-            // const targetDamage = targetPerc * (left.damage + right.damage) / currentPerc;
-            // left.damage -= (left.damage + right.damage) - targetDamage;
-            //
-            console.log(
+            const targetLeftDamage = leftDamage.times(targetPerc).dividedBy(currentPerc);
+            const diff = targetLeftDamage.minus(leftDamage);
+            left.damage += diff.round().toNumber();
+            belLog('Adding to left', diff.round().toNumber());
+            belLog(
                 SERVER_DATA.mustInvert ? 100 - invaderDomination[div] : invaderDomination[div],
                 left.damage * 100 / (left.damage + right.damage)
             );
@@ -171,7 +146,7 @@ class BattleStatsLoader {
 
     async getNbpStats(battleId) {
         const data = await $j.getJSON(`https://www.erepublik.com/${erepublik.settings.culture}/military/nbp-stats/${battleId}/${SERVER_DATA.division}`);
-        console.log('Retrieved nbp stats');
+        belLog('Retrieved nbp stats');
         return data;
     }
 
