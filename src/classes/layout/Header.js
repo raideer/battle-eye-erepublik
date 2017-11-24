@@ -80,6 +80,7 @@ export default class Header extends React.Component {
                     <li className="pull-right">
                         <ul className="list-unstyled list-inline">
                             <li><a className="bel-btn bel-btn-inverse" target="_blank" href="http://bit.ly/BattleEye">Homepage</a></li>
+                            <li><a className="bel-btn bel-btn-inverse" target="_blank" href="http://raideer.github.io/battle-eye-erepublik/">Bug reports and suggestions</a></li>
                             <li><a className="bel-btn bel-btn-inverse" target="_blank" href="http://www.erepublik.com/en/citizen/profile/8075739">Contact/Donate</a></li>
                             <li><button id="battle-eye-settings" onClick={this.props.openModal} className="bel-btn bel-btn-default">Settings</button></li>
                         </ul>
