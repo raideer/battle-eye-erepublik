@@ -114,17 +114,6 @@ export default class BattleEye {
         });
     }
 
-    sortByValue(obj) {
-        const sorted = {};
-        const sortedKeys = Object.keys(obj).sort((a, b) => { return obj[a] - obj[b]; }).reverse();
-
-        for (var i in sortedKeys) {
-            sorted[sortedKeys[i]] = obj[sortedKeys[i]];
-        }
-
-        return sorted;
-    }
-
     exportStats(type, data) {
         ExcelGenerator.exportStats(type, data);
     }

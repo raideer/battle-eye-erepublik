@@ -13,6 +13,17 @@ class Utils {
 
         return prettyName;
     }
+
+    sortByValue(obj) {
+        const sorted = {};
+        const sortedKeys = Object.keys(obj).sort((a, b) => { return obj[a] - obj[b]; }).reverse();
+
+        for (var i in sortedKeys) {
+            sorted[sortedKeys[i]] = obj[sortedKeys[i]];
+        }
+
+        return sorted;
+    }
 }
 
 export default new Utils();
