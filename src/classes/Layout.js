@@ -23,7 +23,7 @@ export default class Layout {
     }
 
     update(feedData) {
-        ReactDOM.render(<Template settings={window.BattleEyeSettings} viewData={window.viewData} feedData={feedData} headerData={this.headerData} />, this.battleEye);
+        ReactDOM.render(<Template settings={window.BattleEyeSettings} feedData={feedData} headerData={this.headerData} />, this.battleEye);
         ReactDOM.render(<MiniMonitor settings={window.BattleEyeSettings} feedData={feedData} />, this.miniMonitor);
     }
 }

@@ -3,14 +3,13 @@ import Layout from './classes/Layout';
 import EventHandler from './classes/EventHandler';
 
 import BattleStatsLoader from './BattleStatsLoader';
+import ExcelGenerator from './ExcelGenerator';
 
 export default class BattleEye {
     constructor() {
         belTime('battleEyeConstructor');
-        window.BattleEye = this;
-        window.viewData = {
-            connected: true
-        };
+
+        this.connected = true;
 
         this.second = 0;
         this.contributors = {};
@@ -49,7 +48,7 @@ export default class BattleEye {
         pomelo.disconnect = () => {
             // tried to dc
             setTimeout(() => {
-                window.viewData.connected = true;
+                this.connected = true;
             }, 2000);
         };
 
@@ -136,7 +135,7 @@ export default class BattleEye {
     }
 
     exportStats(type, data) {
-        return require('./ExcelGenerator')(type, data);
+        ExcelGenerator.exportStats(type, data);
     }
 
     processBattleStats(data, teamA, teamB) {
@@ -346,7 +345,7 @@ export default class BattleEye {
         const closeHandler = data => {
             console.log(data);
             belLog(`Socket closed [${data.reason}]`);
-            window.viewData.connected = false;
+            this.connected = false;
             this.layout.update(this.getTeamStats());
         };
 
@@ -357,6 +356,6 @@ export default class BattleEye {
     handle(data) {
         this.teamA.handle(data);
         this.teamB.handle(data);
-        window.viewData.connected = true;
+        this.connected = true;
     }
 }

@@ -76,7 +76,7 @@ export default class Header extends React.Component {
                         </div>
                     </li>
 
-                    <If test={!window.viewData.connected}>
+                    <If test={!window.BattleEye.connected}>
                         <li>
                             <span className="bel-alert bel-disconnectedAlert">Not connected!</span>
                         </li>

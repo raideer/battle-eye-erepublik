@@ -44,7 +44,7 @@ export default class Template extends React.Component {
         return (
             <div>
                 <SettingsModal closeModal={this.closeModal.bind(this)} hidden={this.state.modalHidden}/>
-                <Header viewData={this.props.viewData} openModal={this.openModal.bind(this)} data={this.props.headerData}/>
+                <Header openModal={this.openModal.bind(this)} data={this.props.headerData}/>
                 <TabSelector changeTab={this.changeTab.bind(this)} tab={this.state.tab} buttons={this.getTabButtons()} />
                 <Tabs data={this.props.feedData} tab={this.state.tab} />
                 <Footer />
