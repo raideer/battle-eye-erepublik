@@ -37,15 +37,15 @@ class ExcelGenerator {
         }
     }
 
-    statsToSheet(battleEye, sheet, stats, round) {
+    statsToSheet(sheet, stats, round) {
         var headingStyle = {
             fontSize: 20,
             verticalAlignment: 'center',
             horizontalAlignment: 'center'
         };
 
-        sheet.range('A1:C1').merged(true).value(battleEye.teamAName).style(headingStyle).style({ fontColor: '27ad60', bold: true });
-        sheet.range('I1:K1').merged(true).value(battleEye.teamBName).style(headingStyle).style({ fontColor: 'c1392b', bold: true });
+        sheet.range('A1:C1').merged(true).value(window.BattleEye.teamAName).style(headingStyle).style({ fontColor: '27ad60', bold: true });
+        sheet.range('I1:K1').merged(true).value(window.BattleEye.teamBName).style(headingStyle).style({ fontColor: 'c1392b', bold: true });
 
         if (round % 4 != 0) {
             sheet.range('E1:G1').merged(true).value('Divisions').style(headingStyle).style({ fontColor: '27ad60', bold: true });
