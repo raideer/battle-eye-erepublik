@@ -60,8 +60,6 @@ export default class BattleEye {
             revolutionCountry: this.revolutionCountry
         }, this);
 
-        this.layout.update(this.getTeamStats());
-        this.checkForUpdates();
         BattleStatsLoader.getNbpStats(SERVER_DATA.battleId)
         .then(async data => {
             if (data.zone_finished) {
@@ -226,7 +224,7 @@ export default class BattleEye {
             return data;
         } catch (e) {
             belLog('Failed to download data.json');
-            console.error('Failed to download data.json');
+            throw e;
         }
     }
 
@@ -336,7 +334,7 @@ export default class BattleEye {
         this.events.on('tick', handleTick.bind(this));
     }
 
-    overridePomelo() {
+    async overridePomelo() {
         const messageHandler = data => {
             this.updateContributors = true;
             this.handle(data);
@@ -351,6 +349,9 @@ export default class BattleEye {
 
         pomelo.on('onMessage', messageHandler.bind(this));
         pomelo.on('close', closeHandler.bind(this));
+
+        this.layout.update(this.getTeamStats());
+        await this.checkForUpdates();
     }
 
     handle(data) {

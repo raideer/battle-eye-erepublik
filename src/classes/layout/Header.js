@@ -9,7 +9,9 @@ export default class Header extends React.Component {
             log: null
         };
 
-        this.listenerRegistered = false;
+        window.BattleEye.events.on('log', text => {
+            this.state.log = text;
+        });
     }
 
     getTeamElementStyle() {
@@ -52,13 +54,6 @@ export default class Header extends React.Component {
     }
 
     render() {
-        if (!this.listenerRegistered && window.BattleEye) {
-            window.BattleEye.events.on('log', text => {
-                this.state.log = text;
-            });
-
-            this.listenerRegistered = true;
-        }
         return (
             <div id="battle_eye_header">
                 <ul className="list-unstyled list-inline text-left bel-header-menu" style={this.getHeaderListStyle()}>
