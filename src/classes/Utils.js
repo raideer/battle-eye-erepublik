@@ -24,6 +24,10 @@ class Utils {
 
         return sorted;
     }
+
+    lastDigit(number) {
+        return number.toString().split('').pop();
+    }
 }
 
 export default new Utils();
