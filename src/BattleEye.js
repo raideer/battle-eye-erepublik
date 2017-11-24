@@ -15,13 +15,6 @@ export default class BattleEye {
         this.contributors = {};
         this.alerts = {};
 
-        if (window.BattleEyeStorage === false) {
-            return console.error('LocalStorage is not available! Battle Eye initialisation canceled');
-        }
-
-        window.BattleEyeStorage.loadSettings();
-        window.BattleEyeSettings = window.BattleEyeStorage.getAll();
-
         this.events = new EventHandler();
 
         this.teamA = new Stats(SERVER_DATA.leftBattleId);
