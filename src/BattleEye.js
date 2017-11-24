@@ -85,8 +85,6 @@ export default class BattleEye {
             });
         });
 
-        this.defineListeners();
-
         this.runTicker();
 
         this.handleEvents();
@@ -334,6 +332,7 @@ export default class BattleEye {
 
         this.layout.update(this.getTeamStats());
         await this.checkForUpdates();
+        this.defineListeners();
     }
 
     handle(data) {
