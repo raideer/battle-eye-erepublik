@@ -90,11 +90,13 @@ export default class DivisionTab extends React.Component {
                 <div className="belFeedValue">
                     <ul className="list-unstyled">
                         <li className="bel-col-1-3 text-right">
+                            <FloatValue green={true} a={left.recentFighters} b={right.recentFighters} text={left.recentFighters == 1 ? 'fighter' : 'fighters'} />
                             <FloatValue green={true} a={left.dps} b={right.dps} />
                         </li>
                         <li className="bel-col-1-3 text-center">DPS</li>
                         <li className="bel-col-1-3 text-left">
                             <FloatValue a={right.dps} b={left.dps} />
+                            <FloatValue a={right.recentFighters} b={left.recentFighters} text={ right.recentFighters == 1 ? 'fighter' : 'fighters' } />
                         </li>
                     </ul>
                 </div>

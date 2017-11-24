@@ -15,7 +15,7 @@ export default class DivisionStats extends DpsHandler {
             return;
         }
 
-        this.addHit(data.msg.damage);
+        this.addHit(data.msg.damage, data.msg.citizenId);
         this.hits++;
         this.damage += data.msg.damage;
         this.countries.handle(data);
@@ -28,7 +28,8 @@ export default class DivisionStats extends DpsHandler {
             dps: this.dps,
             hits: this.hits,
             avgHit: Math.round(this.damage / this.hits) | 0,
-            countries: this.countries.getAll()
+            countries: this.countries.getAll(),
+            recentFighters: Object.keys(this._recentFighters).length
         };
     }
 }

@@ -41,14 +41,13 @@ export default class Stats extends DpsHandler {
 
         this.divisions.handle(data);
 
-        this.addHit(data.msg.damage);
+        this.addHit(data.msg.damage, data.msg.citizenId);
         this.hits++;
         this.damage += data.msg.damage;
         this.countries.handle(data);
     }
 
     toObject() {
-        // console.log('dps', this.dps);
         return {
             damage: this.damage,
             id: this.id,
@@ -57,7 +56,8 @@ export default class Stats extends DpsHandler {
             avgHit: Math.round(this.damage / this.hits),
             divisions: this.divisions.toObject(),
             countries: this.countries.getAll(),
-            revolution: this.revolution
+            revolution: this.revolution,
+            recentFighters: Object.keys(this._recentFighters).length
         };
     }
 }

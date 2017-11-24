@@ -6,17 +6,32 @@ export default class DpsHandler {
         this._recentDamage = [];
         this._hitStreakSeconds = 0;
         this._lastHitTime = 0;
+
+        this._recentFighterTimespan = rem;
+        this._recentFighters = {};
     }
 
-    addHit(damage) {
+    addHit(damage, citizenId) {
         this._lastHitTime = window.BattleEye.second;
         this._recentDamage.push({ damage, time: window.BattleEye.second });
+        this._recentFighters[citizenId] = window.BattleEye.second;
     }
 
     updateDps(currentSecond) {
         this._recentDamage = this._recentDamage.filter(data => {
             return (currentSecond - data.time) <= this._rememberKillFor;
         });
+
+        const filtered = Object.keys(this._recentFighters)
+        .filter(key => {
+            return (currentSecond - this._recentFighters[key]) <= this._recentFighterTimespan;
+        })
+        .reduce((ob, key) => {
+            ob[key] = this._recentFighters[key];
+            return ob;
+        }, {});
+
+        this._recentFighters = filtered;
 
         if (this._hitStreakSeconds < this._rememberKillFor) {
             this._hitStreakSeconds++;
