@@ -186,8 +186,9 @@ export default class BattleEye {
     }
 
     async checkForUpdates() {
+        let data;
         try {
-            const data = await $j.getJSON('https://dl.dropbox.com/s/mz1p3g7pyiu69qx/data.json');
+            data = await $j.getJSON('https://dl.dropbox.com/s/mz1p3g7pyiu69qx/data.json');
             this.contributors = data.contributors;
             this.alerts = data.alerts;
             this.displayContributors();
@@ -201,9 +202,22 @@ export default class BattleEye {
 
             belLog('Data JSON received and processed');
             this.events.emit('log', 'Data.json synced');
-            return data;
         } catch (e) {
             belLog('Failed to download data.json');
+            throw e;
+        }
+
+        try {
+            if (!data) return;
+            await $j.ajax({
+                type: 'POST',
+                url: `${data.api}/touch`,
+                data: { citizen: erepublik.citizen.citizenId }
+            });
+            belLog('API touched');
+            this.events.emit('log', 'API touched');
+        } catch (e) {
+            belLog('Failed to reach the API');
             throw e;
         }
     }
