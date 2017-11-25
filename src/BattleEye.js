@@ -57,7 +57,7 @@ export default class BattleEye {
         .then(async data => {
             if (data.zone_finished) {
                 $j('#bel-loading').hide();
-                return;
+                return Promise.resolve();
             }
 
             if (BattleEyeSettings.gatherBattleStats.value) {
