@@ -7,7 +7,7 @@ const exportPath = process.env.EXPORT_PATH || 'build';
 module.exports = {
     entry: ['babel-polyfill', './src/index.js'],
     output: {
-        filename: 'battle-eye.user.js',
+        filename: 'battle-eye-live.user.js',
         path: path.resolve(exportPath)
     },
     module: {
@@ -50,7 +50,7 @@ module.exports = {
         new webpack.optimize.UglifyJsPlugin(),
         new webpack.BannerPlugin({
             banner: `// ==UserScript==
-// @name        Battle Eye
+// @name        Battle Eye Live
 // @namespace   battle-eye-live
 // @author      Industrials
 // @homepage    https://docs.google.com/spreadsheets/d/1Ebqp5Hb8KmGvX6X0FXmALO30Fv-IyfJHUGPkjKey8tg
