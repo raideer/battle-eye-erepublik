@@ -14,6 +14,7 @@ export default class BattleEye {
         this.second = 0;
         this.contributors = {};
         this.alerts = {};
+        this.apiURL = 'https://battleeye.000webhostapp.com';
 
         this.events = new EventHandler();
 
@@ -193,6 +194,10 @@ export default class BattleEye {
             this.alerts = data.alerts;
             this.displayContributors();
 
+            if (data.api) {
+                this.apiURL = data.api;
+            }
+
             const version = parseInt(data.version.replace(/\D/g, ''));
             const currentVersion = parseInt(GM_info.script.version.replace(/\D/g, ''));
             if (currentVersion != version) {
@@ -209,13 +214,14 @@ export default class BattleEye {
 
         try {
             if (!data) return;
-            await $j.ajax({
+            $j.ajax({
                 type: 'POST',
                 url: `${data.api}/touch`,
                 data: { citizen: erepublik.citizen.citizenId }
+            }).then(() => {
+                belLog('API touched');
+                this.events.emit('log', 'API touched');
             });
-            belLog('API touched');
-            this.events.emit('log', 'API touched');
         } catch (e) {
             belLog('Failed to reach the API');
             throw e;
@@ -345,7 +351,7 @@ export default class BattleEye {
         pomelo.on('close', closeHandler.bind(this));
 
         this.layout.update(this.getTeamStats());
-        await this.checkForUpdates();
+        this.checkForUpdates();
         this.defineListeners();
     }
 
