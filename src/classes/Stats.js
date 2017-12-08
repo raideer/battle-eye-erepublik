@@ -52,6 +52,7 @@ export default class Stats extends DpsHandler {
             damage: this.damage,
             id: this.id,
             dps: this.dps,
+            highestDps: this.highestDps,
             hits: this.hits,
             avgHit: Math.round(this.damage / this.hits),
             divisions: this.divisions.toObject(),
