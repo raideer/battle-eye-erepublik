@@ -20,6 +20,14 @@ export default class DivisionTab extends React.Component {
             return null;
         }
 
+        function num(number) {
+            if (isNaN(number)) {
+                return 0;
+            }
+
+            return number.toLocaleString();
+        }
+
         var left = this.props.data.left;
         var right = this.props.data.right;
         var highlightDivision = false;
@@ -42,13 +50,13 @@ export default class DivisionTab extends React.Component {
                 <div className="belFeedValue">
                     <ul className="list-unstyled">
                         <li className="bel-col-1-3 text-right">
-                            <TextValue a={`1% = ${leftDmgPerPercent.toLocaleString()} dmg`}/>
+                            <TextValue a={`1% = ${num(leftDmgPerPercent)} dmg`}/>
                             <FloatValue green={true} a={this.getPerc(leftDomination, rightDomination)} b={this.getPerc(rightDomination, leftDomination)} text={'%'}/>
                         </li>
                         <li className="bel-col-1-3 text-center">Domination</li>
                         <li className="bel-col-1-3 text-left">
                             <FloatValue b={this.getPerc(leftDomination, rightDomination)} a={this.getPerc(rightDomination, leftDomination)} text={'%'}/>
-                            <TextValue a={`1% = ${rightDmgPerPercent.toLocaleString()} dmg`}/>
+                            <TextValue a={`1% = ${num(rightDmgPerPercent)} dmg`}/>
                         </li>
                     </ul>
                 </div>
