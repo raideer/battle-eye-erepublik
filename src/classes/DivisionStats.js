@@ -26,6 +26,7 @@ export default class DivisionStats extends DpsHandler {
             damage: this.damage,
             id: this.id,
             dps: this.dps,
+            highestDps: this.highestDps,
             hits: this.hits,
             avgHit: Math.round(this.damage / this.hits) | 0,
             countries: this.countries.getAll(),
