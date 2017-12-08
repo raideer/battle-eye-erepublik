@@ -114,33 +114,60 @@ class BattleStatsLoader {
     }
 
     fixDamageDifference(nbpstats, leftTeam, rightTeam) {
-        function round(num) {
-            return Math.round(num * 100000000) / 100000000;
-        }
-
         if (!nbpstats) return;
 
+        function round(num) {
+            return Math.round(num * 100000) / 100000;
+        }
+
+        function fix(targetPerc, left, right) {
+            // c = targetPerc; a = left.damage; b = right.damage
+            // x = (ca + cb - a) / (1 - c)
+            const ca = new BigNumber(String(left.damage * targetPerc));
+            const cb = new BigNumber(String(right.damage * targetPerc));
+            const inverseC = new BigNumber(String(1 - targetPerc));
+            const upperfraction = ca.plus(cb).minus(String(left.damage));
+            const x = upperfraction.dividedBy(inverseC);
+
+            const addToLeft = x.round().toNumber();
+            // const addToLeft = Math.round(((targetPerc * left.damage) + (targetPerc * right.damage) - left.damage) * (1 - targetPerc));
+            // console.log('addtoleft', addToLeft, targetPerc, left.damage, right.damage);
+
+            left.damage += addToLeft;
+
+            const results = [
+                round(targetPerc) - round(left.damage / (left.damage + right.damage)),
+                addToLeft
+            ];
+
+            return results;
+        }
+
         const invaderDomination = nbpstats.division.domination;
+
         const divs = SERVER_DATA.division === 11 ? [11] : [1, 2, 3, 4];
 
         divs.forEach(div => {
             const left = leftTeam.divisions.get(`div${div}`);
             const right = rightTeam.divisions.get(`div${div}`);
-            const leftDamage = new BigNumber(left.damage);
-            const rightDamage = new BigNumber(right.damage);
-            const totalDamage = leftDamage.plus(rightDamage);
 
-            const targetPerc = new BigNumber(round(SERVER_DATA.mustInvert ? 100 - invaderDomination[div] : invaderDomination[div]));
-            const currentPerc = leftDamage.times(100).dividedBy(totalDamage);
+            const targetPerc = round(SERVER_DATA.mustInvert ? 100 - invaderDomination[div] : invaderDomination[div] / 100);
+            let totalAdded = 0;
+            let diff = 0;
+            let loops = 0;
 
-            const targetLeftDamage = leftDamage.times(targetPerc).dividedBy(currentPerc);
-            const diff = targetLeftDamage.minus(leftDamage);
-            left.damage += diff.round().toNumber();
-            belLog('Adding to left', diff.round().toNumber());
-            belLog(
-                SERVER_DATA.mustInvert ? 100 - invaderDomination[div] : invaderDomination[div],
-                left.damage * 100 / (left.damage + right.damage)
-            );
+            do {
+                const fixData = fix(targetPerc / 100, left, right);
+                diff = fixData[0];
+                totalAdded += fixData[1];
+                loops++;
+                if (loops > 150) {
+                    break;
+                }
+            } while (Math.round(diff * 100) / 100 != 0);
+
+            belLog(`Fixing Div ${div}`);
+            belLog('Adding to left', totalAdded, `(${loops} loops)`);
         });
     }
 
