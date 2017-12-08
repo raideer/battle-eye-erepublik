@@ -1,6 +1,7 @@
 export default class DpsHandler {
     constructor(rem) {
         this.dps = 0;
+        this.highestDps = 0;
 
         this._rememberKillFor = rem;
         this._recentDamage = [];
@@ -42,6 +43,9 @@ export default class DpsHandler {
         }, 0);
 
         this.dps = Math.round(recentDamage / this._hitStreakSeconds);
+        if (this.dps > this.highestDps) {
+            this.highestDps = this.dps;
+        }
 
         // Resetting dps if no kills have been done for the last 10 seconds
         if (currentSecond - this._lastHitTime >= this._rememberKillFor) {
