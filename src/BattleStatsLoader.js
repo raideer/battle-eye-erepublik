@@ -133,6 +133,10 @@ class BattleStatsLoader {
             // const addToLeft = Math.round(((targetPerc * left.damage) + (targetPerc * right.damage) - left.damage) * (1 - targetPerc));
             // console.log('addtoleft', addToLeft, targetPerc, left.damage, right.damage);
 
+            if (isNaN(addToLeft)) {
+                return [0, 0];
+            }
+
             left.damage += addToLeft;
 
             const results = [
