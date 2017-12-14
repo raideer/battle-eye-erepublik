@@ -139,12 +139,10 @@ class BattleStatsLoader {
 
             left.damage += addToLeft;
 
-            const results = [
+            return [
                 round(targetPerc) - round(left.damage / (left.damage + right.damage)),
                 addToLeft
             ];
-
-            return results;
         }
 
         const invaderDomination = nbpstats.division.domination;
@@ -155,13 +153,22 @@ class BattleStatsLoader {
             const left = leftTeam.divisions.get(`div${div}`);
             const right = rightTeam.divisions.get(`div${div}`);
 
-            const targetPerc = round(SERVER_DATA.mustInvert ? 100 - invaderDomination[div] : invaderDomination[div] / 100);
+            const targetPerc = round(SERVER_DATA.mustInvert ? 100 - invaderDomination[div] : invaderDomination[div]) / 100;
+
+            if (left.damage === 0 || right.damage === 0) {
+                belLog('No damage. Skipping percentage sync');
+                return;
+            }
+
+            belLog('Must invert', SERVER_DATA.mustInvert);
+            belLog('Target', targetPerc);
+
             let totalAdded = 0;
             let diff = 0;
             let loops = 0;
 
             do {
-                const fixData = fix(targetPerc / 100, left, right);
+                const fixData = fix(targetPerc, left, right);
                 diff = fixData[0];
                 totalAdded += fixData[1];
                 loops++;
