@@ -1,6 +1,7 @@
 import DivisionTab from './DivisionTab';
 import CountriesTab from './CountriesTab';
 import SummaryTab from './SummaryTab';
+import OtherTab from './OtherTab';
 import React from 'react';
 
 export default class Tabs extends React.Component {
@@ -54,12 +55,8 @@ export default class Tabs extends React.Component {
     }
 
     renderCountries() {
-        var data = {};
-        data.left = this.props.data.left;
-        data.right = this.props.data.right;
-
         return (
-            <CountriesTab tab={this.props.tab} data={data} />
+            <CountriesTab tab={this.props.tab} data={this.props.data} />
         );
     }
 
@@ -69,12 +66,19 @@ export default class Tabs extends React.Component {
         );
     }
 
+    renderOther() {
+        return (
+            <OtherTab tab={this.props.tab} data={this.props.data} />
+        );
+    }
+
     getContent() {
         return (
             <div>
                 {this.renderDivisions()}
                 {this.renderCountries()}
                 {this.renderSummary()}
+                {this.renderOther()}
             </div>
         );
     }

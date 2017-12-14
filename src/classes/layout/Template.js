@@ -35,7 +35,8 @@ export default class Template extends React.Component {
         return [
             ['div', 'Divisions'],
             ['countries', 'Countries'],
-            ['summary', 'Battle stats']
+            ['other', 'Other stats'],
+            ['summary', 'Battle summary']
         ];
     }
 
