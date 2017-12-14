@@ -21,7 +21,7 @@ function defineDefaultSettings() {
         ['showKills', false, 'Stats', 'Show kills done by each division'],
         ['moveToTop', false, 'Structure', 'Display BattleEye above the battlefield', '*Requires a page refresh'],
         ['gatherBattleStats', true, 'Stats', 'Gather battle stats', 'Displays total damage and kills since the beginning of the round.'],
-        ['fixPercentages', true, 'Stats', 'Sync percentages', 'Makes sure BattleEye percentages are in sync with current battle\'s domination'],
+        ['syncPercentages', true, 'Stats', 'Sync percentages', 'Makes sure BattleEye percentages are in sync with current battle\'s domination'],
         ['showDamageGraph', true, 'Structure', 'Show damage pie charts', 'At the moment this feature is very unoptimized. May cause a preformance drop'],
         ['showDpsBar', true, 'Bars', 'Show DPS bar'],
         ['showDamageBar', false, 'Bars', 'Show Damage bar'],
