@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import utils from './classes/Utils';
 
 class BattleStatsLoader {
     async loadStats(round = SERVER_DATA.zoneId, divs = null) {
@@ -129,11 +130,9 @@ class BattleStatsLoader {
             const upperfraction = ca.plus(cb).minus(String(left.damage));
             const x = upperfraction.dividedBy(inverseC);
 
-            const addToLeft = x.round().toNumber();
-            // const addToLeft = Math.round(((targetPerc * left.damage) + (targetPerc * right.damage) - left.damage) * (1 - targetPerc));
-            // console.log('addtoleft', addToLeft, targetPerc, left.damage, right.damage);
+            const addToLeft = utils.number(x.round().toNumber());
 
-            if (isNaN(addToLeft)) {
+            if (addToLeft === 0) {
                 return [0, 0];
             }
 
