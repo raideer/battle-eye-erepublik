@@ -67,7 +67,7 @@ export default class BattleEye {
                 this.events.emit('log', 'Battle stats loaded.');
             }
 
-            if (BattleEyeSettings.fixPercentages.value) {
+            if (BattleEyeSettings.syncPercentages.value) {
                 BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB);
             }
         })
@@ -78,7 +78,7 @@ export default class BattleEye {
             window.ajaxSuccess.push((data, url) => {
                 // If data is nbp-stats
                 if (url.match('nbp-stats')) {
-                    if (BattleEyeSettings.fixPercentages.value) {
+                    if (BattleEyeSettings.syncPercentages.value) {
                         BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB);
                         belLog('Fixed dif');
                     }
