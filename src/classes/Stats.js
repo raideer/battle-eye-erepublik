@@ -57,6 +57,7 @@ export default class Stats extends DpsHandler {
             avgHit: Math.round(this.damage / this.hits),
             divisions: this.divisions.toObject(),
             countries: this.countries.getAll(),
+            countriesCount: this.countries.length,
             revolution: this.revolution,
             recentFighters: Object.keys(this._recentFighters).length
         };

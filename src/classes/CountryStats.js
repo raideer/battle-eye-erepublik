@@ -25,6 +25,10 @@ export default class CountryStats {
         }
     }
 
+    get length() {
+        return Object.keys(this.countries).length;
+    }
+
     handleBare(data) {
         const ob = {
             msg: {

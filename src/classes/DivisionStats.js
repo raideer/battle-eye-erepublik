@@ -30,6 +30,7 @@ export default class DivisionStats extends DpsHandler {
             hits: this.hits,
             avgHit: Math.round(this.damage / this.hits) | 0,
             countries: this.countries.getAll(),
+            countriesCount: this.countries.length,
             recentFighters: Object.keys(this._recentFighters).length
         };
     }
