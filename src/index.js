@@ -1,6 +1,6 @@
 import SettingsStorage from './classes/Storage';
 import BattleEye from './BattleEye';
-import './styles/app.scss';
+import './styles/battleeye.scss';
 
 function defineDefaultSettings() {
     const define = settings => {
@@ -10,23 +10,13 @@ function defineDefaultSettings() {
     };
 
     const settings = [
-        ['showOtherDivs', false, 'Structure', 'Show other divisions', 'You can select what divisions you want to see with the settings below.'],
         ['showDiv1', true, 'Structure', 'Show DIV 1'],
         ['showDiv2', true, 'Structure', 'Show DIV 2'],
         ['showDiv3', true, 'Structure', 'Show DIV 3'],
         ['showDiv4', true, 'Structure', 'Show DIV 4'],
-        ['showDomination', true, 'Stats', 'Show domination', 'Similar to damage, but takes domination bonus in count'],
-        ['showAverageDamage', false, 'Stats', 'Show average damage dealt'],
         ['showMiniMonitor', true, 'Stats', 'Display a small division monitor on the battlefield'],
         ['showKills', false, 'Stats', 'Show kills done by each division'],
         ['moveToTop', false, 'Structure', 'Display BattleEye above the battlefield', '*Requires a page refresh'],
-        ['gatherBattleStats', true, 'Stats', 'Gather battle stats', 'Displays total damage and kills since the beginning of the round.'],
-        ['syncPercentages', true, 'Stats', 'Sync percentages', 'Makes sure BattleEye percentages are in sync with current battle\'s domination'],
-        ['showDamageGraph', true, 'Structure', 'Show damage pie charts', 'At the moment this feature is very unoptimized. May cause a preformance drop'],
-        ['showDpsBar', true, 'Bars', 'Show DPS bar'],
-        ['showDamageBar', false, 'Bars', 'Show Damage bar'],
-        ['showDominationBar', true, 'Bars', 'Show Domination bar'],
-        ['largerBars', false, 'Bars', 'Larger bars'],
         ['enableLogging', false, 'Other', 'Enable logging to console'],
         ['enableBenchmarking', false, 'Other', 'Enable performance logging to console']
     ];
