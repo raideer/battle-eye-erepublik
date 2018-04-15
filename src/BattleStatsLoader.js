@@ -1,5 +1,5 @@
-import BigNumber from 'bignumber.js';
-import utils from './classes/Utils';
+// import BigNumber from 'bignumber.js';
+import { getPerc } from './classes/Utils';
 
 class BattleStatsLoader {
     async loadStats(round = SERVER_DATA.zoneId, divs = null) {
@@ -80,11 +80,11 @@ class BattleStatsLoader {
                     if (side == 'left') {
                         leftDmg += dmg;
                         teamA.countries.handleBare(bareData);
-                        teamA.divisions.get(`div${div}`).countries.handleBare(bareData);
+                        teamA.divisions.get(div).countries.handleBare(bareData);
                     } else {
                         rightDmg += dmg;
                         teamB.countries.handleBare(bareData);
-                        teamB.divisions.get(`div${div}`).countries.handleBare(bareData);
+                        teamB.divisions.get(div).countries.handleBare(bareData);
                     }
                 });
 
@@ -94,49 +94,75 @@ class BattleStatsLoader {
                     if (side == 'left') {
                         leftKl += kills;
                         teamA.countries.handleKills(player.country_permalink, kills);
-                        teamA.divisions.get(`div${div}`).countries.handleKills(player.country_permalink, kills);
+                        teamA.divisions.get(div).countries.handleKills(player.country_permalink, kills);
                     } else {
                         rightKl += kills;
                         teamB.countries.handleKills(player.country_permalink, kills);
-                        teamB.divisions.get(`div${div}`).countries.handleKills(player.country_permalink, kills);
+                        teamB.divisions.get(div).countries.handleKills(player.country_permalink, kills);
                     }
                 });
             });
 
-            teamA.divisions.get(`div${div}`).damage += leftDmg;
-            teamB.divisions.get(`div${div}`).damage += rightDmg;
+            teamA.divisions.get(div).damage += leftDmg;
+            teamB.divisions.get(div).damage += rightDmg;
             teamA.damage += leftDmg;
             teamB.damage += rightDmg;
-            teamA.divisions.get(`div${div}`).hits += leftKl;
-            teamB.divisions.get(`div${div}`).hits += rightKl;
+            teamA.divisions.get(div).hits += leftKl;
+            teamB.divisions.get(div).hits += rightKl;
             teamA.hits += leftKl;
             teamB.hits += rightKl;
         });
     }
 
-    fixDamageDifference(nbpstats, leftTeam, rightTeam) {
+    fixDamageDifference(nbpstats, leftTeam, rightTeam, second) {
         if (!nbpstats) return;
 
         function round(num) {
             return Math.round(num * 100000) / 100000;
         }
 
-        function fix(targetPerc, left, right) {
-            // c = targetPerc; a = left.damage; b = right.damage
-            // x = (ca + cb - a) / (1 - c)
-            const ca = new BigNumber(String(left.damage * targetPerc));
-            const cb = new BigNumber(String(right.damage * targetPerc));
-            const inverseC = new BigNumber(String(1 - targetPerc));
-            const upperfraction = ca.plus(cb).minus(String(left.damage));
-            const x = upperfraction.dividedBy(inverseC);
+        function findClosestDelta(left, right, targetPerc) {
+            const history = [];
+            left.forEach((item, i) => {
+                history.push({
+                    left: item,
+                    right: right[i]
+                });
+            });
 
-            const addToLeft = utils.number(x.round().toNumber());
+            let smallestPair;
+            let smallest = 100;
+
+            history.forEach(pair => {
+                const perc = round(pair.left.damage / (pair.right.damage + pair.left.damage));
+                const delta = Math.abs(perc - targetPerc);
+                if (delta < smallest) {
+                    smallest = delta;
+                    smallestPair = pair;
+                }
+            });
+
+            return smallestPair;
+        }
+
+        function fix(targetPerc, left, right) {
+            //  L * Tp + R * Tp - L
+            // ---------------------
+            //       1 - Tp
+
+            // L * Tp      L        R * Tp
+            // ------  -  ----   +  ------
+            // 1 - Tp     1 - Tp    1  - Tp
+
+            const ltp = (left.damage / (1 - targetPerc)) * targetPerc;
+            const rtp = (right.damage / (1 - targetPerc)) * targetPerc;
+            const l = left.damage / (1 - targetPerc);
+
+            const addToLeft = Math.round(ltp - l + rtp);
 
             if (addToLeft === 0) {
                 return [0, 0];
             }
-
-            left.damage += addToLeft;
 
             return [
                 round(targetPerc) - round(left.damage / (left.damage + right.damage)),
@@ -149,35 +175,38 @@ class BattleStatsLoader {
         const divs = SERVER_DATA.division === 11 ? [11] : [1, 2, 3, 4];
 
         divs.forEach(div => {
-            const left = leftTeam.divisions.get(`div${div}`);
-            const right = rightTeam.divisions.get(`div${div}`);
+            const left = leftTeam.divisions.get(div);
+            const right = rightTeam.divisions.get(div);
+
+            const leftHistory = left.damageHistory.filter(item => {
+                return item.time >= second - 20;
+            });
+
+            const rightHistory = right.damageHistory.filter(item => {
+                return item.time >= second - 20;
+            });
 
             const targetPerc = round(SERVER_DATA.mustInvert ? 100 - invaderDomination[div] : invaderDomination[div]) / 100;
 
-            if (left.damage === 0 || right.damage === 0) {
+            let closest = findClosestDelta(leftHistory, rightHistory, targetPerc);
+
+            if (!closest) {
+                closest = {
+                    left, right
+                };
+            }
+
+            if (closest.left.damage === 0 || closest.right.damage === 0) {
                 belLog('No damage. Skipping percentage sync');
                 return;
             }
 
-            belLog('Must invert', SERVER_DATA.mustInvert);
-            belLog('Target', targetPerc);
+            const [diff, add] = fix(targetPerc, closest.left, closest.right);
 
-            let totalAdded = 0;
-            let diff = 0;
-            let loops = 0;
+            left.damage += add;
+            leftTeam.damage += add;
 
-            do {
-                const fixData = fix(targetPerc, left, right);
-                diff = fixData[0];
-                totalAdded += fixData[1];
-                loops++;
-                if (loops > 150) {
-                    break;
-                }
-            } while (Math.round(diff * 100) / 100 != 0);
-
-            belLog(`Fixing Div ${div}`);
-            belLog('Adding to left', totalAdded, `(${loops} loops)`);
+            belLog('Adding to left', add, `${div} (${diff} diff @ T+${second})`);
         });
     }
 
