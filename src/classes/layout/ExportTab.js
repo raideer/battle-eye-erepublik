@@ -3,7 +3,7 @@ import Table from './charts/Table';
 import TabButton from './TabButton';
 import Pie from './charts/Pie';
 import Radar from './charts/Radar';
-import { intToRGB, hashCode } from '../Utils';
+import { intToRGB, hashCode, currentRound } from '../Utils';
 
 export default class ExportTab extends React.Component {
     constructor() {
@@ -12,7 +12,7 @@ export default class ExportTab extends React.Component {
             step: 0,
             progress: {
                 current: 0,
-                max: SERVER_DATA.zoneId + 1,
+                max: ((currentRound * 4) - (Math.floor(currentRound / 4) * 3)) * 2,
                 status: 'Fetching data'
             },
             activeRound: 'overall',
@@ -35,8 +35,17 @@ export default class ExportTab extends React.Component {
         window.BattleEye.generateSummary();
 
         window.BattleEye.events.on('summary.update', step => {
-            this.state.progress.status = `Fetched round ${step}`;
-            this.state.progress.current = step;
+            if (step.page == 1) {
+                this.state.progress.current++;
+            }
+
+            this.setState({
+                progress: {
+                    status: `[Round ${step.round}] Processed ${step.type} for division ${step.div} (${step.page}/${step.maxPage})`,
+                    current: this.state.progress.current,
+                    max: this.state.progress.max
+                }
+            });
         });
 
         window.BattleEye.events.on('summary.finished', ([left, right, rounds]) => {
@@ -202,9 +211,11 @@ export default class ExportTab extends React.Component {
                             { charts.map(tab => {
                                 return (
                                     <TabButton
+                                        key={tab[0]}
                                         name={tab[0]}
                                         activeTab={this.state.activeChart}
-                                        className={`${this.state.activeChart == tab[0] ? '' : 'is-outlined'} is-inverted is-dark`}
+                                        inactiveClass='is-outlined'
+                                        className='is-inverted is-dark'
                                         click={this.setChart.bind(this, tab[0])}>
                                         {tab[1]}
                                     </TabButton>
@@ -217,9 +228,11 @@ export default class ExportTab extends React.Component {
                             { rounds.map(tab => {
                                 return (
                                     <TabButton
+                                        key={tab[0]}
                                         name={tab[0]}
                                         activeTab={this.state.activeRound}
-                                        className={`${this.state.activeRound == tab[0] ? '' : 'is-outlined'} is-inverted is-dark`}
+                                        inactiveClass='is-outlined'
+                                        className='is-inverted is-dark'
                                         click={this.setRound.bind(this, tab[0])}>
                                         {tab[1]}
                                     </TabButton>
@@ -232,9 +245,11 @@ export default class ExportTab extends React.Component {
                             { divisions.map(tab => {
                                 return (
                                     <TabButton
+                                        key={tab[0]}
                                         name={tab[0]}
                                         activeTab={this.state.activeDiv}
-                                        className={`${this.state.activeDiv == tab[0] ? '' : 'is-outlined'} is-inverted is-dark`}
+                                        inactiveClass='is-outlined'
+                                        className='is-inverted is-dark'
                                         click={this.setDiv.bind(this, tab[0])}>
                                         {tab[1]}
                                     </TabButton>
