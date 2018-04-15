@@ -1,6 +1,7 @@
 import DpsHandler from './DpsHandler';
 import CountryStats from './CountryStats';
 import Divisions from './Divisions';
+import { takeRight } from 'lodash';
 
 export default class Stats extends DpsHandler {
     constructor(id) {
@@ -13,16 +14,12 @@ export default class Stats extends DpsHandler {
         this.constructDivisions();
         this.revolution = false;
         this.defender = false;
+        this.damageHistory = [];
     }
 
     constructDivisions() {
         this.divisions = new Divisions();
-
-        this.divisions.create('div1', 1);
-        this.divisions.create('div2', 2);
-        this.divisions.create('div3', 3);
-        this.divisions.create('div4', 4);
-        this.divisions.create('div11', 11);
+        [1, 2, 3, 4, 11].forEach(div => this.divisions.create(div));
     }
 
     isSide(side) {
@@ -32,6 +29,16 @@ export default class Stats extends DpsHandler {
     updateDps(timeData) {
         super.updateDps(timeData);
         this.divisions.updateDps(timeData);
+
+        this.damageHistory.push({
+            damage: this.damage,
+            kills: this.hits,
+            dps: this.dps,
+            activeFighters: Object.keys(this._recentFighters).length,
+            time: timeData
+        });
+
+        this.damageHistory = takeRight(this.damageHistory, 100);
     }
 
     handle(data) {
@@ -52,6 +59,7 @@ export default class Stats extends DpsHandler {
             damage: this.damage,
             id: this.id,
             dps: this.dps,
+            damageHistory: this.damageHistory,
             highestDps: this.highestDps,
             hits: this.hits,
             avgHit: Math.round(this.damage / this.hits),
