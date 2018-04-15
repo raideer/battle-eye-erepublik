@@ -10,11 +10,12 @@ export default class BattleEye {
         belTime('battleEyeConstructor');
 
         this.connected = true;
+        this.loading = true;
 
         this.second = 0;
         this.contributors = {};
         this.alerts = {};
-        this.apiURL = 'https://battleeye.000webhostapp.com';
+        this.apiURL = 'https://battleeye.raideer.xyz';
 
         this.events = new EventHandler();
 
@@ -55,33 +56,29 @@ export default class BattleEye {
         }, this);
 
         BattleStatsLoader.getNbpStats(SERVER_DATA.battleId)
-        .then(async data => {
+        .then(data => {
             if (data.zone_finished) {
-                $j('#bel-loading').hide();
+                $j('#battleeye-loading').hide();
                 return Promise.resolve();
             }
 
-            if (BattleEyeSettings.gatherBattleStats.value) {
-                const stats = await BattleStatsLoader.loadStats();
+            BattleStatsLoader.loadStats().then(stats => {
                 BattleStatsLoader.processStats(stats, this.teamA, this.teamB);
                 this.events.emit('log', 'Battle stats loaded.');
-            }
+                $j('#battleeye-loading').hide();
 
-            if (BattleEyeSettings.syncPercentages.value) {
-                BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB);
-            }
+                BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB, this.second);
+            });
+
+            return Promise.resolve();
         })
         .then(() => {
-            $j('#bel-loading').hide();
             this.layout.update(this.getTeamStats());
 
             window.ajaxSuccess.push((data, url) => {
                 // If data is nbp-stats
                 if (url.match('nbp-stats')) {
-                    if (BattleEyeSettings.syncPercentages.value) {
-                        BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB);
-                        belLog('Fixed dif');
-                    }
+                    BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB, this.second);
                 }
             });
         });
@@ -90,6 +87,13 @@ export default class BattleEye {
 
         this.handleEvents();
         belTimeEnd('battleEyeConstructor');
+    }
+
+    reload() {
+        $j('#battleeye__live').remove();
+        clearInterval(this.interval);
+        window.BattleEye = new BattleEye();
+        window.BattleEye.overridePomelo();
     }
 
     defineListeners() {
@@ -133,8 +137,8 @@ export default class BattleEye {
             let rightKl = 0;
 
             ['leftDamage', 'rightDamage'].forEach(side => {
-                for (const i in data[side][`div${div}`]) {
-                    const hit = data[side][`div${div}`][i];
+                for (const i in data[side][div]) {
+                    const hit = data[side][div][i];
                     const dmg = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,.]/g, ''));
 
                     const bareData = {
@@ -145,37 +149,37 @@ export default class BattleEye {
                     if (side == 'leftDamage') {
                         leftDmg += dmg;
                         teamA.countries.handleBare(bareData);
-                        teamA.divisions.get(`div${div}`).countries.handleBare(bareData);
+                        teamA.divisions.get(div).countries.handleBare(bareData);
                     } else {
                         rightDmg += dmg;
                         teamB.countries.handleBare(bareData);
-                        teamB.divisions.get(`div${div}`).countries.handleBare(bareData);
+                        teamB.divisions.get(div).countries.handleBare(bareData);
                     }
                 }
             });
 
             ['leftKills', 'rightKills'].forEach(side => {
-                for (const i in data[side][`div${div}`]) {
-                    const hit = data[side][`div${div}`][i];
+                for (const i in data[side][div]) {
+                    const hit = data[side][div][i];
                     const killValue = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,.]/g, ''));
                     if (side == 'leftKills') {
                         leftKl += killValue;
                         teamA.countries.handleKills(hit.country_permalink, killValue);
-                        teamA.divisions.get(`div${div}`).countries.handleKills(hit.country_permalink, killValue);
+                        teamA.divisions.get(div).countries.handleKills(hit.country_permalink, killValue);
                     } else {
                         rightKl += killValue;
                         teamB.countries.handleKills(hit.country_permalink, killValue);
-                        teamB.divisions.get(`div${div}`).countries.handleKills(hit.country_permalink, killValue);
+                        teamB.divisions.get(div).countries.handleKills(hit.country_permalink, killValue);
                     }
                 }
             });
 
-            teamA.divisions.get(`div${div}`).damage += leftDmg;
-            teamB.divisions.get(`div${div}`).damage += rightDmg;
+            teamA.divisions.get(div).damage += leftDmg;
+            teamB.divisions.get(div).damage += rightDmg;
             teamA.damage += leftDmg;
             teamB.damage += rightDmg;
-            teamA.divisions.get(`div${div}`).hits += leftKl;
-            teamB.divisions.get(`div${div}`).hits += rightKl;
+            teamA.divisions.get(div).hits += leftKl;
+            teamB.divisions.get(div).hits += rightKl;
             teamA.hits += leftKl;
             teamB.hits += rightKl;
         }
@@ -195,14 +199,19 @@ export default class BattleEye {
             this.displayContributors();
 
             if (data.api) {
-                this.apiURL = data.api;
+                // this.apiURL = data.api;
             }
 
             const version = parseInt(data.version.replace(/\D/g, ''));
             const currentVersion = parseInt(GM_info.script.version.replace(/\D/g, ''));
             if (currentVersion != version) {
-                document.querySelector('#bel-version .bel-alert').classList.add('bel-alert-danger');
-                document.querySelector('#bel-version').innerHTML += `<a class="bel-btn" href="${data.updateUrl}">Update</a>`;
+                belLog('Versions do not match!');
+                $j('#battleeye-version').addClass('is-warning').removeClass('is-main').after(`
+                    <a href="${data.updateUrl}" id="battleeye-update" class="tag is-danger">
+                        Update available
+                    </a>
+                `);
+                // document.querySelector('#bel-version').innerHTML += `<a class="bel-btn" href="${data.updateUrl}">Update</a>`;
             }
 
             belLog('Data JSON received and processed');
@@ -216,8 +225,11 @@ export default class BattleEye {
             if (!data) return;
             $j.ajax({
                 type: 'POST',
-                url: `${data.api}/touch`,
-                data: { citizen: erepublik.citizen.citizenId }
+                url: `${this.apiURL}/touch`,
+                data: {
+                    citizen: erepublik.citizen.citizenId,
+                    version: GM_info.script.version
+                }
             }).then(() => {
                 belLog('API touched');
                 this.events.emit('log', 'API touched');
@@ -230,7 +242,6 @@ export default class BattleEye {
 
     async generateSummary() {
         const data = [];
-        this.step = 1;
         this.events.emit('log', 'Generating summary...');
 
         for (let round = 1; round <= SERVER_DATA.zoneId; round++) {
@@ -328,20 +339,22 @@ export default class BattleEye {
 
             this.teamA.updateDps(second);
             this.teamB.updateDps(second);
-            this.layout.update(this.getTeamStats());
+
+            if (second % 1 === 0) {
+                this.layout.update(this.getTeamStats());
+            }
         };
 
         this.events.on('tick', handleTick.bind(this));
     }
 
-    async overridePomelo() {
+    overridePomelo() {
         const messageHandler = data => {
             this.updateContributors = true;
             this.handle(data);
         };
 
         const closeHandler = data => {
-            console.log(data);
             belLog(`Socket closed [${data.reason}]`);
             this.connected = false;
             this.layout.update(this.getTeamStats());
