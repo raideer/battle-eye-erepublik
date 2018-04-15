@@ -102,70 +102,6 @@ export default class BattleEye {
         ExcelGenerator.exportStats(type, data);
     }
 
-    processBattleStats(data, teamA, teamB) {
-        const divs = [1, 2, 3, 4, 11];
-
-        if (!data) {
-            belLog('undefined data - returning');
-            return;
-        }
-
-        for (const d in divs) {
-            const div = divs[d];
-            let leftDmg = 0;
-            let rightDmg = 0;
-            let leftKl = 0;
-            let rightKl = 0;
-
-            ['leftDamage', 'rightDamage'].forEach(side => {
-                for (const i in data[side][div]) {
-                    const hit = data[side][div][i];
-                    const dmg = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,.]/g, ''));
-
-                    const bareData = {
-                        damage: dmg,
-                        permalink: hit.country_permalink
-                    };
-
-                    if (side == 'leftDamage') {
-                        leftDmg += dmg;
-                        teamA.countries.handleBare(bareData);
-                        teamA.divisions.get(div).countries.handleBare(bareData);
-                    } else {
-                        rightDmg += dmg;
-                        teamB.countries.handleBare(bareData);
-                        teamB.divisions.get(div).countries.handleBare(bareData);
-                    }
-                }
-            });
-
-            ['leftKills', 'rightKills'].forEach(side => {
-                for (const i in data[side][div]) {
-                    const hit = data[side][div][i];
-                    const killValue = Number.isInteger(hit.value) ? hit.value : Number(hit.value.replace(/[,.]/g, ''));
-                    if (side == 'leftKills') {
-                        leftKl += killValue;
-                        teamA.countries.handleKills(hit.country_permalink, killValue);
-                        teamA.divisions.get(div).countries.handleKills(hit.country_permalink, killValue);
-                    } else {
-                        rightKl += killValue;
-                        teamB.countries.handleKills(hit.country_permalink, killValue);
-                        teamB.divisions.get(div).countries.handleKills(hit.country_permalink, killValue);
-                    }
-                }
-            });
-
-            teamA.divisions.get(div).damage += leftDmg;
-            teamB.divisions.get(div).damage += rightDmg;
-            teamA.damage += leftDmg;
-            teamB.damage += rightDmg;
-            teamA.divisions.get(div).hits += leftKl;
-            teamB.divisions.get(div).hits += rightKl;
-            teamA.hits += leftKl;
-            teamB.hits += rightKl;
-        }
-    }
-
     resetSettings() {
         window.BattleEyeStorage.loadDefaults();
     }
@@ -179,7 +115,7 @@ export default class BattleEye {
             this.displayContributors();
 
             if (data.api) {
-                // this.apiURL = data.api;
+                this.apiURL = data.api;
             }
 
             const version = parseInt(data.version.replace(/\D/g, ''));
