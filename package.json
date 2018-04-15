@@ -9,7 +9,6 @@
     "babel-loader": "^7.1.2",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "babel-preset-es2017": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "cross-env": "^5.1.4",
     "css-loader": "^0.28.7",
@@ -30,7 +29,7 @@
   "author": "Raideer",
   "license": "ISC",
   "dependencies": {
-    "bulma": "^0.6.1",
+    "bulma": "^0.6.2",
     "chart.js": "^2.7.2",
     "dotenv": "^4.0.0",
     "lodash": "^4.17.5",
