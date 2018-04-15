@@ -4,6 +4,7 @@ import DivisionsTab from './DivisionsTab';
 import ChartsTab from './ChartsTab';
 import TabButton from './TabButton';
 import ExportTab from './ExportTab';
+import SettingsTab from './SettingsTab';
 
 export default class Template extends React.Component {
     constructor() {
@@ -37,7 +38,7 @@ export default class Template extends React.Component {
             );
         case 'settings':
             return (
-                <div>Settings</div>
+                <SettingsTab />
             );
         default:
             return null;
