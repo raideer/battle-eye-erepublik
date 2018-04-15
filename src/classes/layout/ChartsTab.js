@@ -183,7 +183,7 @@ export default class ChartsTab extends React.Component {
     render() {
         let tabs;
 
-        if (division() == 11) {
+        if (division == 11) {
             this.state.activeTab = 11;
             tabs = [
                 [11, 'AIR']
