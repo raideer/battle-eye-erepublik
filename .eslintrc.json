@@ -24,7 +24,7 @@
       "belLog": false,
       "XlsxPopulate": false,
       "localStorage": false,
-      "BattleEyeSettings": false,
+      "BattleEyeStorage": false,
       "BattleEye": false
   },
   "plugins": ["react"],
