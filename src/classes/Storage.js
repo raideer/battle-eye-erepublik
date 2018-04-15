@@ -4,8 +4,7 @@ export default class Storage {
             return false;
         }
 
-        this.prepend = 'battle_eye_';
-        this.fields = {};
+        this.prepend = 'battle_eye2_';
         this.defaults = {};
     }
 
@@ -36,24 +35,15 @@ export default class Storage {
         return false;
     }
 
-    define(id, value, group, name, desc) {
+    define(id, value) {
         this.defaults[id] = {
-            id, name, desc, group, value
+            id, value
         };
     }
 
     loadSettings() {
         for (const i in this.defaults) {
             const field = this.defaults[i];
-
-            if (this.fields[i] === undefined) {
-                this.fields[i] = {
-                    id: field.id,
-                    name: field.name,
-                    desc: field.desc,
-                    group: field.group
-                };
-            }
 
             if (!this.has(i)) {
                 this.set(i, field.value);
@@ -65,18 +55,6 @@ export default class Storage {
         for (const i in this.defaults) {
             this.set(i, this.defaults[i].value);
         }
-    }
-
-    getAll() {
-        const object = {};
-
-        for (const i in this.fields) {
-            const f = this.fields[i];
-
-            object[i] = { field: f, value: this.get(f.id) };
-        }
-
-        return object;
     }
 
     checkIfStorageAvailable() {
