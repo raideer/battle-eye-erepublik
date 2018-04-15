@@ -67,7 +67,7 @@ export default class BattleEye {
                 this.events.emit('log', 'Battle stats loaded.');
                 $j('#battleeye-loading').hide();
 
-                BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB, this.second);
+                BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
             });
 
             return Promise.resolve();
@@ -78,7 +78,7 @@ export default class BattleEye {
             window.ajaxSuccess.push((data, url) => {
                 // If data is nbp-stats
                 if (url.match('nbp-stats')) {
-                    BattleStatsLoader.fixDamageDifference(data, this.teamA, this.teamB, this.second);
+                    BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
                 }
             });
         });
@@ -90,6 +90,7 @@ export default class BattleEye {
     }
 
     reload() {
+        $j('#battleeye__minimonitor').remove();
         $j('#battleeye__live').remove();
         clearInterval(this.interval);
         window.BattleEye = new BattleEye();
@@ -251,8 +252,10 @@ export default class BattleEye {
                 divs = [11];
             }
 
-            const stats = await BattleStatsLoader.loadStats(round, divs);
-            this.events.emit('summary.update', round);
+            const stats = await BattleStatsLoader.loadStats(round, divs, data => {
+                this.events.emit('summary.update', data);
+            });
+            
             data[round] = stats;
         }
 
