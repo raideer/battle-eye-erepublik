@@ -1,5 +1,6 @@
 import DpsHandler from './DpsHandler';
 import CountryStats from './CountryStats';
+import { takeRight } from 'lodash';
 
 export default class DivisionStats extends DpsHandler {
     constructor(division) {
@@ -8,6 +9,7 @@ export default class DivisionStats extends DpsHandler {
         this.hits = 0;
         this.damage = 0;
         this.countries = new CountryStats();
+        this.damageHistory = [];
     }
 
     handle(data) {
@@ -21,11 +23,26 @@ export default class DivisionStats extends DpsHandler {
         this.countries.handle(data);
     }
 
+    updateDps(timeData) {
+        super.updateDps(timeData);
+
+        this.damageHistory.push({
+            damage: this.damage,
+            kills: this.hits,
+            dps: this.dps,
+            activeFighters: Object.keys(this._recentFighters).length,
+            time: timeData
+        });
+
+        this.damageHistory = takeRight(this.damageHistory, 100);
+    }
+
     toObject() {
         return {
             damage: this.damage,
             id: this.id,
             dps: this.dps,
+            damageHistory: this.damageHistory,
             highestDps: this.highestDps,
             hits: this.hits,
             avgHit: Math.round(this.damage / this.hits) | 0,
