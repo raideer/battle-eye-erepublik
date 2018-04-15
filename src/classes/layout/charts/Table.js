@@ -1,5 +1,5 @@
 import React from 'react';
-import { getPerc } from '../../Utils';
+import { getPerc, prettifyCountryName } from '../../Utils';
 import { truncate } from 'lodash';
 import Flag from '../Flag';
 
@@ -48,7 +48,7 @@ export default class Table extends React.Component {
                                     </span>
                                 </div>
                                 <div className="column">
-                                    { truncate(name, {
+                                    { truncate(prettifyCountryName(name), {
                                         length: 14
                                     }) }
                                     <Flag country={ name } />
@@ -60,7 +60,7 @@ export default class Table extends React.Component {
                             <div key={i} className="columns country-row has-text-left">
                                 <div className="column">
                                     <Flag country={ name } />
-                                    { truncate(name, {
+                                    { truncate(prettifyCountryName(name), {
                                         length: 14
                                     }) }
                                 </div>
