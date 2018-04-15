@@ -2,16 +2,17 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Template from './layout/Template';
 import MiniMonitor from './layout/MiniMonitor';
+import BattleEye from '../BattleEye';
 
 export default class Layout {
     constructor(headerData) {
         this.headerData = headerData;
 
         this.battleEye = document.createElement('div');
-        this.battleEye.setAttribute('id', 'battle_eye_live');
+        this.battleEye.setAttribute('id', 'battleeye__live');
 
         this.miniMonitor = document.createElement('div');
-        this.miniMonitor.setAttribute('id', 'bel-minimonitor');
+        this.miniMonitor.setAttribute('id', 'battleeye__minimonitor');
 
         if (window.BattleEyeSettings.moveToTop.value) {
             $j('#content').prepend(this.battleEye);
@@ -23,18 +24,12 @@ export default class Layout {
     }
 
     update(feedData) {
-        ReactDOM.render(
-            <Template
-                settings={window.BattleEyeSettings}
-                feedData={feedData}
-                headerData={this.headerData}
-            />
-            , this.battleEye);
-        ReactDOM.render(
-            <MiniMonitor
-                settings={window.BattleEyeSettings}
-                feedData={feedData}
-            />
-            , this.miniMonitor);
+        const data = {
+            feedData,
+            loading: BattleEye.loading
+        };
+
+        ReactDOM.render(<Template {...data} />, this.battleEye);
+        ReactDOM.render(<MiniMonitor {...data} />, this.miniMonitor);
     }
 }
