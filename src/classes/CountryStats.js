@@ -1,4 +1,4 @@
-import Utils from './Utils';
+import { prettifyCountryName } from './Utils';
 
 export default class CountryStats {
     constructor() {
@@ -12,7 +12,7 @@ export default class CountryStats {
             this.countries[countrySlug] = {
                 damage: 0,
                 kills: 0,
-                name: Utils.prettifyCountryName(countrySlug)
+                name: prettifyCountryName(countrySlug)
             };
         }
 
