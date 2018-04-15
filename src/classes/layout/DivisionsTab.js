@@ -11,9 +11,9 @@ export default class DivisionsTab extends React.Component {
                     <div className="versus__left">{prettifyCountryName(BattleEye.teamAName)} <Flag country={BattleEye.teamAName} /></div>
                     <div className="versus__right"><Flag country={BattleEye.teamBName} /> {prettifyCountryName(BattleEye.teamBName)}</div>
                 </div>
-                { divisions().map(div => {
+                { divisions.map(div => {
                     return (
-                        <div>
+                        <div key={div}>
                             <div className="panel-header">
                                 { divName(div) }
                             </div>

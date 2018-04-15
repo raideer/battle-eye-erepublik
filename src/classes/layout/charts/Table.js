@@ -4,6 +4,23 @@ import { truncate } from 'lodash';
 import Flag from '../Flag';
 
 export default class Table extends React.Component {
+    renderHeader(side) {
+        if (side == 'left') {
+            return (
+                <div className="columns country-row has-text-right">
+                    <div className="column">Damage</div>
+                    <div className="column" style={{ padding: '0 5px' }}>Country</div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="columns country-row has-text-left">
+                <div className="column" style={{ padding: '0 5px' }}>Country</div>
+                <div className="column">Damage</div>
+            </div>
+        );
+    }
     render() {
         const { countries, side } = this.props;
         const totalDamage = Object.keys(countries).reduce((total, name) => {
@@ -13,28 +30,12 @@ export default class Table extends React.Component {
 
         return (
             <div>
-                { [side].map(s => {
-                    if (s == 'left') {
-                        return (
-                            <div className="columns country-row has-text-right">
-                                <div className="column">Damage</div>
-                                <div className="column" style={{ padding: '0 5px' }}>Country</div>
-                            </div>
-                        );
-                    }
-
-                    return (
-                        <div className="columns country-row has-text-left">
-                            <div className="column" style={{ padding: '0 5px' }}>Country</div>
-                            <div className="column">Damage</div>
-                        </div>
-                    );
-                }) }
-                { Object.keys(countries).map(name => {
+                { this.renderHeader(side) }
+                { Object.keys(countries).map((name, i) => {
                     const country = countries[name];
                     if (side == 'left') {
                         return (
-                            <div className="columns country-row has-text-right">
+                            <div key={i} className="columns country-row has-text-right">
                                 <div className="column tags has-addons is-two-thirds">
                                     <span className="tag is-white">
                                         {country.kills} kills
@@ -56,7 +57,7 @@ export default class Table extends React.Component {
                         );
                     } else {
                         return (
-                            <div className="columns country-row has-text-left">
+                            <div key={i} className="columns country-row has-text-left">
                                 <div className="column">
                                     <Flag country={ name } />
                                     { truncate(name, {

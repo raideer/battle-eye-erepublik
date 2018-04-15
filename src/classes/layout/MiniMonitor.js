@@ -5,7 +5,7 @@ export default class MiniMonitor extends React.Component {
     renderDivisions() {
         const { left, right } = this.props.feedData;
 
-        return divisions().map(div => {
+        return divisions.map(div => {
             const leftDamage = left.divisions[div].damage;
             const rightDamage = right.divisions[div].damage;
 

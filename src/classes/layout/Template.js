@@ -78,18 +78,24 @@ export default class Template extends React.Component {
                             <TabButton
                                 name='divisions'
                                 activeTab={this.state.activeTab}
+                                inactiveClass="is-outlined"
+                                className="is-info"
                                 click={this.setTab.bind(this, 'divisions')}>
                                 Divisions
                             </TabButton>
                             <TabButton
                                 name='countries'
                                 activeTab={this.state.activeTab}
+                                inactiveClass="is-outlined"
+                                className="is-info"
                                 click={this.setTab.bind(this, 'charts')}>
                                 Charts
                             </TabButton>
                             <TabButton
                                 name='export'
                                 activeTab={this.state.activeTab}
+                                inactiveClass="is-outlined"
+                                className="is-info"
                                 click={this.setTab.bind(this, 'export')}>
                                 Export
                             </TabButton>

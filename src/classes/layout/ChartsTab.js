@@ -216,6 +216,7 @@ export default class ChartsTab extends React.Component {
                             { charts.map(tab => {
                                 return (
                                     <TabButton
+                                        key={tab[0]}
                                         name={tab[0]}
                                         activeTab={this.state.activeChart}
                                         className={`${this.state.activeChart == tab[0] ? '' : 'is-outlined'} is-inverted is-dark`}
@@ -231,6 +232,7 @@ export default class ChartsTab extends React.Component {
                             { tabs.map(tab => {
                                 return (
                                     <TabButton
+                                        key={tab[0]}
                                         name={tab[0]}
                                         activeTab={this.state.activeTab}
                                         className={`${this.state.activeTab == tab[0] ? '' : 'is-outlined'} is-inverted is-dark`}
