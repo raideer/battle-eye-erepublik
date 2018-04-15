@@ -252,10 +252,10 @@ export default class BattleEye {
                 divs = [11];
             }
 
-            const stats = await BattleStatsLoader.loadStats(round, divs, data => {
-                this.events.emit('summary.update', data);
+            const stats = await BattleStatsLoader.loadStats(round, divs, state => {
+                this.events.emit('summary.update', state);
             });
-            
+
             data[round] = stats;
         }
 
