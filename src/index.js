@@ -5,20 +5,21 @@ import './styles/battleeye.scss';
 function defineDefaultSettings() {
     const define = settings => {
         for (const i in settings) {
-            window.BattleEyeStorage.define(...settings[i]);
+            window.BattleEyeStorage.define(settings[i][0], settings[i][1]);
         }
     };
 
     const settings = [
-        ['showDiv1', true, 'Structure', 'Show DIV 1'],
-        ['showDiv2', true, 'Structure', 'Show DIV 2'],
-        ['showDiv3', true, 'Structure', 'Show DIV 3'],
-        ['showDiv4', true, 'Structure', 'Show DIV 4'],
-        ['showMiniMonitor', true, 'Stats', 'Display a small division monitor on the battlefield'],
-        ['showKills', false, 'Stats', 'Show kills done by each division'],
-        ['moveToTop', false, 'Structure', 'Display BattleEye above the battlefield', '*Requires a page refresh'],
-        ['enableLogging', false, 'Other', 'Enable logging to console'],
-        ['enableBenchmarking', false, 'Other', 'Enable performance logging to console']
+        ['showDiv1', true],
+        ['showDiv2', true],
+        ['showDiv3', true],
+        ['showDiv4', true],
+        ['highlightDiv', true],
+        ['showMiniMonitor', true],
+        ['moveToTop', false],
+        ['layoutUpdateRate', 1],
+        ['enableLogging', false],
+        ['enableBenchmarking', false]
     ];
 
     define(settings);
@@ -27,23 +28,22 @@ function defineDefaultSettings() {
 window.BattleEyeStorage = new SettingsStorage();
 defineDefaultSettings();
 window.BattleEyeStorage.loadSettings();
-window.BattleEyeSettings = window.BattleEyeStorage.getAll();
 
 window.belLog = (...args) => {
     [].unshift.call(args, '[BE]');
-    if (window.BattleEyeSettings.enableLogging.value) {
+    if (window.BattleEyeStorage.get('enableLogging')) {
         console.log.apply(undefined, args);
     }
 };
 
 window.belTime = name => {
-    if (window.BattleEyeSettings.enableBenchmarking.value) {
+    if (window.BattleEyeStorage.get('enableBenchmarking')) {
         console.time(name);
     }
 };
 
 window.belTimeEnd = name => {
-    if (window.BattleEyeSettings.enableBenchmarking.value) {
+    if (window.BattleEyeStorage.get('enableBenchmarking')) {
         console.timeEnd(name);
     }
 };

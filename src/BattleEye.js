@@ -18,6 +18,7 @@ export default class BattleEye {
         this.apiURL = 'https://battleeye.raideer.xyz';
 
         this.events = new EventHandler();
+        this.updateRate = BattleEyeStorage.get('layoutUpdateRate');
 
         this.teamA = new Stats(SERVER_DATA.leftBattleId);
         this.teamAName = SERVER_DATA.countries[SERVER_DATA.leftBattleId];
@@ -97,27 +98,6 @@ export default class BattleEye {
         window.BattleEye.overridePomelo();
     }
 
-    defineListeners() {
-        $j('.bel-settings-field').on('change', event => {
-            const input = event.target;
-            let value;
-
-            if (input.type == 'checkbox') {
-                value = input.checked;
-            } else {
-                value = input.value;
-            }
-
-            window.BattleEyeStorage.set(input.name, value);
-            window.BattleEyeSettings[input.name].value = value;
-
-            var targetAtt = $j(this).attr('id');
-
-            this.events.emit('log', `Updated setting ${input.name} to ${value}`);
-            $j(`label[for="${targetAtt}"]`).notify('Saved', { position: 'right middle', className: 'success' });
-        });
-    }
-
     exportStats(type, data) {
         ExcelGenerator.exportStats(type, data);
     }
@@ -188,7 +168,6 @@ export default class BattleEye {
 
     resetSettings() {
         window.BattleEyeStorage.loadDefaults();
-        window.BattleEyeSettings = window.BattleEyeStorage.getAll();
     }
 
     async checkForUpdates() {
@@ -343,7 +322,7 @@ export default class BattleEye {
             this.teamA.updateDps(second);
             this.teamB.updateDps(second);
 
-            if (second % 1 === 0) {
+            if (second % this.updateRate === 0) {
                 this.layout.update(this.getTeamStats());
             }
         };
@@ -368,7 +347,6 @@ export default class BattleEye {
 
         this.layout.update(this.getTeamStats());
         this.checkForUpdates();
-        this.defineListeners();
     }
 
     handle(data) {

@@ -14,7 +14,8 @@ export default class Layout {
         this.miniMonitor = document.createElement('div');
         this.miniMonitor.setAttribute('id', 'battleeye__minimonitor');
 
-        if (window.BattleEyeSettings.moveToTop.value) {
+        if (window.BattleEyeStorage.get('moveToTop')) {
+            this.battleEye.classList.add('battleeye--above');
             $j('#content').prepend(this.battleEye);
         } else {
             $j('#content').append(this.battleEye);
