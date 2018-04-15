@@ -1,14 +1,13 @@
 import React from 'react';
-import { getPerc } from '../Utils';
 import StatsField from './StatsField';
 import DominationBar from './DominationBar';
 
 export default class Division extends React.Component {
     render() {
-        const { i, division } = this.props;
+        const { i, division, className } = this.props;
 
         return (
-            <div className="battleeye__division">
+            <div className={`battleeye__division ${className ? className : ''}`}>
                 <div className="columns">
                     <div className="column has-text-left division__stats">
                         <StatsField
