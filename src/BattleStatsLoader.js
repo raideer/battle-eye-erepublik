@@ -1,6 +1,3 @@
-// import BigNumber from 'bignumber.js';
-import { getPerc } from './classes/Utils';
-
 class BattleStatsLoader {
     async loadStats(round = SERVER_DATA.zoneId, divs = null) {
         const leftData = new Map();
