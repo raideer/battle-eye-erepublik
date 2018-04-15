@@ -5,9 +5,9 @@ export default class Divisions {
         this.divisions = {};
     }
 
-    create(id, division) {
-        this.divisions[id] = new DivisionStats(division);
-        return this.divisions[id];
+    create(division) {
+        this.divisions[division] = new DivisionStats(division);
+        return this.divisions[division];
     }
 
     get(id) {
