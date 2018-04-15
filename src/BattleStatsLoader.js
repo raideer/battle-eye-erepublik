@@ -1,13 +1,11 @@
+import { divisions } from './classes/Utils';
+
 class BattleStatsLoader {
-    async loadStats(round = SERVER_DATA.zoneId, divs = null) {
+    async loadStats(round = SERVER_DATA.zoneId, divs = divisions, divProcessedCallback = null) {
         const leftData = new Map();
         const rightData = new Map();
         const leftId = SERVER_DATA.leftBattleId;
         const rightId = SERVER_DATA.rightBattleId;
-
-        if (!divs) {
-            divs = SERVER_DATA.division === 11 ? [11] : [1, 2, 3, 4];
-        }
 
         const collectStats = async (div, type) => {
             let page = 1;
@@ -28,8 +26,18 @@ class BattleStatsLoader {
                 }
 
                 maxPage = Math.max(stats[leftId].pages, stats[rightId].pages);
+                if (maxPage === 0) {
+                    maxPage = 1;
+                }
 
                 belLog(`Processed ${type} for division ${div} round ${round} | ${page}/${maxPage}`);
+
+                if (typeof divProcessedCallback == 'function') {
+                    divProcessedCallback({
+                        type, div, round, page, maxPage
+                    });
+                }
+
                 page++;
             } while (page <= maxPage);
         };
@@ -111,14 +119,21 @@ class BattleStatsLoader {
         });
     }
 
-    fixDamageDifference(nbpstats, leftTeam, rightTeam, second) {
+    // Synces eRepublik's and BattleEye's domination percentages
+    calibrateDominationPercentages(nbpstats, leftTeam, rightTeam, second) {
         if (!nbpstats) return;
 
         function round(num) {
             return Math.round(num * 100000) / 100000;
         }
 
-        function findClosestDelta(left, right, targetPerc) {
+        // Problem: percentages returned by NBP stats are up to 30 seconds old, so syncing
+        // damange with old data can be very inaccurate in larger battles
+        //
+        // Solution: track BE percentages for the last 30 seconds and find one that's
+        // closest to percentage returned by NBP stats (abs(BE - NBP)). Add damage to left side, so that
+        // this difference between NBP and t-x percentages is 0
+        function findSmallestDelta(left, right, targetPerc) {
             const history = [];
             left.forEach((item, i) => {
                 history.push({
@@ -131,6 +146,7 @@ class BattleStatsLoader {
             let smallest = 100;
 
             history.forEach(pair => {
+                if (left.damage === 0 || right.damage === 0) return;
                 const perc = round(pair.left.damage / (pair.right.damage + pair.left.damage));
                 const delta = Math.abs(perc - targetPerc);
                 if (delta < smallest) {
@@ -143,8 +159,12 @@ class BattleStatsLoader {
         }
 
         function fix(targetPerc, left, right) {
+            // L = left damage
+            // R = right damage
+            // Tp = target percentage
+
             //  L * Tp + R * Tp - L
-            // ---------------------
+            // --------------------- = Damage difference
             //       1 - Tp
 
             // L * Tp      L        R * Tp
@@ -169,23 +189,23 @@ class BattleStatsLoader {
 
         const invaderDomination = nbpstats.division.domination;
 
-        const divs = SERVER_DATA.division === 11 ? [11] : [1, 2, 3, 4];
-
-        divs.forEach(div => {
+        // Fix each division
+        divisions.forEach(div => {
             const left = leftTeam.divisions.get(div);
             const right = rightTeam.divisions.get(div);
 
+            // Get kill history from the last 20 seconds
             const leftHistory = left.damageHistory.filter(item => {
                 return item.time >= second - 20;
             });
-
             const rightHistory = right.damageHistory.filter(item => {
                 return item.time >= second - 20;
             });
 
+            // Percentage returned by NBP stats
             const targetPerc = round(SERVER_DATA.mustInvert ? 100 - invaderDomination[div] : invaderDomination[div]) / 100;
 
-            let closest = findClosestDelta(leftHistory, rightHistory, targetPerc);
+            let closest = findSmallestDelta(leftHistory, rightHistory, targetPerc);
 
             if (!closest) {
                 closest = {
