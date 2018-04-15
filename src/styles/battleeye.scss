@@ -1,0 +1,133 @@
+$colorMainbg: #3a4470;
+$colorWhite: #dfdfdf;
+$tabColor: $colorWhite;
+
+#battleeye__live {
+    @import "~bulma/sass/utilities/initial-variables.sass";
+    @import "~bulma/sass/utilities/functions.sass";
+
+    $tabs-link-padding: 0.1em 0.6em;
+    $navbar-height: 2.2rem;
+
+    width: 954px;
+    position: relative;
+    float: left;
+    border-radius: 0px 0px 20px 20px;
+    background-color: #ffffff;
+    font-size: 14px;
+    // font-family: "Lato",Helvetica,Arial,sans-serif;
+    text-align: center;
+    line-height: 1.7;
+
+    .navbar {
+        margin-top: 5px;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 27px;
+        text-align: center;
+        font-size: 10px;
+      }
+      
+      .spinner > div {
+        background-color: $colorMainbg;
+        height: 100%;
+        width: 6px;
+        display: inline-block;
+        
+        -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;
+        animation: sk-stretchdelay 1.2s infinite ease-in-out;
+      }
+      
+      .spinner .rect2 {
+        -webkit-animation-delay: -1.1s;
+        animation-delay: -1.1s;
+      }
+      
+      .spinner .rect3 {
+        -webkit-animation-delay: -1.0s;
+        animation-delay: -1.0s;
+      }
+      
+      .spinner .rect4 {
+        -webkit-animation-delay: -0.9s;
+        animation-delay: -0.9s;
+      }
+      
+      .spinner .rect5 {
+        -webkit-animation-delay: -0.8s;
+        animation-delay: -0.8s;
+      }
+      
+      @-webkit-keyframes sk-stretchdelay {
+        0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  
+        20% { -webkit-transform: scaleY(1.0) }
+      }
+      
+      @keyframes sk-stretchdelay {
+        0%, 40%, 100% { 
+          transform: scaleY(0.4);
+          -webkit-transform: scaleY(0.4);
+        }  20% { 
+          transform: scaleY(1.0);
+          -webkit-transform: scaleY(1.0);
+        }
+      }
+
+    .battleeye {
+        &__menu {
+            .logo {
+                margin-right: 10px;
+            }
+
+            margin-top: 5px;
+        }
+
+        &__tab-content {
+            color: $tabColor;
+            background-color: $colorMainbg;
+            border-top: 4px solid #d4d4d4;
+            padding: 4px 0;
+        }
+    }
+
+    @import "~bulma/bulma.sass";
+
+    .tag:not(body).is-main {
+        background-color: $colorMainbg;
+        color: $tabColor;
+    }
+
+    .tag:not(body).is-small {
+        padding: 2px 4px;
+        height: 1.7em;
+    }
+
+    .tag:not(body).is-dark {
+        background-color: darken($colorMainbg, 15%);
+        color: $tabColor;
+    }
+
+    .level:not(:last-child) {
+        margin-bottom: 5px;
+    }
+
+    *, *:before, *:after {
+        box-sizing: border-box;
+    }
+
+    .columns, .columns:last-child {
+        margin: 0;
+    }
+
+    .column {
+        padding: 5px 1em;
+    }
+
+    @import "./battleeye/panel.scss";
+    @import "./battleeye/divisions.scss";
+    @import "./battleeye/countries.scss";
+}
+
+@import "./battleeye/monitor.scss";

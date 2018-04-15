@@ -1,0 +1,136 @@
+$progressHeight: 15px;
+
+.battleeye__division {
+    border-bottom: 1px solid darken($colorMainbg, 5%);
+}
+
+.division {
+    &__name, &__stats, &__domination {
+        border-right: 1px dotted darken($colorMainbg, 10%);
+    }
+
+    &__name {
+        font-weight: bold;
+        max-width: 60px;
+    }
+
+    &__feed {
+        color: $colorMainbg;
+        width: 100%;
+        background-color: lighten($colorMainbg, 60%);
+    }
+}
+
+.battleeye__versus {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    height: 40px;
+    line-height: 40px;
+    background-color: darken($colorMainbg, 10%);
+    color: $colorWhite;
+
+    .versus__left, .versus__right {
+        position: absolute;
+    }
+
+    .versus__left {
+        right: 50%;
+    }
+
+    .versus__right {
+        left: 50%;
+    }
+}
+
+.stats-field {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+
+    & > *:not(:last-child) {
+        margin-right: 5px;
+    }
+}
+
+.battleeye__domination-bar {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 5px;
+
+    &::after {
+        content: "";
+        clear: both;
+        display: table;
+    }
+
+    .progress-bar {
+        background-color: darken($colorMainbg, 15%);
+        position: relative;
+        border-radius: 4px;
+        overflow: hidden;
+
+        &::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+    }
+
+    .progress-leftvalue, .progress-rightvalue {
+        position: absolute;
+        font-size: 0.9em;
+        font-weight: bold;
+        color: $colorMainbg;
+        line-height: $progressHeight;
+        padding: 0 6px;
+        width: 80px;
+    }
+
+    .progress-leftvalue {
+        text-align: right;
+        right: 50%;
+    }
+
+    .progress-rightvalue {
+        text-align: left;
+        left: 50%;
+    }
+
+    .progress-difference {
+        font-size: 0.8em;
+        padding-left: 10px;
+        border-left: 1px dotted darken($colorMainbg, 10%);
+        color: darken($colorWhite, 20%);
+    }
+
+    .progress-center {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        margin-left: -1px;
+        width: 2px;
+        height: $progressHeight;
+        background-color: lighten($colorMainbg, 20%);
+    }
+
+    .progress-name {
+        font-weight: bold;
+        font-size: 0.8em;
+        margin-right: 10px;
+    }
+
+    .left-progress, .right-progress {
+        height: $progressHeight;
+        float: left;
+        transition: width 0.3s ease-in-out;
+    }
+
+    .left-progress {
+        background-color: $green;
+    }
+
+    .right-progress {
+        background-color: $red;
+    }
+}

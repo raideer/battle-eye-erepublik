@@ -1,0 +1,44 @@
+$monitorWidth: 140px;
+
+.battleeye__minimonitor {
+    position: absolute;
+    right: 0;
+    top: 250px;
+    z-index: 999;
+    width: $monitorWidth;
+    padding: 5px 0 5px 5px;
+    background-color: rgba(56, 94, 221, 0.5);
+    border-radius: 5px 0 0 5px;
+    color: #ffffff;
+    transition: right 0.3s ease-in;
+
+    .battleeye-div {
+        background-image: url('https://dl.dropbox.com/s/qitlbj5b0dokpk8/divs.png');
+        background-repeat: no-repeat;
+        height: 22px;
+        width: 19px;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+    
+    .battleeye-div1 {
+        background-position: 0 0;
+    }
+    
+    .battleeye-div2 {
+        background-position: -38px 0;
+    }
+    
+    .battleeye-div3 {
+        background-position: -19px 0;
+    }
+    
+    .battleeye-div4 {
+        background-position: -76px 0;
+    }
+    
+    .battleeye-div11 {
+        background-position: -57px 0;
+    }
+}
