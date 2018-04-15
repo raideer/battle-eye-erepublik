@@ -4,7 +4,7 @@ import DominationBar from './DominationBar';
 
 export default class Division extends React.Component {
     render() {
-        const { i, division, className } = this.props;
+        const { division, className } = this.props;
 
         return (
             <div className={`battleeye__division ${className ? className : ''}`}>
