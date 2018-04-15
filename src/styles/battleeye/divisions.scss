@@ -4,6 +4,10 @@ $progressHeight: 15px;
     border-bottom: 1px solid darken($colorMainbg, 5%);
 }
 
+.highlight-div {
+    background-color: #62264c;
+}
+
 .division {
     &__name, &__stats, &__domination {
         border-right: 1px dotted darken($colorMainbg, 10%);

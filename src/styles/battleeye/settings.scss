@@ -1,0 +1,34 @@
+.battleeye__settings {
+    .section-title {
+        font-weight: bold;
+        width: 100%;
+        padding: 5px 1em;
+        background-color: darken($colorMainbg, 10%);
+    }
+
+    .column {
+        padding: 0;
+    }
+
+    .setting-name {
+        background-color: darken($colorMainbg, 10%);
+        border-color: darken($colorMainbg, 10%);
+        color: $colorWhite;
+
+        &:hover {
+            border-color: darken($colorMainbg, 10%);
+            cursor: inherit;
+        }
+    }
+
+    .setting {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 5px;
+        border-bottom: 1px solid darken($colorMainbg, 10%);
+        input {
+            margin-right: 5px;
+        }
+    }
+}
