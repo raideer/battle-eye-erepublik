@@ -13,13 +13,9 @@ export function prettifyCountryName(country) {
     return prettyName;
 }
 
-export function divisions() {
-    return SERVER_DATA.division == 11 ? [11] : [1, 2, 3, 4];
-}
-
-export function division() {
-    return SERVER_DATA.division;
-}
+export const divisions = SERVER_DATA.division == 11 ? [11] : [1, 2, 3, 4];
+export const division = SERVER_DATA.division;
+export const currentRound = SERVER_DATA.zoneId;
 
 export function divName(div) {
     if (div == 11) {
