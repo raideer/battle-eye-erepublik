@@ -5,6 +5,7 @@ import ChartsTab from './ChartsTab';
 import TabButton from './TabButton';
 import ExportTab from './ExportTab';
 import SettingsTab from './SettingsTab';
+import AboutTab from './AboutTab';
 
 export default class Template extends React.Component {
     constructor() {
@@ -39,6 +40,10 @@ export default class Template extends React.Component {
         case 'settings':
             return (
                 <SettingsTab />
+            );
+        case 'about':
+            return (
+                <AboutTab />
             );
         default:
             return null;
@@ -105,7 +110,13 @@ export default class Template extends React.Component {
                     { this.renderLoader() }
                     <div className="level-right">
                         <div className="level-item buttons">
-                            <a target="__blank" href="https://www.erepublik.com/en/citizen/profile/8075739" className="button is-small">Contact</a>
+                            <TabButton
+                                name='about'
+                                activeTab={this.state.activeTab}
+                                click={this.setTab.bind(this, 'about')}
+                                className='is-dark is-outlined'>
+                                About BattleEye
+                            </TabButton>
                             <TabButton
                                 click={this.reload.bind(this)}
                                 className='is-dark is-outlined'>
