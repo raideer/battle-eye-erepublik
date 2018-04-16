@@ -114,7 +114,6 @@ export default class BattleEye {
             this.displayContributors();
 
             if (data.knownErrors) {
-                console.log(data.knownErrors);
                 this.knownErrors = data.knownErrors;
             }
 
