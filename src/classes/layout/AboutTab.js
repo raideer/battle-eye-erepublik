@@ -58,7 +58,7 @@ export default class AboutTab extends React.Component {
                 <div className="column">
                     <h2>Have questions or suggestions?</h2>
                     <div>Join our <b>Discord</b> channel:</div>
-                    <div><a className="button is-light" href="https://discord.gg/4qeExQz">https://discord.gg/4qeExQz</a></div>
+                    <div><a target="__blank" className="button is-light" href="https://discord.gg/4qeExQz">https://discord.gg/4qeExQz</a></div>
                 </div>
             </div>
         );
