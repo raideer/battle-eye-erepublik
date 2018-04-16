@@ -17,6 +17,24 @@ export default class AboutTab extends React.Component {
         this.state.currentlyUsing = await $j.getJSON(`${BattleEye.apiURL}/users/5minutes`);
     }
 
+    renderKnownBugs() {
+        return (
+            <div>
+                <h2>Known bugs and errors</h2>
+                { BattleEye.knownErrors.map((bug, i) => {
+                    return (
+                        <div key={i} className="bug">
+                            <div className="bug-problem"><b>Problem:</b></div>
+                            <div className="bug-text">{ bug[0] }</div>
+                            <div className="bug-solution"><b>Temporary solution:</b></div>
+                            <div className="bug-text">{ bug[1] }</div>
+                        </div>
+                    );
+                }) }
+            </div>
+        );
+    }
+
     render() {
         return (
             <div className="battleeye__about has-text-left columns">
@@ -34,6 +52,8 @@ export default class AboutTab extends React.Component {
                         <div className="tag is-dark">Currently using</div>
                         <div className="tag is-info">{ this.state.currentlyUsing }</div>
                     </div>
+
+                    { this.renderKnownBugs() }
                 </div>
                 <div className="column">
                     <h2>Have questions or suggestions?</h2>

@@ -14,7 +14,7 @@ export default class BattleEye {
 
         this.second = 0;
         this.contributors = {};
-        this.alerts = {};
+        this.knownErrors = [];
         this.apiURL = 'https://battleeye.raideer.xyz';
 
         this.events = new EventHandler();
@@ -109,10 +109,14 @@ export default class BattleEye {
     async checkForUpdates() {
         let data;
         try {
-            data = await $j.getJSON('https://dl.dropbox.com/s/mz1p3g7pyiu69qx/data.json');
+            data = await $j.getJSON('https://dl.dropboxusercontent.com/s/mz1p3g7pyiu69qx/data.json');
             this.contributors = data.contributors;
-            this.alerts = data.alerts;
             this.displayContributors();
+
+            if (data.knownErrors) {
+                console.log(data.knownErrors);
+                this.knownErrors = data.knownErrors;
+            }
 
             if (data.api) {
                 this.apiURL = data.api;

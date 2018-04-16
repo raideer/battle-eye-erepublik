@@ -20,4 +20,29 @@
     .tags:not(:last-child) {
         margin-bottom: 0;
     }
+
+    .bug {
+        border-left: 3px solid darken($colorMainbg, 10%);
+        padding-left: 10px;
+        margin-bottom: 4px;
+
+        .bug-problem, .bug-solution  {
+            padding: 2px 5px;
+            background-color: darken($colorMainbg, 10%);
+        }
+
+        .bug-problem {
+            border-radius: 5px 5px 0 0;
+        }
+
+        .bug-text {
+            background-color: $colorWhite;
+            color: $colorMainbg;
+            padding: 5px;
+        }
+
+        .bug-text:last-child {
+            border-radius: 0 0 5px 5px;
+        }
+    }
 }
