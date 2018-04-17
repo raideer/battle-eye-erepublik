@@ -1,6 +1,6 @@
 import DpsHandler from './DpsHandler';
 import CountryStats from './CountryStats';
-import { takeRight } from 'lodash';
+import { takeRight } from './Utils';
 
 export default class DivisionStats extends DpsHandler {
     constructor(division) {
