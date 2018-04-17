@@ -1,4 +1,5 @@
 import { divisions } from './classes/Utils';
+import $ from 'jQuery';
 
 class BattleStatsLoader {
     async loadStats(round = SERVER_DATA.zoneId, divs = divisions, divProcessedCallback = null) {
@@ -228,13 +229,13 @@ class BattleStatsLoader {
     }
 
     async getNbpStats(battleId) {
-        const data = await $j.getJSON(`https://www.erepublik.com/${erepublik.settings.culture}/military/nbp-stats/${battleId}/${SERVER_DATA.division}`);
+        const data = await $.getJSON(`https://www.erepublik.com/${erepublik.settings.culture}/military/nbp-stats/${battleId}/${SERVER_DATA.division}`);
         belLog('Retrieved nbp stats');
         return data;
     }
 
     async getStats(division, round, pageLeft, pageRight, type = 'damage', battleId = SERVER_DATA.battleId) {
-        const data = await $j.post('https://www.erepublik.com/en/military/battle-console', {
+        const data = await $.post('https://www.erepublik.com/en/military/battle-console', {
             _token: SERVER_DATA.csrfToken,
             action: 'battleStatistics',
             battleId: battleId,

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import Template from './layout/Template';
 import MiniMonitor from './layout/MiniMonitor';
 import BattleEye from '../BattleEye';
+import $ from 'jQuery';
 
 export default class Layout {
     constructor(headerData) {
@@ -16,12 +17,12 @@ export default class Layout {
 
         if (window.BattleEyeStorage.get('moveToTop')) {
             this.battleEye.classList.add('battleeye--above');
-            $j('#content').prepend(this.battleEye);
+            $('#content').prepend(this.battleEye);
         } else {
-            $j('#content').append(this.battleEye);
+            $('#content').append(this.battleEye);
         }
 
-        $j('#battleConsole').append(this.miniMonitor);
+        $('#battleConsole').append(this.miniMonitor);
     }
 
     update(feedData) {

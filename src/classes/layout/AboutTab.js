@@ -1,4 +1,5 @@
 import React from 'react';
+import $ from 'jQuery';
 
 export default class AboutTab extends React.Component {
     constructor() {
@@ -13,8 +14,8 @@ export default class AboutTab extends React.Component {
     }
 
     async loadActiveUsers() {
-        this.state.activeUsers = await $j.getJSON(`${BattleEye.apiURL}/users`);
-        this.state.currentlyUsing = await $j.getJSON(`${BattleEye.apiURL}/users/5minutes`);
+        this.state.activeUsers = await $.getJSON(`${BattleEye.apiURL}/users`);
+        this.state.currentlyUsing = await $.getJSON(`${BattleEye.apiURL}/users/5minutes`);
     }
 
     renderKnownBugs() {

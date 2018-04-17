@@ -4,6 +4,7 @@ import EventHandler from './classes/EventHandler';
 
 import BattleStatsLoader from './BattleStatsLoader';
 import ExcelGenerator from './ExcelGenerator';
+import $ from 'jQuery';
 
 export default class BattleEye {
     constructor() {
@@ -59,14 +60,14 @@ export default class BattleEye {
         BattleStatsLoader.getNbpStats(SERVER_DATA.battleId)
         .then(data => {
             if (data.zone_finished) {
-                $j('#battleeye-loading').hide();
+                $('#battleeye-loading').hide();
                 return Promise.resolve();
             }
 
             BattleStatsLoader.loadStats().then(stats => {
                 BattleStatsLoader.processStats(stats, this.teamA, this.teamB);
                 this.events.emit('log', 'Battle stats loaded.');
-                $j('#battleeye-loading').hide();
+                $('#battleeye-loading').hide();
 
                 BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
             });
@@ -91,8 +92,8 @@ export default class BattleEye {
     }
 
     reload() {
-        $j('#battleeye__minimonitor').remove();
-        $j('#battleeye__live').remove();
+        $('#battleeye__minimonitor').remove();
+        $('#battleeye__live').remove();
         clearInterval(this.interval);
         window.BattleEye = new BattleEye();
         window.BattleEye.overridePomelo();
@@ -109,7 +110,7 @@ export default class BattleEye {
     async checkForUpdates() {
         let data;
         try {
-            data = await $j.getJSON('https://dl.dropboxusercontent.com/s/mz1p3g7pyiu69qx/data.json');
+            data = await $.getJSON('https://dl.dropboxusercontent.com/s/mz1p3g7pyiu69qx/data.json');
             this.contributors = data.contributors;
             this.displayContributors();
 
@@ -125,7 +126,7 @@ export default class BattleEye {
             const currentVersion = parseInt(GM_info.script.version.replace(/\D/g, ''));
             if (currentVersion != version) {
                 belLog('Versions do not match!');
-                $j('#battleeye-version').addClass('is-warning').removeClass('is-main').after(`
+                $('#battleeye-version').addClass('is-warning').removeClass('is-main').after(`
                     <a href="${data.updateUrl}" id="battleeye-update" class="tag is-danger">
                         Update available
                     </a>
@@ -142,7 +143,7 @@ export default class BattleEye {
 
         try {
             if (!data) return;
-            $j.ajax({
+            $.ajax({
                 type: 'POST',
                 url: `${this.apiURL}/touch`,
                 data: {
@@ -210,8 +211,8 @@ export default class BattleEye {
     }
 
     displayContributors() {
-        $j('.bel-contributor').each(() => {
-            $j(this).removeClass('bel-contributor')
+        $('.bel-contributor').each(() => {
+            $(this).removeClass('bel-contributor')
             .removeAttr('style')
             .removeAttr('original-title');
         });
@@ -221,12 +222,12 @@ export default class BattleEye {
             for (const j in players) {
                 var cId = players[j];
                 if (erepublik.citizen.citizenId == cId) {
-                    $j('#battleConsole .left_player .player_name').css({
+                    $('#battleConsole .left_player .player_name').css({
                         textShadow: `0 0 10px ${color}`,
                         color: `${color}`
                     }).attr('original-title', 'BattleEye contributor').tipsy();
-                } else if ($j(`li[data-citizen-id="${cId}"] .player_name a`).length > 0) {
-                    $j(`li[data-citizen-id="${cId}"] .player_name a`).css({
+                } else if ($(`li[data-citizen-id="${cId}"] .player_name a`).length > 0) {
+                    $(`li[data-citizen-id="${cId}"] .player_name a`).css({
                         textShadow: `0 0 10px ${color}`,
                         color: color
                     }).attr('original-title', 'BattleEye contributor').addClass('bel-contributor').tipsy();
