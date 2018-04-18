@@ -13,7 +13,6 @@
   },
   "globals": {
       "document": false,
-      "$j": false,
       "window": false,
       "SERVER_DATA": false,
       "pomelo": true,
