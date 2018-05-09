@@ -1,3 +1,5 @@
+import XlsxPopulate from './vendor/xlsx-populate';
+
 class ExcelGenerator {
     async exportStats(type, data) {
         const workbook = await XlsxPopulate.fromBlankAsync();
