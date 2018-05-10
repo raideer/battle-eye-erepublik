@@ -43,7 +43,7 @@ export default class AboutTab extends React.Component {
                     <h1>BattleEye</h1>
                     <div className="tags has-addons">
                         <div className="tag is-dark">Installed version</div>
-                        <div className="tag is-info">v{ GM_info.script.version }</div>
+                        <div className="tag is-info">v{ BattleEye.version }</div>
                     </div>
                     <div className="tags has-addons">
                         <div className="tag is-dark">Total active BattleEye users</div>

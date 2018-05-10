@@ -10,6 +10,7 @@ export default class BattleEye {
     constructor() {
         belTime('battleEyeConstructor');
 
+        this.version = '2.1';
         this.connected = true;
         this.loading = true;
 
@@ -53,7 +54,7 @@ export default class BattleEye {
         this.layout = new Layout({
             teamAName: this.teamAName,
             teamBName: this.teamBName,
-            version: GM_info.script.version,
+            version: this.version,
             revolutionCountry: this.revolutionCountry
         }, this);
 
@@ -123,7 +124,7 @@ export default class BattleEye {
             }
 
             const version = parseInt(data.version.replace(/\D/g, ''));
-            const currentVersion = parseInt(GM_info.script.version.replace(/\D/g, ''));
+            const currentVersion = parseInt(this.version.replace(/\D/g, ''));
             if (currentVersion != version) {
                 belLog('Versions do not match!');
                 $('#battleeye-version').addClass('is-warning').removeClass('is-main').after(`
@@ -148,7 +149,7 @@ export default class BattleEye {
                 url: `${this.apiURL}/touch`,
                 data: {
                     citizen: erepublik.citizen.citizenId,
-                    version: GM_info.script.version
+                    version: this.version
                 }
             }).then(() => {
                 belLog('API touched');

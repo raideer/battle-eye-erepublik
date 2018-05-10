@@ -1,0 +1,23 @@
+{
+    "content_scripts": [
+        {
+            "js": [
+                "battleeye.js"
+            ],
+            "matches": [
+                "*://*.erepublik.com/*/military/battlefield/*"
+            ]
+        }
+    ],
+    "description": "Live battle statistics for eRepublik.",
+    "manifest_version": 2,
+    "name": "BattleEye for eRepublik",
+    "short_name": "BE",
+    "homepage_url": "http://bit.ly/BattleEye",
+    "version": "2.1",
+    "applications": {
+        "gecko": {
+            "id": "battyeeye@raideer.xyz"
+        }
+    }
+}
