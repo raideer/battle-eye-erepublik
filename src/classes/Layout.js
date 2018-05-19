@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Template from './layout/Template';
 import MiniMonitor from './layout/MiniMonitor';
-import BattleEye from '../BattleEye';
 import $ from 'jQuery';
 
 export default class Layout {
@@ -27,8 +26,7 @@ export default class Layout {
 
     update(feedData) {
         const data = {
-            feedData,
-            loading: BattleEye.loading
+            feedData
         };
 
         ReactDOM.render(<Template {...data} />, this.battleEye);
