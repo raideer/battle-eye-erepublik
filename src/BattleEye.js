@@ -10,7 +10,7 @@ export default class BattleEye {
     constructor() {
         belTime('battleEyeConstructor');
 
-        this.version = '2.1';
+        this.version = '2.0.2';
         this.connected = true;
         this.loading = true;
 
