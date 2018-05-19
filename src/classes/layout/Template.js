@@ -90,7 +90,7 @@ export default class Template extends React.Component {
                                 Divisions
                             </TabButton>
                             <TabButton
-                                name='countries'
+                                name='charts'
                                 activeTab={this.state.activeTab}
                                 inactiveClass="is-outlined"
                                 className="is-info"
