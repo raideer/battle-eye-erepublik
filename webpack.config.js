@@ -41,7 +41,7 @@ module.exports = {
                             ['env', {
                                 targets: {
                                     browsers: [
-                                        'last 4 versions'
+                                        'last 3 versions'
                                     ]
                                 }
                             }]
