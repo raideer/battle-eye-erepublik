@@ -4,6 +4,7 @@ import TabButton from './TabButton';
 import Table from './charts/Table';
 import Pie from './charts/Pie';
 import Radar from './charts/Radar';
+import Bar from './charts/Bar';
 
 import { Line } from 'react-chartjs-2';
 import { intToRGB, hashCode, getPerc, division } from '../Utils';
@@ -61,6 +62,15 @@ export default class ChartsTab extends React.Component {
         case 'table': {
             return (
                 <Table side={side} countries={countries} />
+            );
+        }
+        case 'bar': {
+            return (
+                <Bar
+                    labels={chartLabels}
+                    data={chartData}
+                    colors={chartColors}
+                />
             );
         }
         }
@@ -200,6 +210,7 @@ export default class ChartsTab extends React.Component {
 
         const charts = [
             ['table', 'Table'],
+            ['bar', 'Bar charts'],
             ['pie', 'Pie charts'],
             ['radar', 'Radar charts'],
             ['dps', 'DPS'],
