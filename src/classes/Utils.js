@@ -25,6 +25,17 @@ export function divName(div) {
     return `DIV ${div}`;
 }
 
+export function guid() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+
+    // eslint-disable-next-line
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
+
 export function takeRight(array, n = 1) {
     const length = array == null ? 0 : array.length;
     if (!length) {
