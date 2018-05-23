@@ -1,5 +1,8 @@
 language: nodejs
-
+env:
+- NODE_ENV=production
+before_script:
+  - npm install
 script:
   - npm run lint
   - npm run build-prod
