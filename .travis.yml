@@ -1,0 +1,15 @@
+language: nodejs
+
+script:
+  - npm run lint
+  - npm run build-prod
+
+deploy:
+  provider: releases
+  api_key:
+    secure: besu/Cg+9GPpbIBi/fKTBw3h3YBZG986GmhHLOV45/k222aT7NZ08gJTjMY/hsYBqtBljwPeWavEHN1EQAeX1uAVfoWbTSBRQeCW5wYEq9bohR/wbYXfZjiZMuQ8gxI3iyn5UtRu6T+JdeXFUGAymjhSu7l6qfJep0Er7n9xnf4wM/IV5o+qjZYOVuDa9T8NglXguAFtIyNAyXWZWak1hwrwvrTYoxh+J4Ew2dRY5xCrTfltkLPJ1eGcsme4R7vBFmafNP9n4eYjlSkO0X60N+D5TxR/Lbygf5D6PblOix68UNbX+EwY7zoIOtKmD5L7C7w7pfBK5t1C1snctI5MXdtrVLdLI8MMBBtpa2mIpjnJ5cDc+FtnZ8yQg9LDtjXX2MLMzvYH6jOJ7OsQZAqlx0khHf60W3tN6WSrVzKSWOkHbW3k8uSqtnhNOZQhWYnVHczAWmX9JWCl3XKzh59SH6GpfkgGM8lio30HZoyh/OEMVleOknapJ5iyTRLs7WCMFeUgWOCpMX06yJaIneW021UFPryx9xgiq9VP8cQRcqP2c3N1WXi1jYyd1SMp4/jYWW0W+Bo+lbL0UmbhFIdOqJVoOvNyONYUZzyRi0493ApWh1xh/H5SjHQNTKYP+/GoAWmi/dm+9OeO56gRG/HK5QOU3oboJxZJ5cfOlwSLII8=
+  file: build/battleeye.js
+  skip_cleanup: true
+  on:
+    repo: raideer/battle-eye-erepublik
+    tags: true
