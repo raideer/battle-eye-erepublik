@@ -317,6 +317,30 @@ babel-core@^6.24.1, babel-core@^6.26.0:
     slash "^1.0.0"
     source-map "^0.5.6"
 
+babel-core@^6.26.3:
+  version "6.26.3"
+  resolved "https://registry.yarnpkg.com/babel-core/-/babel-core-6.26.3.tgz#b2e2f09e342d0f0c88e2f02e067794125e75c207"
+  dependencies:
+    babel-code-frame "^6.26.0"
+    babel-generator "^6.26.0"
+    babel-helpers "^6.24.1"
+    babel-messages "^6.23.0"
+    babel-register "^6.26.0"
+    babel-runtime "^6.26.0"
+    babel-template "^6.26.0"
+    babel-traverse "^6.26.0"
+    babel-types "^6.26.0"
+    babylon "^6.18.0"
+    convert-source-map "^1.5.1"
+    debug "^2.6.9"
+    json5 "^0.5.1"
+    lodash "^4.17.4"
+    minimatch "^3.0.4"
+    path-is-absolute "^1.0.1"
+    private "^0.1.8"
+    slash "^1.0.0"
+    source-map "^0.5.7"
+
 babel-generator@^6.26.0:
   version "6.26.1"
   resolved "https://registry.yarnpkg.com/babel-generator/-/babel-generator-6.26.1.tgz#1844408d3b8f0d35a404ea7ac180f087a601bd90"
@@ -745,9 +769,9 @@ babel-polyfill@^6.26.0:
     core-js "^2.5.0"
     regenerator-runtime "^0.10.5"
 
-babel-preset-env@^1.6.1:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/babel-preset-env/-/babel-preset-env-1.6.1.tgz#a18b564cc9b9afdf4aae57ae3c1b0d99188e6f48"
+babel-preset-env@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/babel-preset-env/-/babel-preset-env-1.7.0.tgz#dea79fa4ebeb883cd35dab07e260c1c9c04df77a"
   dependencies:
     babel-plugin-check-es2015-constants "^6.22.0"
     babel-plugin-syntax-trailing-function-commas "^6.22.0"
@@ -776,7 +800,7 @@ babel-preset-env@^1.6.1:
     babel-plugin-transform-es2015-unicode-regex "^6.22.0"
     babel-plugin-transform-exponentiation-operator "^6.22.0"
     babel-plugin-transform-regenerator "^6.22.0"
-    browserslist "^2.1.2"
+    browserslist "^3.2.6"
     invariant "^2.2.2"
     semver "^5.3.0"
 
@@ -1023,12 +1047,19 @@ browserslist@^1.3.6, browserslist@^1.5.2, browserslist@^1.7.6:
     caniuse-db "^1.0.30000639"
     electron-to-chromium "^1.2.7"
 
-browserslist@^2.1.2, browserslist@^2.11.3:
+browserslist@^2.11.3:
   version "2.11.3"
   resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-2.11.3.tgz#fe36167aed1bbcde4827ebfe71347a2cc70b99b2"
   dependencies:
     caniuse-lite "^1.0.30000792"
     electron-to-chromium "^1.3.30"
+
+browserslist@^3.2.6:
+  version "3.2.8"
+  resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-3.2.8.tgz#b0005361d6471f0f5952797a76fc985f1f978fc6"
+  dependencies:
+    caniuse-lite "^1.0.30000844"
+    electron-to-chromium "^1.3.47"
 
 bser@^2.0.0:
   version "2.0.0"
@@ -1131,6 +1162,10 @@ caniuse-db@^1.0.30000529, caniuse-db@^1.0.30000634, caniuse-db@^1.0.30000639:
 caniuse-lite@^1.0.30000792, caniuse-lite@^1.0.30000805:
   version "1.0.30000830"
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000830.tgz#cb96b8a2dd3cbfe04acea2af3c4e894249095328"
+
+caniuse-lite@^1.0.30000844:
+  version "1.0.30000844"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000844.tgz#de7c84cde0582143cf4f5abdf1b98e5a0539ad4a"
 
 caseless@~0.11.0:
   version "0.11.0"
@@ -1388,7 +1423,7 @@ constants-browserify@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/constants-browserify/-/constants-browserify-1.0.0.tgz#c20b96d8c617748aaf1c16021760cd27fcb8cb75"
 
-convert-source-map@^1.5.0:
+convert-source-map@^1.5.0, convert-source-map@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-1.5.1.tgz#b8278097b9bc229365de5c62cf5fcaed8b5599e5"
 
@@ -1448,9 +1483,9 @@ create-hmac@^1.1.0, create-hmac@^1.1.2, create-hmac@^1.1.4:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-cross-env@^5.1.4:
-  version "5.1.4"
-  resolved "https://registry.yarnpkg.com/cross-env/-/cross-env-5.1.4.tgz#f61c14291f7cc653bb86457002ea80a04699d022"
+cross-env@^5.1.6:
+  version "5.1.6"
+  resolved "https://registry.yarnpkg.com/cross-env/-/cross-env-5.1.6.tgz#0dc05caf945b24e4b9e3b12871fe0e858d08b38d"
   dependencies:
     cross-spawn "^5.1.0"
     is-windows "^1.0.0"
@@ -1603,7 +1638,7 @@ date-now@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/date-now/-/date-now-0.1.4.tgz#eaf439fd4d4848ad74e5cc7dbef200672b9e345b"
 
-debug@^2.2.0, debug@^2.3.3, debug@^2.6.8:
+debug@^2.2.0, debug@^2.3.3, debug@^2.6.8, debug@^2.6.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
   dependencies:
@@ -1733,6 +1768,10 @@ ecc-jsbn@~0.1.1:
 electron-to-chromium@^1.2.7, electron-to-chromium@^1.3.30:
   version "1.3.42"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.42.tgz#95c33bf01d0cc405556aec899fe61fd4d76ea0f9"
+
+electron-to-chromium@^1.3.47:
+  version "1.3.48"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.48.tgz#d3b0d8593814044e092ece2108fc3ac9aea4b900"
 
 elliptic@^6.0.0:
   version "6.4.0"
@@ -1878,9 +1917,9 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-eslint-plugin-react@^7.5.1:
-  version "7.7.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.7.0.tgz#f606c719dbd8a1a2b3d25c16299813878cca0160"
+eslint-plugin-react@^7.8.2:
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.8.2.tgz#e95c9c47fece55d2303d1a67c9d01b930b88a51d"
   dependencies:
     doctrine "^2.0.2"
     has "^1.0.1"
@@ -3654,9 +3693,9 @@ node-pre-gyp@^0.6.39:
     tar "^2.2.1"
     tar-pack "^3.4.0"
 
-node-sass@^4.7.2:
-  version "4.8.3"
-  resolved "https://registry.yarnpkg.com/node-sass/-/node-sass-4.8.3.tgz#d077cc20a08ac06f661ca44fb6f19cd2ed41debb"
+node-sass@^4.9.0:
+  version "4.9.0"
+  resolved "https://registry.yarnpkg.com/node-sass/-/node-sass-4.9.0.tgz#d1b8aa855d98ed684d6848db929a20771cc2ae52"
   dependencies:
     async-foreach "^0.1.3"
     chalk "^1.1.1"
@@ -4130,9 +4169,9 @@ postcss-load-plugins@^2.3.0:
     cosmiconfig "^2.1.1"
     object-assign "^4.1.0"
 
-postcss-loader@^2.1.4:
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/postcss-loader/-/postcss-loader-2.1.4.tgz#f44a6390e03c84108b2b2063182d1a1011b2ce76"
+postcss-loader@^2.1.5:
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/postcss-loader/-/postcss-loader-2.1.5.tgz#3c6336ee641c8f95138172533ae461a83595e788"
   dependencies:
     loader-utils "^1.1.0"
     postcss "^6.0.0"
@@ -4336,7 +4375,7 @@ preserve@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
 
-private@^0.1.6, private@^0.1.7:
+private@^0.1.6, private@^0.1.7, private@^0.1.8:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/private/-/private-0.1.8.tgz#2381edb3689f7a53d653190060fcf822d2f368ff"
 
@@ -4478,9 +4517,9 @@ rc@^1.1.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-chartjs-2@^2.7.0:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/react-chartjs-2/-/react-chartjs-2-2.7.0.tgz#14925143f7e5c59dc631d0d8279255b031c5561a"
+react-chartjs-2@^2.7.2:
+  version "2.7.2"
+  resolved "https://registry.yarnpkg.com/react-chartjs-2/-/react-chartjs-2-2.7.2.tgz#9a9499f2943126b6ef89e7c8b93193879feb2597"
   dependencies:
     lodash "^4.17.4"
     prop-types "^15.5.8"
@@ -5626,9 +5665,9 @@ webpack-sources@^1.0.1:
     source-list-map "^2.0.0"
     source-map "~0.6.1"
 
-webpack@^3.8.1:
-  version "3.11.0"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-3.11.0.tgz#77da451b1d7b4b117adaf41a1a93b5742f24d894"
+webpack@^3.12.0:
+  version "3.12.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-3.12.0.tgz#3f9e34360370602fcf639e97939db486f4ec0d74"
   dependencies:
     acorn "^5.0.0"
     acorn-dynamic-import "^2.0.0"
