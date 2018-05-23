@@ -2,10 +2,10 @@ language: nodejs
 env:
 - NODE_ENV=production
 before_script:
-  - npm install
+  - yarn install
 script:
-  - npm run lint
-  - npm run build-prod
+  - yarn run lint
+  - yarn run build-prod
 
 deploy:
   provider: releases
