@@ -36,18 +36,6 @@ window.belLog = (...args) => {
     }
 };
 
-window.belTime = name => {
-    if (window.BattleEyeStorage.get('enableBenchmarking')) {
-        console.time(name);
-    }
-};
-
-window.belTimeEnd = name => {
-    if (window.BattleEyeStorage.get('enableBenchmarking')) {
-        console.timeEnd(name);
-    }
-};
-
 // erep Stuff++ event handler for get requests
 if (window.ajaxSuccess) {
     belLog('Using stuff++ ajax listener');

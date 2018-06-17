@@ -8,9 +8,7 @@ import $ from 'jQuery';
 
 export default class BattleEye {
     constructor() {
-        belTime('battleEyeConstructor');
-
-        this.version = '2.0.2';
+        this.version = '2.0.3';
         this.connected = true;
         this.loading = true;
 
@@ -89,7 +87,6 @@ export default class BattleEye {
         this.runTicker();
 
         this.handleEvents();
-        belTimeEnd('battleEyeConstructor');
     }
 
     reload() {
