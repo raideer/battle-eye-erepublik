@@ -5,7 +5,7 @@
 // @homepage    http://bit.ly/BattleEye
 // @description Live battle statistics for eRepublik
 // @include     http*://www.erepublik.com/*/military/battlefield/*
-// @version     2.1
+// @version     2.0.2
 // @run-at      document-idle
 // @grant       none
 // @noframes
