@@ -1,14 +1,14 @@
 import DpsHandler from './DpsHandler';
 import CountryStats from './CountryStats';
 import Divisions from './Divisions';
-import { takeRight } from './Utils';
+import { takeRight, uid } from './Utils';
 
 export default class Stats extends DpsHandler {
     constructor(id) {
         super(10);
         this.name = SERVER_DATA.countries[id];
         this.countries = new CountryStats();
-        this.id = id;
+        this.id = uid();
         this.damage = 0;
         this.hits = 0;
         this.constructDivisions();

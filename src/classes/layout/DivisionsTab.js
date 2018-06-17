@@ -3,6 +3,8 @@ import { divisions, divName, prettifyCountryName, division } from '../Utils';
 import Division from './Division';
 import Flag from './Flag';
 
+let divid = null;
+
 export default class DivisionsTab extends React.Component {
     render() {
         return (
@@ -17,8 +19,12 @@ export default class DivisionsTab extends React.Component {
                     }
                     return true;
                 }).map(div => {
+                    if (!divid) {
+                        divid = this.props.divisions.left[div].id + this.props.divisions.right[div].id;
+                    }
+
                     return (
-                        <div key={div}>
+                        <div key={divid}>
                             <div className="panel-header">
                                 { divName(div) }
                             </div>
