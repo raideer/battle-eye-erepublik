@@ -7,6 +7,7 @@
 
     .country-row {
         border-bottom: 2px solid darken($colorMainbg, 5%);
+        height: 30px;
     }
 
     .columns:not(:last-child), .tags:not(:last-child) {
