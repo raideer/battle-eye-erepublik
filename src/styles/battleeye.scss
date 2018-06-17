@@ -19,6 +19,10 @@ $tabColor: $colorWhite;
     text-align: center;
     line-height: 1.7;
 
+    .no-transitions {
+        transition: none !important;
+    }
+
     .navbar {
         margin-top: 5px;
     }

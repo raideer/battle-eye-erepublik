@@ -127,6 +127,7 @@ $progressHeight: 15px;
     .left-progress, .right-progress {
         height: $progressHeight;
         float: left;
+        will-change: width;
         transition: width 0.3s ease-in-out;
     }
 
