@@ -8,7 +8,7 @@ import $ from 'jQuery';
 
 export default class BattleEye {
     constructor() {
-        this.version = '2.0.3';
+        this.version = '2.0.4';
         this.connected = true;
         this.loading = true;
 
@@ -120,17 +120,16 @@ export default class BattleEye {
                 this.apiURL = data.api;
             }
 
-            const version = parseInt(data.version.replace(/\D/g, ''));
-            const currentVersion = parseInt(this.version.replace(/\D/g, ''));
-            if (currentVersion != version) {
-                belLog('Versions do not match!');
-                $('#battleeye-version').addClass('is-warning').removeClass('is-main').after(`
-                    <a href="${data.updateUrl}" id="battleeye-update" class="tag is-danger">
-                        Update available
-                    </a>
-                `);
-                // document.querySelector('#bel-version').innerHTML += `<a class="bel-btn" href="${data.updateUrl}">Update</a>`;
-            }
+            // const version = parseInt(data.version.replace(/\D/g, ''));
+            // const currentVersion = parseInt(this.version.replace(/\D/g, ''));
+            // if (currentVersion != version) {
+            //     belLog('Versions do not match!');
+            //     $('#battleeye-version').addClass('is-warning').removeClass('is-main').after(`
+            //         <a href="${data.updateUrl}" id="battleeye-update" class="tag is-danger">
+            //             Update available
+            //         </a>
+            //     `);
+            // }
 
             belLog('Data JSON received and processed');
             this.events.emit('log', 'Data.json synced');
@@ -252,7 +251,7 @@ export default class BattleEye {
 
     handleEvents() {
         const handleTick = second => {
-            if (second % 3 === 0 && this.updateContributors) {
+            if (second % 3 === 0 && this.updateContributors === true) {
                 this.updateContributors = false;
                 this.displayContributors();
             }
