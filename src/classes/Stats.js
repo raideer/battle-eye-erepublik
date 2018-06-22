@@ -4,10 +4,11 @@ import Divisions from './Divisions';
 import { takeRight, uid } from './Utils';
 
 export default class Stats extends DpsHandler {
-    constructor(id) {
+    constructor(countryId) {
         super(10);
-        this.name = SERVER_DATA.countries[id];
+        this.name = SERVER_DATA.countries[countryId];
         this.countries = new CountryStats();
+        this.countryId = countryId;
         this.id = uid();
         this.damage = 0;
         this.hits = 0;
@@ -23,7 +24,7 @@ export default class Stats extends DpsHandler {
     }
 
     isSide(side) {
-        return this.id == side;
+        return this.countryId == side;
     }
 
     updateDps(timeData) {
