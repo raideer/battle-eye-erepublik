@@ -14,10 +14,15 @@
     "name": "BattleEye for eRepublik",
     "short_name": "BE",
     "homepage_url": "http://bit.ly/BattleEye",
-    "version": "2.1",
+    "version": "2.1.1",
+    "icons": {
+        "48": "icons/icon.png",
+        "96": "icons/icon@2x.png"
+    },
     "applications": {
         "gecko": {
-            "id": "battyeeye@raideer.xyz"
+            "id": "battyeeye@raideer.xyz",
+            "update_url": "https://cdn.raideer.xyz/ffupdates.json"
         }
     }
 }
