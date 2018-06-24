@@ -6,6 +6,9 @@ import BattleStatsLoader from './BattleStatsLoader';
 import ExcelGenerator from './ExcelGenerator';
 import $ from 'jQuery';
 
+const SERVER_DATA = window.SERVER_DATA;
+const erepublik = window.erepublik;
+
 export default class BattleEye {
     constructor() {
         this.version = '2.0.4';

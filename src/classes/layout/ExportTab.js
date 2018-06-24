@@ -183,7 +183,7 @@ export default class ExportTab extends React.Component {
             ['overall', 'All rounds']
         ];
 
-        for (let i = 1; i <= SERVER_DATA.zoneId; i++) {
+        for (let i = 1; i <= window.SERVER_DATA.zoneId; i++) {
             rounds.push([i, `Round ${i}`]);
         }
 

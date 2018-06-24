@@ -1,3 +1,11 @@
+/*
+	All code is publicly available at:
+	https://github.com/raideer/battle-eye-erepublik
+	This script is solely an injector for the actual script,
+	which is being appended into the document head on
+	*://*.erepublik.com/military/battlefield/*
+	No injection is made into the Chrome context.
+*/
 (function battleeye() {
     console.log('BattleEye for Firefox')
     var script = document.createElement('script');

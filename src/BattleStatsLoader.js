@@ -1,6 +1,8 @@
 import { divisions } from './classes/Utils';
 import $ from 'jQuery';
 
+const SERVER_DATA = window.SERVER_DATA;
+
 class BattleStatsLoader {
     async loadStats(round = SERVER_DATA.zoneId, divs = divisions, divProcessedCallback = null) {
         const leftData = new Map();

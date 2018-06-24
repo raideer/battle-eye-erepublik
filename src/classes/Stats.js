@@ -6,7 +6,7 @@ import { takeRight, uid } from './Utils';
 export default class Stats extends DpsHandler {
     constructor(countryId) {
         super(10);
-        this.name = SERVER_DATA.countries[countryId];
+        this.name = window.SERVER_DATA.countries[countryId];
         this.countries = new CountryStats();
         this.countryId = countryId;
         this.id = uid();

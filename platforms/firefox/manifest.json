@@ -13,7 +13,7 @@
     "manifest_version": 2,
     "name": "BattleEye for eRepublik",
     "short_name": "BE",
-    "homepage_url": "http://bit.ly/BattleEye",
+    "homepage_url": "https://battleeye.raideer.xyz",
     "version": "2.1.1",
     "icons": {
         "48": "icons/icon.png",
