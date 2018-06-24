@@ -14,8 +14,7 @@ if (process.env.NODE_ENV == 'production') {
 
 module.exports = {
     entry: {
-        'build/battleeye': ['babel-polyfill', './src/index.js'],
-        'platforms/chrome/battleeye': ['babel-polyfill', './src/index.js']
+        'build/battleeye': ['babel-polyfill', './src/index.js']
     },
     output: {
         filename: '[name].js',
