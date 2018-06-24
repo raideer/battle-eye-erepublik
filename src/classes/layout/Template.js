@@ -76,7 +76,7 @@ export default class Template extends React.Component {
                     <div className="level-left">
                         <div className="level-item">
                             <div className="tags has-addons logo">
-                                <a target="__blank" href="http://bit.ly/BattleEye" className="tag">BATTLE EYE</a>
+                                <a target="_blank" href="https://battleeye.raideer.xyz/" className="tag">BATTLE EYE</a>
                                 <span id="battleeye-version" className="tag is-main">v{ BattleEye.version }</span>
                             </div>
                         </div>
