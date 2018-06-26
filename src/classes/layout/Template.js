@@ -6,6 +6,7 @@ import TabButton from './TabButton';
 import ExportTab from './ExportTab';
 import SettingsTab from './SettingsTab';
 import AboutTab from './AboutTab';
+import FirstKillsTab from './FirstKillsTab';
 
 export default class Template extends React.Component {
     constructor() {
@@ -45,6 +46,10 @@ export default class Template extends React.Component {
             return (
                 <AboutTab />
             );
+        case 'firstKills':
+            return (
+                <FirstKillsTab firstKills={this.props.feedData.firstKills} />
+            );
         default:
             return null;
         }
@@ -69,6 +74,18 @@ export default class Template extends React.Component {
         window.BattleEye.reload();
     }
 
+    renderFirstKillsButton() {
+        if (this.props.feedData.firstKills) {
+            return (<TabButton
+                name='firstKills'
+                activeTab={this.state.activeTab}
+                inactiveClass="is-outlined"
+                click={this.setTab.bind(this, 'firstKills')}>
+                First kills <b style={{ margin: '0 4px' }}>BETA</b>
+            </TabButton>);
+        }
+    }
+
     render() {
         return (
             <div>
@@ -78,6 +95,9 @@ export default class Template extends React.Component {
                             <div className="tags has-addons logo">
                                 <a target="_blank" href="https://battleeye.raideer.xyz/" className="tag">BATTLE EYE</a>
                                 <span id="battleeye-version" className="tag is-main">v{ BattleEye.version }</span>
+                                <span className="tag">
+                                    <span id="be_connected"></span>
+                                </span>
                             </div>
                         </div>
                         <div className="level-item buttons">
@@ -105,6 +125,7 @@ export default class Template extends React.Component {
                                 click={this.setTab.bind(this, 'export')}>
                                 Export
                             </TabButton>
+                            {this.renderFirstKillsButton()}
                         </div>
                     </div>
                     { this.renderLoader() }
@@ -115,12 +136,12 @@ export default class Template extends React.Component {
                                 activeTab={this.state.activeTab}
                                 click={this.setTab.bind(this, 'about')}
                                 className='is-dark is-outlined'>
-                                About BattleEye
+                                Info
                             </TabButton>
                             <TabButton
                                 click={this.reload.bind(this)}
                                 className='is-dark is-outlined'>
-                                Reload BattleEye
+                                Reload
                             </TabButton>
                             <TabButton
                                 name='settings'

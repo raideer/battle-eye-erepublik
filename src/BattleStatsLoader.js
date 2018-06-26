@@ -251,6 +251,18 @@ class BattleStatsLoader {
 
         return data;
     }
+
+    async getFirstKills(battleId) {
+        try {
+            const data = await $.getJSON(`https://battleeye.raideer.xyz/firstHits/${battleId}`);
+            console.log(data);
+            return data;
+        } catch (e) {
+            console.error('Failed to fetch firstKills for the battle');
+        }
+
+        return null;
+    }
 }
 
 export default new BattleStatsLoader();

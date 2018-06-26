@@ -11,7 +11,7 @@ const erepublik = window.erepublik;
 
 export default class BattleEye {
     constructor() {
-        this.version = '2.0.4';
+        this.version = '2.0.5';
         this.connected = true;
         this.loading = true;
 
@@ -30,6 +30,8 @@ export default class BattleEye {
 
         this.teamA.defender = SERVER_DATA.defenderId == SERVER_DATA.leftBattleId;
         this.teamB.defender = SERVER_DATA.defenderId != SERVER_DATA.leftBattleId;
+
+        this.firstKills = null;
 
         this.revolutionCountry = null;
         if (SERVER_DATA.isCivilWar) {
@@ -85,6 +87,12 @@ export default class BattleEye {
                     BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
                 }
             });
+            
+            BattleStatsLoader.getFirstKills(SERVER_DATA.battleId).then(kills => {
+                this.firstKills = kills;
+            });
+
+            this.notifyConnection(true);
         });
 
         this.runTicker();
@@ -239,7 +247,8 @@ export default class BattleEye {
     getTeamStats() {
         return {
             left: this.teamA.toObject(),
-            right: this.teamB.toObject()
+            right: this.teamB.toObject(),
+            firstKills: this.firstKills
         };
     }
 
@@ -270,6 +279,20 @@ export default class BattleEye {
         this.events.on('tick', handleTick.bind(this));
     }
 
+    notifyConnection(connected = true) {
+        if (connected) {
+            $('#be_connected')
+            .addClass('is-connected')
+            .removeClass('is-disconnected')
+            .attr('original-title', 'Connection to the server successfully established').tipsy();
+        } else {
+            $('#be_connected')
+            .addClass('is-disconnected')
+            .removeClass('is-connected')
+            .attr('original-title', 'Not connected to the server!').tipsy();
+        }
+    }
+
     overridePomelo() {
         const messageHandler = data => {
             this.updateContributors = true;
@@ -280,6 +303,7 @@ export default class BattleEye {
             belLog(`Socket closed [${data.reason}]`);
             this.connected = false;
             this.layout.update(this.getTeamStats());
+            this.notifyConnection(false);
         };
 
         pomelo.on('onMessage', messageHandler.bind(this));

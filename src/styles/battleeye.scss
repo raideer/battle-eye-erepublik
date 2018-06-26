@@ -19,6 +19,28 @@ $tabColor: $colorWhite;
     text-align: center;
     line-height: 1.7;
 
+    #be_connected {
+        width: 10px;
+        height: 10px;
+        background-color: gray;
+        border-radius: 50%;
+        transition: all 0.3s;
+
+        &.is-connected {
+            background-color: rgb(15, 194, 15);
+            border-radius: 50%;
+            box-shadow: green 0px 0px 5px;
+            border: 1px solid white;
+        }
+
+        &.is-disconnected {
+            background-color: rgb(255, 0, 0);
+            border-radius: 50%;
+            box-shadow: rgb(128, 0, 0) 0px 0px 5px;
+            border: 1px solid white;
+        }
+    }
+
     .no-transitions {
         transition: none !important;
     }
@@ -134,6 +156,7 @@ $tabColor: $colorWhite;
     @import "./battleeye/countries.scss";
     @import "./battleeye/settings.scss";
     @import "./battleeye/about.scss";
+    @import "./battleeye/firstkills.scss";
 }
 
 @import "./battleeye/monitor.scss";
