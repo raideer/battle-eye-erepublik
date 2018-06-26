@@ -74,18 +74,6 @@ export default class Template extends React.Component {
         window.BattleEye.reload();
     }
 
-    renderFirstKillsButton() {
-        if (this.props.feedData.firstKills) {
-            return (<TabButton
-                name='firstKills'
-                activeTab={this.state.activeTab}
-                inactiveClass="is-outlined"
-                click={this.setTab.bind(this, 'firstKills')}>
-                First kills <b style={{ margin: '0 4px' }}>BETA</b>
-            </TabButton>);
-        }
-    }
-
     render() {
         return (
             <div>
@@ -125,7 +113,13 @@ export default class Template extends React.Component {
                                 click={this.setTab.bind(this, 'export')}>
                                 Export
                             </TabButton>
-                            {this.renderFirstKillsButton()}
+                            <TabButton
+                                name='firstKills'
+                                activeTab={this.state.activeTab}
+                                inactiveClass="is-outlined"
+                                click={this.setTab.bind(this, 'firstKills')}>
+                                First kills <b style={{ margin: '0 4px' }}>BETA</b>
+                            </TabButton>
                         </div>
                     </div>
                     { this.renderLoader() }
