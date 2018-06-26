@@ -9,6 +9,12 @@ export default class FirstKillsTab extends React.Component {
         this.state = {
             activeTab: SERVER_DATA.zoneId
         };
+
+        this.kills = {
+            left: null,
+            right: null,
+            round: 0
+        };
     }
 
     setRound(round) {
@@ -18,7 +24,7 @@ export default class FirstKillsTab extends React.Component {
     }
 
     getKills(side) {
-        const accPrefill = this.state.activeTab & 4 === 0 ? { 11: [] } : { 1: [], 2: [], 3: [], 4: [] };
+        const accPrefill = this.state.activeTab % 4 === 0 ? { 11: [] } : { 1: [], 2: [], 3: [], 4: [] };
         return this.props.firstKills
         .filter(kill => kill.round == this.state.activeTab && kill.side == side)
         .sort((a, b) => {
@@ -33,8 +39,11 @@ export default class FirstKillsTab extends React.Component {
     render() {
         const { firstKills } = this.props;
 
-        const leftKills = this.getKills(SERVER_DATA.leftBattleId);
-        const rightKills = this.getKills(SERVER_DATA.rightBattleId);
+        if (!this.kills.left || !this.kills.right || this.kills.round != this.state.activeTab) {
+            this.kills.left = this.getKills(SERVER_DATA.leftBattleId);
+            this.kills.right = this.getKills(SERVER_DATA.rightBattleId);
+            this.kills.round = this.state.activeTab;
+        }
 
         return (
             <div className="battleeye__countries">
@@ -81,8 +90,8 @@ export default class FirstKillsTab extends React.Component {
                                 </tr>
                             </thead>
                             <tbody>
-                                { Object.keys(leftKills).map(div => {
-                                    const kills = leftKills[div];
+                                { Object.keys(this.kills.left).map(div => {
+                                    const kills = this.kills.left[div];
                                     const rows = [<tr key={0} className="first-kills__div"><td colSpan="4">Division {div}</td></tr>];
                                     if (kills.length > 0) {
                                         rows.push(...kills.map((kill, i) => {
@@ -120,8 +129,8 @@ export default class FirstKillsTab extends React.Component {
                                 </tr>
                             </thead>
                             <tbody>
-                                { Object.keys(rightKills).map(div => {
-                                    const kills = rightKills[div];
+                                { Object.keys(this.kills.right).map(div => {
+                                    const kills = this.kills.right[div];
                                     const rows = [<tr key={0} className="first-kills__div"><td colSpan="4">Division {div}</td></tr>];
                                     if (kills.length > 0) {
                                         rows.push(...kills.map((kill, i) => {
