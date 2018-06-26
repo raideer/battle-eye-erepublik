@@ -37,7 +37,8 @@ export default class FirstKillsTab extends React.Component {
     }
 
     render() {
-        const { firstKills } = this.props;
+        if (!this.props.firstKills) return <div>Loading...</div>;
+        const firstKills = this.props.firstKills;
 
         if (!this.kills.left || !this.kills.right || this.kills.round != this.state.activeTab) {
             this.kills.left = this.getKills(SERVER_DATA.leftBattleId);
@@ -72,9 +73,9 @@ export default class FirstKillsTab extends React.Component {
                     </div>
                 </div>
                 <div className="panel-header">
-                    First kills for round { this.state.activeTab }
+                    First kills for Round { this.state.activeTab }
                 </div>
-                <p>
+                <p style={{ backgroundColor: '#d4d4d4', color: '#20253e' }}>
                     Kills are tracked only for the first 30 minutes
                 </p>
 
@@ -100,6 +101,7 @@ export default class FirstKillsTab extends React.Component {
                                             if (diff < 0) {
                                                 diff = 0;
                                             }
+
                                             return (
                                                 <tr key={kill.id}>
                                                     <th>{ i + 1 }</th>
@@ -139,10 +141,11 @@ export default class FirstKillsTab extends React.Component {
                                             if (diff < 0) {
                                                 diff = 0;
                                             }
+
                                             return (
                                                 <tr key={kill.id}>
                                                     <td>{number(kill.damage, true)}</td>
-                                                    <td><a href={`https://www.erepublik.com/${window.erepublik.settings.culture}/citizen/profile/${kill.citizenId}`}>{kill.name}</a></td>
+                                                    <td><a target="_blank" href={`https://www.erepublik.com/${window.erepublik.settings.culture}/citizen/profile/${kill.citizenId}`}>{kill.name}</a></td>
                                                     <td title="Seconds after round start">+{diff}</td>
                                                     <th>{ i + 1 }</th>
                                                 </tr>
