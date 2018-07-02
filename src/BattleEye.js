@@ -11,7 +11,7 @@ const erepublik = window.erepublik;
 
 export default class BattleEye {
     constructor() {
-        this.version = '2.0.5';
+        this.version = '2.0.6';
         this.connected = true;
         this.loading = true;
 
@@ -32,6 +32,9 @@ export default class BattleEye {
         this.teamB.defender = SERVER_DATA.defenderId != SERVER_DATA.leftBattleId;
 
         this.firstKills = null;
+
+        this.renderContributors = true;
+        this.playerIsContributor = false;
 
         this.revolutionCountry = null;
         if (SERVER_DATA.isCivilWar) {
@@ -87,7 +90,7 @@ export default class BattleEye {
                     BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
                 }
             });
-            
+
             BattleStatsLoader.getFirstKills(SERVER_DATA.battleId).then(kills => {
                 this.firstKills = kills;
             });
@@ -119,28 +122,13 @@ export default class BattleEye {
     async checkForUpdates() {
         let data;
         try {
-            data = await $.getJSON('https://dl.dropboxusercontent.com/s/mz1p3g7pyiu69qx/data.json');
+            data = await $.getJSON('https://cdn.raideer.xyz/data.json');
             this.contributors = data.contributors;
             this.displayContributors();
 
             if (data.knownErrors) {
                 this.knownErrors = data.knownErrors;
             }
-
-            if (data.api) {
-                this.apiURL = data.api;
-            }
-
-            // const version = parseInt(data.version.replace(/\D/g, ''));
-            // const currentVersion = parseInt(this.version.replace(/\D/g, ''));
-            // if (currentVersion != version) {
-            //     belLog('Versions do not match!');
-            //     $('#battleeye-version').addClass('is-warning').removeClass('is-main').after(`
-            //         <a href="${data.updateUrl}" id="battleeye-update" class="tag is-danger">
-            //             Update available
-            //         </a>
-            //     `);
-            // }
 
             belLog('Data JSON received and processed');
             this.events.emit('log', 'Data.json synced');
@@ -219,6 +207,9 @@ export default class BattleEye {
     }
 
     displayContributors() {
+        const playerData = window.angular.element('#console_left').scope().players;
+        const displayedPlayers = [...Object.keys(playerData.leftSidePlayers), ...Object.keys(playerData.rightSidePlayers)];
+
         $('.bel-contributor').each(() => {
             $(this).removeClass('bel-contributor')
             .removeAttr('style')
@@ -226,16 +217,21 @@ export default class BattleEye {
         });
 
         for (const color in this.contributors) {
-            const players = this.contributors[color];
-            for (const j in players) {
-                var cId = players[j];
-                if (erepublik.citizen.citizenId == cId) {
-                    $('#battleConsole .left_player .player_name').css({
+            for (const i in this.contributors[color]) {
+                const id = this.contributors[color][i];
+
+                if (erepublik.citizen.citizenId == id) {
+                    $('.left_player .player_name').css({
                         textShadow: `0 0 10px ${color}`,
                         color: `${color}`
                     }).attr('original-title', 'BattleEye contributor').tipsy();
-                } else if ($(`li[data-citizen-id="${cId}"] .player_name a`).length > 0) {
-                    $(`li[data-citizen-id="${cId}"] .player_name a`).css({
+                    this.playerIsContributor = true;
+                    console.log('Thank you for supporting BattleEye!');
+                } else if (
+                    displayedPlayers.length > 0
+                    && displayedPlayers.indexOf(id) >= 0
+                ) {
+                    $(`li[data-citizen-id="${id}"] .player_name a`).css({
                         textShadow: `0 0 10px ${color}`,
                         color: color
                     }).attr('original-title', 'BattleEye contributor').addClass('bel-contributor').tipsy();
@@ -263,8 +259,8 @@ export default class BattleEye {
 
     handleEvents() {
         const handleTick = second => {
-            if (second % 3 === 0 && this.updateContributors === true) {
-                this.updateContributors = false;
+            if (second % 3 === 0 && this.renderContributors) {
+                this.renderContributors = false;
                 this.displayContributors();
             }
 
@@ -295,7 +291,7 @@ export default class BattleEye {
 
     overridePomelo() {
         const messageHandler = data => {
-            this.updateContributors = true;
+            this.renderContributors = true;
             this.handle(data);
         };
 
