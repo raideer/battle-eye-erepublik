@@ -76,7 +76,8 @@ export default class FirstKillsTab extends React.Component {
                     First kills for Round { this.state.activeTab }
                 </div>
                 <p style={{ backgroundColor: '#d4d4d4', color: '#20253e' }}>
-                    Kills are tracked only for the first 30 minutes
+                    Kills are tracked only for the first hour. This limit might change later.
+                    Expect bugs/missed rounds while this feature is in beta.
                 </p>
 
                 <div className="columns">
