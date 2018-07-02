@@ -231,23 +231,36 @@ class BattleStatsLoader {
     }
 
     async getNbpStats(battleId) {
-        const data = await $.getJSON(`https://www.erepublik.com/${erepublik.settings.culture}/military/nbp-stats/${battleId}/${SERVER_DATA.division}`);
-        belLog('Retrieved nbp stats');
+        let data;
+
+        try {
+            data = await $.getJSON(`https://www.erepublik.com/${erepublik.settings.culture}/military/nbp-stats/${battleId}/${SERVER_DATA.division}`);
+            belLog('Retrieved nbp stats');
+        } catch (e) {
+            console.error('Failed to retrieve nbp stats');
+        }
+
         return data;
     }
 
     async getStats(division, round, pageLeft, pageRight, type = 'damage', battleId = SERVER_DATA.battleId) {
-        const data = await $.post('https://www.erepublik.com/en/military/battle-console', {
-            _token: SERVER_DATA.csrfToken,
-            action: 'battleStatistics',
-            battleId: battleId,
-            division: division,
-            leftPage: pageLeft,
-            rightPage: pageRight,
-            round: round,
-            type: type,
-            zoneId: parseInt(round, 10)
-        });
+        let data;
+
+        try {
+            data = await $.post('https://www.erepublik.com/en/military/battle-console', {
+                _token: SERVER_DATA.csrfToken,
+                action: 'battleStatistics',
+                battleId: battleId,
+                division: division,
+                leftPage: pageLeft,
+                rightPage: pageRight,
+                round: round,
+                type: type,
+                zoneId: parseInt(round, 10)
+            });
+        } catch (e) {
+            console.error(`Failed to retrieve stats for ${battleId} d${division} pl${pageLeft} pr${pageRight} r${round} t${type}`);
+        }
 
         return data;
     }
