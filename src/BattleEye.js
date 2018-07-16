@@ -86,6 +86,7 @@ export default class BattleEye {
             window.ajaxSuccess.push((data, url) => {
                 // If data is nbp-stats
                 if (url.match('nbp-stats')) {
+                    this.nbpStats = data;
                     BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
                 }
             });
