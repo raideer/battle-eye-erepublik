@@ -1,10 +1,16 @@
 import React from 'react';
 import StatsField from './StatsField';
 import DominationBar from './DominationBar';
+import DominationBar2 from './DominationBar2';
 
 export default class Division extends React.Component {
     render() {
-        const { division, className } = this.props;
+        const { division, className, i } = this.props;
+
+        let actualDomination = window.BattleEye.nbpStats ? window.BattleEye.nbpStats.division.domination[i] : 0;
+        if (window.SERVER_DATA.mustInvert) {
+            actualDomination = (100 - actualDomination);
+        }
 
         return (
             <div className={`battleeye__division ${className ? className : ''}`}>
@@ -32,9 +38,10 @@ export default class Division extends React.Component {
                         />
                     </div>
                     <div className="column is-three-fifths division__domination">
-                        <DominationBar
+                        <DominationBar2
                             left={division.left.damage}
                             right={division.right.damage}
+                            leftActual={actualDomination}
                             name="Damage" />
                         <DominationBar
                             left={division.left.dps}

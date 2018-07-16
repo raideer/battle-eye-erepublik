@@ -124,7 +124,7 @@ $progressHeight: 15px;
         margin-right: 10px;
     }
 
-    .left-progress, .right-progress {
+    .left-progress, .right-progress, .left-actual-progress, .right-actual-progress {
         height: $progressHeight;
         float: left;
         will-change: width;
@@ -132,10 +132,39 @@ $progressHeight: 15px;
     }
 
     .left-progress {
-        background-color: $green;
+        background-color: darken($green, 15%);
     }
 
     .right-progress {
+        background-color: darken($red, 8%);
+    }
+
+    .left-actual-progress {
+        background-color: $green;
+    }
+
+    .right-actual-progress {
         background-color: $red;
+    }
+
+    .progress-bar-gain {
+        width: 100%;
+        text-align: center;
+        line-height: 1;
+
+        &.positive:after {
+            content: "►";
+            color: $green;
+        }
+
+        &.neutral:after {
+            content: "△";
+            color: darken($colorMainbg, 10%);
+        }
+
+        &.negative:after {
+            content: "◄";
+            color: $red;
+        }
     }
 }

@@ -1,14 +1,18 @@
 import React from 'react';
 
-export default class DominationBar extends React.Component {
+export default class DominationBar2 extends React.Component {
     render() {
         const { left, right, name } = this.props;
 
-        let aPerc = 0, bPerc = 0;
+        const leftActual = Math.round(this.props.leftActual * 100) / 100;
+        const rightActual = 100 - leftActual;
+
+        let aPerc = 0, bPerc = 0, gain = 0;
 
         if (left + right !== 0) {
             aPerc = Math.round(left * 10000 / (left + right)) / 100;
             bPerc = Math.round(right * 10000 / (left + right)) / 100;
+            gain = aPerc - leftActual;
         }
 
         return (
@@ -19,9 +23,11 @@ export default class DominationBar extends React.Component {
                     <div className="progress-center"></div>
                     <div className="progress-leftvalue">{aPerc}</div>
                     <div className="progress-rightvalue">{bPerc}</div>
-                    <div style={{ width: `${aPerc}%` }} className="left-actual-progress"></div>
-                    <div style={{ width: `${bPerc}%` }} className="right-actual-progress"></div>
+                    <div style={{ width: `${gain < 0 ? leftActual - Math.abs(gain) : leftActual}%` }} className="left-actual-progress"></div>
+                    <div style={{ width: `${Math.abs(gain)}%` }} className={gain >= 0 ? 'left-progress' : 'right-progress'}></div>
+                    <div style={{ width: `${gain >= 0 ? rightActual - gain : rightActual}%` }} className="right-actual-progress"></div>
                 </div>
+                <div className={`progress-bar-gain ${gain < 0 ? 'negative' : gain > 0 ? 'positive' : 'neutral'}`}></div>
             </div>
         );
     }
