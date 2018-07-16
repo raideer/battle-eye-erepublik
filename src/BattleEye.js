@@ -16,6 +16,7 @@ export default class BattleEye {
         this.loading = true;
 
         this.second = 0;
+        this.lastNbp = 999;
         this.contributors = {};
         this.knownErrors = [];
         this.apiURL = 'https://battleeye.raideer.xyz';
@@ -87,6 +88,7 @@ export default class BattleEye {
                 // If data is nbp-stats
                 if (url.match('nbp-stats')) {
                     this.nbpStats = data;
+                    this.lastNbp = this.second;
                     BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
                 }
             });

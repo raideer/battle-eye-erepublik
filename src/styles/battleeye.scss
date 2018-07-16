@@ -6,6 +6,9 @@ $tabColor: $colorWhite;
     @import "~bulma/sass/utilities/initial-variables.sass";
     @import "~bulma/sass/utilities/functions.sass";
 
+    $widescreen-enabled: false;
+    $fullhd-enabled: false;
+
     $tabs-link-padding: 0.1em 0.6em;
     $navbar-height: 2.2rem;
 
@@ -41,8 +44,9 @@ $tabColor: $colorWhite;
         }
     }
 
-    .no-transitions {
-        transition: none !important;
+    .no-transitions * {
+        transition: unset !important;
+        transition-duration: 0s !important;
     }
 
     .navbar {
@@ -115,6 +119,18 @@ $tabColor: $colorWhite;
             background-color: $colorMainbg;
             border-top: 4px solid #d4d4d4;
             padding: 4px 0;
+        }
+
+        &__nbp-progress {
+            width: 100%;
+            height: 5px;
+            overflow: hidden;
+        }
+
+        &__nbp-progress-bar {
+            transition: width 1.5s;
+            height: 5px;
+            background-color: rgb(189, 189, 189);
         }
     }
 

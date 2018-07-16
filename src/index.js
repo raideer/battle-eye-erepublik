@@ -19,7 +19,9 @@ function defineDefaultSettings() {
         ['moveToTop', false],
         ['layoutUpdateRate', 1],
         ['enableLogging', false],
-        ['enableBenchmarking', false]
+        ['enableBenchmarking', false],
+        ['showBattleProgressbar', true],
+        ['showTransitionAnimations', true]
     ];
 
     define(settings);

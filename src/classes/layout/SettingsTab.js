@@ -27,6 +27,12 @@ export default class SettingsTab extends React.Component {
                         value={BattleEyeStorage.get('showMiniMonitor')}
                         handleClick={this.handleClick.bind(this)}
                     />
+                    <Setting
+                        title="Show battle update progress bar"
+                        name="showBattleProgressbar"
+                        value={BattleEyeStorage.get('showBattleProgressbar')}
+                        handleClick={this.handleClick.bind(this)}
+                    />
                 </div>
                 <div className="column">
                     <div className="section-title">Divisions tab</div>
@@ -62,7 +68,7 @@ export default class SettingsTab extends React.Component {
                     />
                 </div>
                 <div className="column is-two-fifths">
-                    <div className="section-title">Performance</div>
+                    <div className="section-title">Display and performance</div>
                     <Setting
                         title="Layout update rate"
                         name="layoutUpdateRate"
@@ -72,6 +78,12 @@ export default class SettingsTab extends React.Component {
                             [4, 'every 4s']
                         ]}
                         value={BattleEyeStorage.get('layoutUpdateRate')}
+                        handleClick={this.handleClick.bind(this)}
+                    />
+                    <Setting
+                        title="Smooth transitions"
+                        name="showTransitionAnimations"
+                        value={BattleEyeStorage.get('showTransitionAnimations')}
                         handleClick={this.handleClick.bind(this)}
                     />
                 </div>

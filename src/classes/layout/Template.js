@@ -74,9 +74,22 @@ export default class Template extends React.Component {
         window.BattleEye.reload();
     }
 
+    getProgressBar() {
+        if (BattleEyeStorage.get('showBattleProgressbar')) {
+            const nbpProgress = ((window.BattleEye.second - window.BattleEye.lastNbp) / 30) * 100;
+            return (
+                <div className="battleeye__nbp-progress">
+                    <div style={{ width: `${nbpProgress}%` }} className="battleeye__nbp-progress-bar"></div>
+                </div>
+            );
+        }
+
+        return null;
+    }
+
     render() {
         return (
-            <div>
+            <div className={BattleEyeStorage.get('showTransitionAnimations') ? '' : 'no-transitions'}>
                 <div className="level battleeye__menu">
                     <div className="level-left">
                         <div className="level-item">
@@ -147,6 +160,7 @@ export default class Template extends React.Component {
                         </div>
                     </div>
                 </div>
+                { this.getProgressBar() }
 
                 <div className="battleeye__tab-content">
                     { /* Putting ExportTab in charge of rendering itself to prevent destructing data */ }
