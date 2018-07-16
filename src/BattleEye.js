@@ -33,9 +33,6 @@ export default class BattleEye {
 
         this.firstKills = null;
 
-        this.renderContributors = true;
-        this.playerIsContributor = false;
-
         this.revolutionCountry = null;
         if (SERVER_DATA.isCivilWar) {
             if (SERVER_DATA.invaderId == SERVER_DATA.leftBattleId) {
@@ -79,6 +76,8 @@ export default class BattleEye {
                 BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
             });
 
+            this.fetchBattleEyeData();
+
             return Promise.resolve();
         })
         .then(() => {
@@ -119,11 +118,13 @@ export default class BattleEye {
         window.BattleEyeStorage.loadDefaults();
     }
 
-    async checkForUpdates() {
+    async fetchBattleEyeData() {
+        belLog('Fetching data.json');
         let data;
         try {
             data = await $.getJSON('https://cdn.raideer.xyz/data.json');
             this.contributors = data.contributors;
+
             this.displayContributors();
 
             if (data.knownErrors) {
@@ -207,37 +208,49 @@ export default class BattleEye {
     }
 
     displayContributors() {
-        const playerData = window.angular.element('#console_left').scope().players;
-        const displayedPlayers = [...Object.keys(playerData.leftSidePlayers), ...Object.keys(playerData.rightSidePlayers)];
+        const styles = [];
 
-        $('.bel-contributor').each(() => {
-            $(this).removeClass('bel-contributor')
-            .removeAttr('style')
-            .removeAttr('original-title');
-        });
+        const playerIsContributor = this.isPlayerContributor();
+        if (playerIsContributor) {
+            $('.left_player .player_name').css({
+                textShadow: `0 0 10px ${playerIsContributor}`,
+                color: `${playerIsContributor}`
+            }).attr('original-title', 'Thank you for supporting BattleEye!').tipsy();
+        }
+
+        const ids = [];
+
+        for (const color in this.contributors) {
+            const colorStyles = this.contributors[color].map(id => {
+                return `li[data-citizen-id="${id}"] .player_name a`;
+            });
+
+            styles.push(`${colorStyles.join(', ')} { textShadow: 0 0 10px ${color} !important; color: ${color} !important; }`);
+            ids.push(colorStyles);
+        }
+
+        $('head').append(`
+            <style>
+                ${styles.join(' ')}
+            </style>
+        `);
+    }
+
+    isPlayerContributor(citizen = erepublik.citizen.citizenId) {
+        let res = null;
 
         for (const color in this.contributors) {
             for (const i in this.contributors[color]) {
-                const id = this.contributors[color][i];
-
-                if (erepublik.citizen.citizenId == id) {
-                    $('.left_player .player_name').css({
-                        textShadow: `0 0 10px ${color}`,
-                        color: `${color}`
-                    }).attr('original-title', 'BattleEye contributor').tipsy();
-                    this.playerIsContributor = true;
-                    console.log('Thank you for supporting BattleEye!');
-                } else if (
-                    displayedPlayers.length > 0
-                    && displayedPlayers.indexOf(id) >= 0
-                ) {
-                    $(`li[data-citizen-id="${id}"] .player_name a`).css({
-                        textShadow: `0 0 10px ${color}`,
-                        color: color
-                    }).attr('original-title', 'BattleEye contributor').addClass('bel-contributor').tipsy();
+                if (this.contributors[color][i] == citizen) {
+                    res = color;
+                    break;
                 }
             }
+
+            if (res) break;
         }
+
+        return res;
     }
 
     getTeamStats() {
@@ -259,11 +272,6 @@ export default class BattleEye {
 
     handleEvents() {
         const handleTick = second => {
-            if (second % 3 === 0 && this.renderContributors) {
-                this.renderContributors = false;
-                this.displayContributors();
-            }
-
             this.teamA.updateDps(second);
             this.teamB.updateDps(second);
 
@@ -291,7 +299,6 @@ export default class BattleEye {
 
     overridePomelo() {
         const messageHandler = data => {
-            this.renderContributors = true;
             this.handle(data);
         };
 
@@ -306,7 +313,6 @@ export default class BattleEye {
         pomelo.on('close', closeHandler.bind(this));
 
         this.layout.update(this.getTeamStats());
-        this.checkForUpdates();
     }
 
     handle(data) {
