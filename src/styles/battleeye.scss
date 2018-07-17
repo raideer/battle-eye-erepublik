@@ -128,7 +128,7 @@ $tabColor: $colorWhite;
         }
 
         &__nbp-progress-bar {
-            transition: width 1.5s;
+            transition: width 1s linear;
             height: 5px;
             background-color: rgb(189, 189, 189);
         }

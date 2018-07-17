@@ -132,11 +132,11 @@ $progressHeight: 15px;
     }
 
     .left-progress {
-        background-color: darken($green, 15%);
+        background-color: lighten($green, 14%);
     }
 
     .right-progress {
-        background-color: darken($red, 8%);
+        background-color: lighten($red, 10%);
     }
 
     .left-actual-progress {
