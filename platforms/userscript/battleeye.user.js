@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name        Battle Eye Live
 // @namespace   battle-eye-live
-// @author      Industrials
+// @author      Raideer
 // @homepage    https://battleeye.raideer.xyz/
 // @description Live battle statistics for eRepublik
 // @include     http*://www.erepublik.com/*/military/battlefield/*
 // @version     2.0.5
 // @run-at      document-idle
 // @grant       none
+// @updateURL   https://cdn.raideer.xyz/battleeye.user.js
+// @icon        https://cdn.raideer.xyz/icons/icon@2x.png
 // @noframes
 // ==/UserScript==
 
