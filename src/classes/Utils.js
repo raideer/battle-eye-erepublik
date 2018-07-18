@@ -76,6 +76,10 @@ export function sortByValue(obj) {
     return sorted;
 }
 
+export function round(num, precision = 1) {
+    return Math.round(num * precision) / precision;
+}
+
 export function lastDigit(n) {
     return n.toString().split('').pop();
 }

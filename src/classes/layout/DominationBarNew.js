@@ -1,18 +1,19 @@
 import React from 'react';
+import { round } from '../Utils';
 
-export default class DominationBar2 extends React.Component {
+export default class DominationBarNew extends React.Component {
     render() {
         const { left, right, name } = this.props;
 
-        const leftActual = Math.round(this.props.leftActual * 100) / 100;
-        const rightActual = Math.round((100 - leftActual) * 100) / 100;
+        const leftActual = round(this.props.leftActual, 100);
+        const rightActual = round(100 - leftActual, 100);
 
         let aPerc = 0, bPerc = 0, gain = 0;
 
         if (left + right !== 0) {
-            aPerc = Math.round(left * 10000 / (left + right)) / 100;
-            bPerc = Math.round(right * 10000 / (left + right)) / 100;
-            gain = Math.round((aPerc - leftActual) * 100) / 100;
+            aPerc = round(left * 100 / (left + right), 100);
+            bPerc = round(right * 100 / (left + right), 100);
+            gain = round(aPerc - leftActual);
         }
 
         return (
@@ -27,7 +28,6 @@ export default class DominationBar2 extends React.Component {
                     <div style={{ width: `${Math.abs(gain)}%` }} className={gain >= 0 ? 'left-progress' : 'right-progress'}></div>
                     <div style={{ width: `${gain >= 0 ? rightActual - gain : rightActual}%` }} className="right-actual-progress"></div>
                 </div>
-                {/* <div className={`progress-bar-gain ${gain < 0 ? 'negative' : gain > 0 ? 'positive' : 'neutral'}`}></div> */}
             </div>
         );
     }
