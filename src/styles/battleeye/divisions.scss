@@ -73,6 +73,7 @@ $progressHeight: 15px;
         position: relative;
         border-radius: 4px;
         overflow: hidden;
+        height: $progressHeight;
 
         &::after {
             content: "";
@@ -151,9 +152,10 @@ $progressHeight: 15px;
         width: 100%;
         text-align: center;
         line-height: 1;
+        margin-top: 2px;
 
         &.positive:after {
-            content: "►";
+            content: "➤";
             color: $green;
         }
 
@@ -163,7 +165,9 @@ $progressHeight: 15px;
         }
 
         &.negative:after {
-            content: "◄";
+            transform: rotate(-180deg);
+            display: inline-block;
+            content: "➤";
             color: $red;
         }
     }

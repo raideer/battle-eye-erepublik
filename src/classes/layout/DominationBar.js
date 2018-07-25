@@ -1,4 +1,5 @@
 import React from 'react';
+import { round, getPerc } from '../Utils';
 
 export default class DominationBar extends React.Component {
     render() {
@@ -7,8 +8,8 @@ export default class DominationBar extends React.Component {
         let aPerc = 0, bPerc = 0;
 
         if (left + right !== 0) {
-            aPerc = Math.round(left * 10000 / (left + right)) / 100;
-            bPerc = Math.round(right * 10000 / (left + right)) / 100;
+            aPerc = getPerc(left, right, 100);
+            bPerc = round(100 - aPerc, 100);
         }
 
         return (

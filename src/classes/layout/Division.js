@@ -7,13 +7,13 @@ export default class Division extends React.Component {
     render() {
         const { division, className, i } = this.props;
 
-        // let actualDomination = 0;
-        // if (window.BattleEye.nbpStats) {
-        //     actualDomination = window.BattleEye.nbpStats.division.domination[i];
-        //     if (window.SERVER_DATA.mustInvert) {
-        //         actualDomination = 100 - actualDomination;
-        //     }
-        // }
+        let actualDomination = 0;
+        if (window.BattleEye.nbpStats) {
+            actualDomination = window.BattleEye.nbpStats.division.domination[i];
+            if (window.SERVER_DATA.mustInvert) {
+                actualDomination = 100 - actualDomination;
+            }
+        }
 
         return (
             <div className={`battleeye__division ${className ? className : ''}`}>
@@ -41,10 +41,12 @@ export default class Division extends React.Component {
                         />
                     </div>
                     <div className="column is-three-fifths division__domination">
-                        <DominationBar
+                        <DominationBarNew
                             left={division.left.damage}
                             right={division.right.damage}
-                            // leftActual={actualDomination}
+                            leftActual={actualDomination}
+                            dpsLeft={division.left.dps}
+                            dpsRight={division.right.dps}
                             name="Damage" />
                         <DominationBar
                             left={division.left.dps}

@@ -17,6 +17,7 @@ export default class BattleEye {
 
         this.second = 0;
         this.lastNbp = 999;
+        this.nbpStats = null;
         this.contributors = {};
         this.knownErrors = [];
         this.apiURL = 'https://battleeye.raideer.xyz';

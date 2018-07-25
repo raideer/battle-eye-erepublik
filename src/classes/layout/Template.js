@@ -56,8 +56,9 @@ export default class Template extends React.Component {
     }
 
     renderLoader() {
+        const zoneFinished = window.BattleEye.nbpStats ? window.BattleEye.nbpStats.zone_finished : false;
         return (
-            <div id="battleeye-loading" className="level-item">
+            <div id="battleeye-loading" style={zoneFinished ? { display: 'none' } : {}} className="level-item">
                 Loading stats
                 <div className="spinner">
                     <div className="rect1"></div>
