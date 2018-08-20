@@ -18,11 +18,12 @@ export default class DominationBarNew extends React.Component {
         }
 
         const dps = getPerc(dpsLeft, dpsRight);
+        const difference = Math.abs(left - right);
 
         return (
             <div className="battleeye__domination-bar">
                 <span className="progress-name">{ name }</span>
-                <span className="progress-difference">Difference: {Math.abs(left - right).toLocaleString()}</span>
+                <span className="progress-difference">Difference: {difference.toLocaleString()} <span style={{ display: 'inline-block', width: '10px' }}></span></span>
                 <div className="progress-bar">
                     <div className="progress-center"></div>
                     <div className="progress-leftvalue">{aPerc}</div>
