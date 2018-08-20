@@ -2,6 +2,7 @@ import React from 'react';
 import Table from './charts/Table';
 import TabButton from './TabButton';
 import Pie from './charts/Pie';
+import Bar from './charts/Bar';
 import Radar from './charts/Radar';
 import { intToRGB, hashCode, currentRound } from '../Utils';
 
@@ -104,6 +105,15 @@ export default class ExportTab extends React.Component {
                     <img style={{ borderRadius: '5px' }} src={googleImg()}/>
                 </div>
             );
+        case 'bar': {
+            return (
+                <Bar
+                    labels={chartLabels}
+                    data={chartData}
+                    colors={chartColors}
+                />
+            );
+        }
         default:
             return (
                 <Table side={side} countries={countries} />
@@ -199,6 +209,7 @@ export default class ExportTab extends React.Component {
             ['table', 'Table'],
             ['pie', 'Pie chart'],
             ['radar', 'Radar chart'],
+            ['bar', 'Bar chart'],
             ['google', 'Google charts image'],
             ['export', 'Export data']
         ];
