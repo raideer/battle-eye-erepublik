@@ -11,7 +11,7 @@ const erepublik = window.erepublik;
 
 export default class BattleEye {
     constructor() {
-        this.version = '2.0.6';
+        this.version = '2.0.7';
         this.connected = true;
         this.loading = true;
 
