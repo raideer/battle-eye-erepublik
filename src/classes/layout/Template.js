@@ -102,7 +102,7 @@ export default class Template extends React.Component {
                                 </span>
                             </div>
                         </div>
-                        <div className="level-item buttons">
+                        <div className="level-item buttons has-addons">
                             <TabButton
                                 name='divisions'
                                 activeTab={this.state.activeTab}
