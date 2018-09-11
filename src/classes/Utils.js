@@ -120,3 +120,14 @@ export function intToRGB(i) {
 
     return '00000'.substring(0, 6 - c.length) + c;
 }
+
+export function arrayRemoveElement(array, element) {
+    const copy = array.slice();
+    const index = copy.indexOf(element);
+
+    if (index > -1) {
+        copy.splice(index, 1);
+    }
+
+    return copy;
+}
