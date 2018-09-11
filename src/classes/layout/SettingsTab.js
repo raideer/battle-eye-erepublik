@@ -61,9 +61,15 @@ export default class SettingsTab extends React.Component {
                         handleClick={this.handleClick.bind(this)}
                     />
                     <Setting
-                        title="Highlight your division"
+                        title="Highlight my division"
                         name="highlightDiv"
                         value={BattleEyeStorage.get('highlightDiv')}
+                        handleClick={this.handleClick.bind(this)}
+                    />
+                    <Setting
+                        title="Show my division on top"
+                        name="topDiv"
+                        value={BattleEyeStorage.get('topDiv')}
                         handleClick={this.handleClick.bind(this)}
                     />
                 </div>

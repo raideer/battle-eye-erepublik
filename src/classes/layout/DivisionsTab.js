@@ -1,5 +1,5 @@
 import React from 'react';
-import { divisions, divName, prettifyCountryName, division } from '../Utils';
+import { divisions, divName, prettifyCountryName, division, arrayRemoveElement } from '../Utils';
 import Division from './Division';
 import Flag from './Flag';
 
@@ -7,13 +7,21 @@ const divIds = {};
 
 export default class DivisionsTab extends React.Component {
     render() {
+        let divs;
+
+        if (BattleEyeStorage.get('topDiv')) {
+            divs = [division, ...arrayRemoveElement(divisions, division)];
+        } else {
+            divs = divisions;
+        }
+
         return (
             <div className="battleeye__divisions">
                 <div className="battleeye__versus">
                     <div className="versus__left">{prettifyCountryName(BattleEye.teamAName)} <Flag country={BattleEye.teamAName} /></div>
                     <div className="versus__right"><Flag country={BattleEye.teamBName} /> {prettifyCountryName(BattleEye.teamBName)}</div>
                 </div>
-                { divisions.filter(div => {
+                { divs.filter(div => {
                     if (div !== 11) {
                         return BattleEyeStorage.get(`showDiv${div}`);
                     }

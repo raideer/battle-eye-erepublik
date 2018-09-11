@@ -21,7 +21,8 @@ function defineDefaultSettings() {
         ['enableLogging', false],
         ['enableBenchmarking', false],
         ['showBattleProgressbar', true],
-        ['showTransitionAnimations', true]
+        ['showTransitionAnimations', true],
+        ['topDiv', true]
     ];
 
     define(settings);
