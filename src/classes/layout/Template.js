@@ -132,7 +132,7 @@ export default class Template extends React.Component {
                                 activeTab={this.state.activeTab}
                                 inactiveClass="is-outlined"
                                 click={this.setTab.bind(this, 'firstKills')}>
-                                First kills <b style={{ margin: '0 4px' }}>BETA</b>
+                                First kills {window.BattleEye.fktVersion ? <i style={{ fontSize: '10px', marginLeft: '4px' }}>v{window.BattleEye.fktVersion}</i> : ''}
                             </TabButton>
                         </div>
                     </div>

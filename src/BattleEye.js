@@ -12,6 +12,7 @@ const erepublik = window.erepublik;
 export default class BattleEye {
     constructor() {
         this.version = '2.0.7';
+        this.fktVersion = null;
         this.connected = true;
         this.loading = true;
 
@@ -128,6 +129,7 @@ export default class BattleEye {
         try {
             data = await $.getJSON('https://cdn.raideer.xyz/data.json');
             this.contributors = data.contributors;
+            this.fktVersion = data.fktVersion;
 
             this.displayContributors();
 
