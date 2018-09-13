@@ -2,7 +2,21 @@ import React from 'react';
 import Setting from './Setting';
 
 export default class SettingsTab extends React.Component {
+    constructor() {
+        super();
+        this.state = {};
+        this.interval = null;
+    }
+
+    componentDidMount() {
+        this.setState(window.BattleEyeStorage.items);
+    }
+
     handleClick(setting, value) {
+        this.setState({
+            [setting]: value
+        });
+
         BattleEyeStorage.set(setting, value);
 
         if (setting == 'moveToTop' || setting == 'layoutUpdateRate') {
@@ -18,58 +32,82 @@ export default class SettingsTab extends React.Component {
                     <Setting
                         title="Show BattleEye above battlefield"
                         name="moveToTop"
-                        value={BattleEyeStorage.get('moveToTop')}
+                        value={this.state.moveToTop}
                         handleClick={this.handleClick.bind(this)}
                     />
                     <Setting
                         title="Show mini monitor on the battlefield"
                         name="showMiniMonitor"
-                        value={BattleEyeStorage.get('showMiniMonitor')}
+                        value={this.state.showMiniMonitor}
                         handleClick={this.handleClick.bind(this)}
                     />
                     <Setting
                         title="Show battle update progress bar"
                         name="showBattleProgressbar"
-                        value={BattleEyeStorage.get('showBattleProgressbar')}
+                        value={this.state.showBattleProgressbar}
                         handleClick={this.handleClick.bind(this)}
                     />
+                    <Setting
+                        title="Make BattleEye fixed height"
+                        name="fixedHeight"
+                        value={this.state.fixedHeight}
+                        handleClick={this.handleClick.bind(this)}
+                    />
+                    {
+                        this.state.fixedHeight ? <Setting
+                            title="Height of the BattleEye window"
+                            input={e => {
+                                const height = parseInt(e.target.value) || 0;
+                                this.setState({
+                                    battleeyeHeight: height
+                                });
+                                clearInterval(this.interval);
+                                this.interval = setTimeout(() => {
+                                    BattleEyeStorage.set('battleeyeHeight', height);
+                                }, 1000);
+                            }}
+                            inputType="px"
+                            value={this.state.battleeyeHeight}
+                            handleClick={this.handleClick.bind(this)}
+                        /> : null
+                    }
                 </div>
                 <div className="column">
                     <div className="section-title">Divisions tab</div>
                     <Setting
                         title="Show DIV 1"
                         name="showDiv1"
-                        value={BattleEyeStorage.get('showDiv1')}
+                        value={this.state.showDiv1}
                         handleClick={this.handleClick.bind(this)}
                     />
                     <Setting
                         title="Show DIV2"
                         name="showDiv2"
-                        value={BattleEyeStorage.get('showDiv2')}
+                        value={this.state.showDiv2}
                         handleClick={this.handleClick.bind(this)}
                     />
                     <Setting
                         title="Show DIV3"
                         name="showDiv3"
-                        value={BattleEyeStorage.get('showDiv3')}
+                        value={this.state.showDiv3}
                         handleClick={this.handleClick.bind(this)}
                     />
                     <Setting
                         title="Show DIV4"
                         name="showDiv4"
-                        value={BattleEyeStorage.get('showDiv4')}
+                        value={this.state.showDiv4}
                         handleClick={this.handleClick.bind(this)}
                     />
                     <Setting
                         title="Highlight my division"
                         name="highlightDiv"
-                        value={BattleEyeStorage.get('highlightDiv')}
+                        value={this.state.highlightDiv}
                         handleClick={this.handleClick.bind(this)}
                     />
                     <Setting
                         title="Show my division on top"
                         name="topDiv"
-                        value={BattleEyeStorage.get('topDiv')}
+                        value={this.state.topDiv}
                         handleClick={this.handleClick.bind(this)}
                     />
                 </div>
@@ -83,13 +121,13 @@ export default class SettingsTab extends React.Component {
                             [2, 'every 2s'],
                             [4, 'every 4s']
                         ]}
-                        value={BattleEyeStorage.get('layoutUpdateRate')}
+                        value={this.state.layoutUpdateRate}
                         handleClick={this.handleClick.bind(this)}
                     />
                     <Setting
                         title="Smooth transitions"
                         name="showTransitionAnimations"
-                        value={BattleEyeStorage.get('showTransitionAnimations')}
+                        value={this.state.showTransitionAnimations}
                         handleClick={this.handleClick.bind(this)}
                     />
                 </div>
