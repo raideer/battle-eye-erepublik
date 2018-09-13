@@ -68,6 +68,7 @@ export default class Storage {
     loadDefaults() {
         for (const i in this.defaults) {
             this.set(i, this.defaults[i].value);
+            this.items[i] = this.defaults[i].value;
         }
     }
 
