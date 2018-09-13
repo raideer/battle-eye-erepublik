@@ -2,13 +2,25 @@ import React from 'react';
 
 export default class Setting extends React.Component {
     render() {
-        const { title, name, value, handleClick, options } = this.props;
+        const { title, name, value, handleClick, options, input, inputType } = this.props;
+
+        if (input) {
+            return (
+                <div className="setting">
+                    <span className="buttons has-addons">
+                        <span className="button is-static setting-name is-small">{ title }</span>
+                        <input onChange={input} value={value} className="setting-input" type="text"/>
+                        { inputType ? <span className="button is-static setting-name is-small">{inputType}</span> : null}
+                    </span>
+                </div>
+            );
+        }
 
         if (options) {
             return (
                 <div className="setting">
                     <span className="buttons has-addons">
-                        <span className="button setting-name is-small">{ title }</span>
+                        <span className="button is-static setting-name is-small">{ title }</span>
                         { options.map(option => {
                             return (
                                 <span
@@ -25,7 +37,7 @@ export default class Setting extends React.Component {
         return (
             <div className="setting">
                 <span className="buttons has-addons">
-                    <span className="button setting-name is-small">{ title }</span>
+                    <span className="button is-static setting-name is-small">{ title }</span>
                     <span onClick={handleClick.bind(null, name, true)} className={`button is-small ${value === true ? 'is-success' : 'is-light'}`}>On</span>
                     <span onClick={handleClick.bind(null, name, false)} className={`button is-small ${value === false ? 'is-danger' : 'is-light'}`}>Off</span>
                 </span>
