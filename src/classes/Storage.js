@@ -6,13 +6,19 @@ export default class Storage {
 
         this.prepend = 'battle_eye2_';
         this.defaults = {};
+        this.items = {};
     }
 
     set(id, value) {
         localStorage.setItem(`${this.prepend}${id}`, value);
+        this.items[id] = value;
     }
 
-    get(id) {
+    get(id, force = false) {
+        if (this.items[id] && !force) {
+            return this.items[id];
+        }
+
         let val = localStorage.getItem(`${this.prepend}${id}`);
 
         switch (val) {
@@ -27,8 +33,12 @@ export default class Storage {
         return val;
     }
 
-    has(field) {
-        if (localStorage.getItem(`${this.prepend}${field}`)) {
+    has(id) {
+        if (this.items[id]) {
+            return true;
+        }
+
+        if (localStorage.getItem(`${this.prepend}${id}`)) {
             return true;
         }
 
@@ -43,10 +53,14 @@ export default class Storage {
 
     loadSettings() {
         for (const i in this.defaults) {
-            const field = this.defaults[i];
+            const def = this.defaults[i];
+            const field = this.get(i);
 
-            if (!this.has(i)) {
-                this.set(i, field.value);
+            if (field !== null && field !== undefined) {
+                this.items[i] = field;
+            } else {
+                this.items[i] = def.value;
+                this.set(i, def.value);
             }
         }
     }
