@@ -53,7 +53,7 @@
 
     "accessor-pairs": "warn",
     "array-callback-return": "error",
-    "complexity": ["warn", 25],
+    "complexity": ["warn", 35],
     "curly": ["error", "multi-line", "consistent"],
     "dot-location": ["error", "property"],
     "dot-notation": "error",
