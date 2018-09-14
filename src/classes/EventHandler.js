@@ -16,6 +16,12 @@ export default class EventHandler {
         this.events[eventName].push(closure);
     }
 
+    remove(eventName) {
+        if (this.events[eventName]) {
+            delete this.events[eventName];
+        }
+    }
+
     off(eventName, closure) {
         if (this.events[eventName]) {
             for (const i in this.events[eventName]) {
