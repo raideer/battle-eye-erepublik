@@ -1,3 +1,5 @@
+import $ from 'jQuery';
+
 export function uid() {
     return `0000${(Math.random() * Math.pow(36, 4) << 0).toString(36)}`.slice(-4);
 }
@@ -16,6 +18,7 @@ export function prettifyCountryName(country) {
 export const divisions = window.SERVER_DATA.division == 11 ? [11] : [1, 2, 3, 4];
 export const division = window.SERVER_DATA.division;
 export const currentRound = window.SERVER_DATA.zoneId;
+export const isAir = currentRound % 4 === 0;
 
 export function divName(div) {
     if (div == 11) {
@@ -130,4 +133,42 @@ export function arrayRemoveElement(array, element) {
     }
 
     return copy;
+}
+
+export function arrayReverse(array) {
+    const copy = array.slice();
+    copy.reverse();
+    return copy;
+}
+
+export function currentDamage() {
+    return window.erepublik.functions.stripNumber($('#total_damage strong').html());
+}
+
+export function currentDomination(useBattleEye = false) {
+    if (useBattleEye) {
+        const aDamage = window.BattleEye.teamA.divisions.get(division).damage;
+        const bDamage = window.BattleEye.teamB.divisions.get(division).damage;
+        return round(aDamage * 100 / (aDamage + bDamage), 100);
+    }
+
+    let d = window.BattleEye.nbpStats.division.domination[division];
+    if (SERVER_DATA.mustInvert) {
+        d = 100 - d;
+    }
+
+    return d;
+}
+
+export function currentStats(side) {
+    return window.BattleEye.nbpStats.stats.current[currentRound][division][side].top_damage;
+}
+
+export function currentBH(side) {
+    const stats = currentStats(side);
+    if (stats.length > 0) {
+        return stats[0];
+    }
+
+    return null;
 }
