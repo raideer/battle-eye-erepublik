@@ -1,5 +1,6 @@
 import React from 'react';
 import Setting from './Setting';
+import BulmaButton from './BulmaButton';
 
 export default class SettingsTab extends React.Component {
     constructor() {
@@ -71,6 +72,15 @@ export default class SettingsTab extends React.Component {
                             handleClick={this.handleClick.bind(this)}
                         /> : null
                     }
+                    <BulmaButton
+                        onClick={() => {
+                            window.BattleEye.resetSettings();
+                            this.setState(window.BattleEyeStorage.items);
+                        }}
+                        buttonStyle={{ margin: '5px 0' }}
+                        text="Reset settings to defaults"
+                        buttonClass="is-small is-warning"
+                    />
                 </div>
                 <div className="column">
                     <div className="section-title">Divisions tab</div>
