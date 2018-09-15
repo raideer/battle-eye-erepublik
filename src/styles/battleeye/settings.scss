@@ -21,14 +21,20 @@
         }
     }
 
+    .setting-input {
+        display: inline-flex;
+        height: 26px;
+        width: 70px;
+        margin-bottom: 8px;
+        padding: 3px;
+        text-align: center;
+    }
+
     .setting {
         display: flex;
         justify-content: center;
         width: 100%;
         padding: 5px;
         border-bottom: 1px solid darken($colorMainbg, 10%);
-        input {
-            margin-right: 5px;
-        }
     }
 }

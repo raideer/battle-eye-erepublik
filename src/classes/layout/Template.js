@@ -1,4 +1,5 @@
 import React from 'react';
+import $ from 'jQuery';
 
 import DivisionsTab from './DivisionsTab';
 import ChartsTab from './ChartsTab';
@@ -7,6 +8,7 @@ import ExportTab from './ExportTab';
 import SettingsTab from './SettingsTab';
 import AboutTab from './AboutTab';
 import FirstKillsTab from './FirstKillsTab';
+import AutoAttackerTab from './AutoAttackerTab';
 
 export default class Template extends React.Component {
     constructor() {
@@ -50,6 +52,13 @@ export default class Template extends React.Component {
             return (
                 <FirstKillsTab firstKills={this.props.feedData.firstKills} />
             );
+        case 'autoattacker':
+            return (
+                <div>
+                    <div>This feature is still being tested. Use with caution</div>
+                    <AutoAttackerTab />
+                </div>
+            );
         default:
             return null;
         }
@@ -59,8 +68,7 @@ export default class Template extends React.Component {
         const zoneFinished = window.BattleEye.nbpStats ? window.BattleEye.nbpStats.zone_finished : false;
         return (
             <div id="battleeye-loading" style={zoneFinished ? { display: 'none' } : {}} className="level-item">
-                Loading stats
-                <div className="spinner">
+                <div className="spinner" original-title="Loading stats">
                     <div className="rect1"></div>
                     <div className="rect2"></div>
                     <div className="rect3"></div>
@@ -69,6 +77,10 @@ export default class Template extends React.Component {
                 </div>
             </div>
         );
+    }
+
+    componentDidMount() {
+        $('.spinner').tipsy();
     }
 
     reload() {
@@ -88,9 +100,27 @@ export default class Template extends React.Component {
         return null;
     }
 
+    getContainerStyle() {
+        if (BattleEyeStorage.get('fixedHeight')) {
+            let height = parseInt(BattleEyeStorage.get('battleeyeHeight'));
+            if (height < 200) {
+                height = 200;
+            } else if (height > 1000) {
+                height = 1000;
+            }
+
+            return {
+                height: `${height}px`,
+                overflowY: 'scroll'
+            };
+        }
+
+        return {};
+    }
+
     render() {
         return (
-            <div className={BattleEyeStorage.get('showTransitionAnimations') ? '' : 'no-transitions'}>
+            <div style={this.getContainerStyle()} className={BattleEyeStorage.get('showTransitionAnimations') ? '' : 'no-transitions'}>
                 <div className="level battleeye__menu">
                     <div className="level-left">
                         <div className="level-item">
@@ -98,7 +128,8 @@ export default class Template extends React.Component {
                                 <a target="_blank" href="https://battleeye.raideer.xyz/" className="tag">BATTLE EYE</a>
                                 <span id="battleeye-version" className="tag is-main">v{ BattleEye.version }</span>
                                 <span className="tag">
-                                    <span id="be_connected"></span>
+                                    <span id="be_connected" style={{ display: 'none' }}></span>
+                                    { this.renderLoader() }
                                 </span>
                             </div>
                         </div>
@@ -109,7 +140,7 @@ export default class Template extends React.Component {
                                 inactiveClass="is-outlined"
                                 className="is-info"
                                 click={this.setTab.bind(this, 'divisions')}>
-                                Divisions
+                                <i className="fas fa-list be-menu-icon"></i> Divisions
                             </TabButton>
                             <TabButton
                                 name='charts'
@@ -117,7 +148,7 @@ export default class Template extends React.Component {
                                 inactiveClass="is-outlined"
                                 className="is-info"
                                 click={this.setTab.bind(this, 'charts')}>
-                                Charts
+                                <i className="fas fa-chart-line be-menu-icon"></i> Charts
                             </TabButton>
                             <TabButton
                                 name='export'
@@ -125,7 +156,15 @@ export default class Template extends React.Component {
                                 inactiveClass="is-outlined"
                                 className="is-info"
                                 click={this.setTab.bind(this, 'export')}>
-                                Export
+                                <i className="fas fa-file-export be-menu-icon"></i> Export
+                            </TabButton>
+                            <TabButton
+                                name='autoattacker'
+                                activeTab={this.state.activeTab}
+                                inactiveClass="is-outlined"
+                                className="is-info"
+                                click={this.setTab.bind(this, 'autoattacker')}>
+                                Auto attacker <span style={{ marginLeft: '4px' }}>{window.BattleEye.autoattacker.enabled ? <i className="fas fa-toggle-on has-text-success"></i> : <i className="fas fa-toggle-off"></i>}</span>
                             </TabButton>
                             <TabButton
                                 name='firstKills'
@@ -136,7 +175,6 @@ export default class Template extends React.Component {
                             </TabButton>
                         </div>
                     </div>
-                    { this.renderLoader() }
                     <div className="level-right">
                         <div className="level-item buttons">
                             <TabButton
@@ -144,19 +182,19 @@ export default class Template extends React.Component {
                                 activeTab={this.state.activeTab}
                                 click={this.setTab.bind(this, 'about')}
                                 className='is-dark is-outlined'>
-                                Info
+                                <i className="fas fa-info-circle be-menu-icon"></i> Info
                             </TabButton>
                             <TabButton
                                 click={this.reload.bind(this)}
                                 className='is-dark is-outlined'>
-                                Reload
+                                <i className="fas fa-sync-alt be-menu-icon"></i> Reload
                             </TabButton>
                             <TabButton
                                 name='settings'
                                 activeTab={this.state.activeTab}
                                 click={this.setTab.bind(this, 'settings')}
                                 className='is-primary'>
-                                Settings
+                                <i className="fas fa-cog be-menu-icon"></i> Settings
                             </TabButton>
                         </div>
                     </div>

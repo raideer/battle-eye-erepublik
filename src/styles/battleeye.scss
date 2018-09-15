@@ -54,8 +54,8 @@ $tabColor: $colorWhite;
     }
 
     .spinner {
-        width: 50px;
-        height: 27px;
+        width: 10px;
+        height: 20px;
         text-align: center;
         font-size: 10px;
       }
@@ -63,7 +63,7 @@ $tabColor: $colorWhite;
       .spinner > div {
         background-color: $colorMainbg;
         height: 100%;
-        width: 6px;
+        width: 2px;
         display: inline-block;
         
         -webkit-animation: sk-stretchdelay 1.2s infinite ease-in-out;
@@ -119,6 +119,8 @@ $tabColor: $colorWhite;
             background-color: $colorMainbg;
             border-top: 4px solid #d4d4d4;
             padding: 4px 0;
+            border-radius: 4px;
+            padding-bottom: 5px;
         }
 
         &__nbp-progress {
@@ -167,12 +169,25 @@ $tabColor: $colorWhite;
         padding: 5px 1em;
     }
 
+    .col-half {
+        width: 50%;
+    }
+
+    .button {
+        font-size: 0.9em;
+    }
+    
+    .be-menu-icon {
+        margin: 0 4px 0 0;
+    }
+
     @import "./battleeye/panel.scss";
     @import "./battleeye/divisions.scss";
     @import "./battleeye/countries.scss";
     @import "./battleeye/settings.scss";
     @import "./battleeye/about.scss";
     @import "./battleeye/firstkills.scss";
+    @import "./battleeye/autoattacker.scss";
 }
 
 @import "./battleeye/monitor.scss";

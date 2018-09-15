@@ -1,6 +1,8 @@
 import Stats from './classes/Stats';
 import Layout from './classes/Layout';
 import EventHandler from './classes/EventHandler';
+import AutoAttacker from './classes/AutoAttacker';
+import { currentDamage } from './classes/Utils';
 
 import BattleStatsLoader from './BattleStatsLoader';
 import ExcelGenerator from './ExcelGenerator';
@@ -11,16 +13,18 @@ const erepublik = window.erepublik;
 
 export default class BattleEye {
     constructor() {
-        this.version = '2.0.7';
-        this.fktVersion = null;
-        this.connected = true;
-        this.loading = true;
+        this.version = '2.1.0';
+        this.fktVersion = null; // Current First Kill Tracker version
+        this.connected = true; // Has BE connected to the socket
+        this.loading = true; // Is BattleEye still loading
+        this.autoattacker = new AutoAttacker;
 
-        this.second = 0;
-        this.lastNbp = 999;
-        this.nbpStats = null;
-        this.contributors = {};
-        this.knownErrors = [];
+        this.interval = null; // Holds the main clock
+        this.second = 0; // Current second
+        this.lastNbp = 999; // Time when last nbp was fetched
+        this.nbpStats = null; // Last fetched nbp data
+        this.contributors = {}; // List of contributors
+        this.knownErrors = []; // List of known errors fetched from data.json
         this.apiURL = 'https://battleeye.raideer.xyz';
 
         this.events = new EventHandler();
@@ -34,6 +38,7 @@ export default class BattleEye {
         this.teamA.defender = SERVER_DATA.defenderId == SERVER_DATA.leftBattleId;
         this.teamB.defender = SERVER_DATA.defenderId != SERVER_DATA.leftBattleId;
 
+        this.personalDamage = currentDamage();
         this.firstKills = null;
 
         this.revolutionCountry = null;
@@ -67,14 +72,14 @@ export default class BattleEye {
         BattleStatsLoader.getNbpStats(SERVER_DATA.battleId)
         .then(data => {
             if (data.zone_finished) {
-                $('#battleeye-loading').hide();
+                this.hideLoader();
                 return Promise.resolve();
             }
 
             BattleStatsLoader.loadStats().then(stats => {
                 BattleStatsLoader.processStats(stats, this.teamA, this.teamB);
                 this.events.emit('log', 'Battle stats loaded.');
-                $('#battleeye-loading').hide();
+                this.hideLoader();
 
                 BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
             });
@@ -92,6 +97,8 @@ export default class BattleEye {
                     this.nbpStats = data;
                     this.lastNbp = this.second;
                     BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
+                } else if (url.match(/fight-shooot|fight-shoooot|deploy-bomb/) && !data.error && data.message == 'ENEMY_KILLED') {
+                    this.personalDamage += data.user.givenDamage;
                 }
             });
 
@@ -105,6 +112,13 @@ export default class BattleEye {
         this.runTicker();
 
         this.handleEvents();
+    }
+
+    hideLoader() {
+        $('#battleeye-loading').hide();
+        $('#be_connected').css({
+            display: 'block'
+        });
     }
 
     reload() {
