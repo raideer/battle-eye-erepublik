@@ -1,4 +1,6 @@
 .battleeye__settings {
+    flex-wrap: wrap;
+
     .section-title {
         font-weight: bold;
         width: 100%;
@@ -8,6 +10,8 @@
 
     .column {
         padding: 0;
+        margin-bottom: 10px;
+        border-left: 2px solid darken($colorMainbg, 10%);
     }
 
     .setting-name {
@@ -35,6 +39,9 @@
         justify-content: center;
         width: 100%;
         padding: 5px;
-        border-bottom: 1px solid darken($colorMainbg, 10%);
+
+        &:not(:last-child) {
+            border-bottom: 1px solid darken($colorMainbg, 10%);
+        }
     }
 }

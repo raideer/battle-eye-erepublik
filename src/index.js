@@ -28,7 +28,8 @@ window.BattleEyeStorage = new SettingsStorage();
     ['showAutoattackerKills', true],
     ['fixedHeight', false],
     ['battleeyeHeight', 400],
-    ['autoattackerBEDomination', true]
+    ['autoattackerBEDomination', true],
+    ['showAutoattacker', false]
 ].forEach(setting => {
     window.BattleEyeStorage.define(setting[0], setting[1]);
 });

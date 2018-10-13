@@ -79,7 +79,7 @@ export default class SettingsTab extends React.Component {
                         }}
                         buttonStyle={{ margin: '5px 0' }}
                         text="Reset settings to defaults"
-                        buttonClass="is-small is-warning"
+                        buttonClass="is-small is-warning~"
                     />
                 </div>
                 <div className="column">
@@ -138,6 +138,15 @@ export default class SettingsTab extends React.Component {
                         title="Smooth transitions"
                         name="showTransitionAnimations"
                         value={this.state.showTransitionAnimations}
+                        handleClick={this.handleClick.bind(this)}
+                    />
+                </div>
+                <div className="column is-one-third">
+                    <div className="section-title">Experimental features</div>
+                    <Setting
+                        title="Autoattacker"
+                        name="showAutoattacker"
+                        value={this.state.showAutoattacker}
                         handleClick={this.handleClick.bind(this)}
                     />
                 </div>

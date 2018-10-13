@@ -158,14 +158,14 @@ export default class Template extends React.Component {
                                 click={this.setTab.bind(this, 'export')}>
                                 <i className="fas fa-file-export be-menu-icon"></i> Export
                             </TabButton>
-                            <TabButton
+                            { BattleEyeStorage.get('showAutoattacker') ? <TabButton
                                 name='autoattacker'
                                 activeTab={this.state.activeTab}
                                 inactiveClass="is-outlined"
                                 className="is-info"
                                 click={this.setTab.bind(this, 'autoattacker')}>
                                 Auto attacker <span style={{ marginLeft: '4px' }}>{window.BattleEye.autoattacker.enabled ? <i className="fas fa-toggle-on has-text-success"></i> : <i className="fas fa-toggle-off"></i>}</span>
-                            </TabButton>
+                            </TabButton> : null}
                             <TabButton
                                 name='firstKills'
                                 activeTab={this.state.activeTab}

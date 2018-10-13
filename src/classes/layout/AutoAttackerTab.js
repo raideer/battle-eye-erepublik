@@ -213,7 +213,7 @@ export default class AutoAttackerTab extends React.Component {
                             </p>)
                         }
                     </div>
-                    <div className="aa-tooltip" original-title="Set the damage difference you want to keep from the second place. This helps prevent BH steals">
+                    {/* <div className="aa-tooltip" original-title="Set the damage difference you want to keep from the second place. This helps prevent BH steals">
                         {
                             this.renderInput('damagePadding', <span>Damage <b>padding</b></span>, '', this.state.allIn, <p className="control">
                                 <a className="button is-static is-small aa-fixed-height">
@@ -221,7 +221,7 @@ export default class AutoAttackerTab extends React.Component {
                                 </a>
                             </p>)
                         }
-                    </div>
+                    </div> */}
                     <label className="aa-checkbox aa-tooltip" original-title="Max Domination setting will use realtime data from BattleEye instead of waiting for battle to update">
                         <input onChange={this.handleCheckbox.bind(this, 'beDomination', 'autoattackerBEDomination')} checked={this.state.beDomination} type="checkbox" />
                         Use realtime domination
