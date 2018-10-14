@@ -142,7 +142,7 @@ export function arrayReverse(array) {
 }
 
 export function currentDamage() {
-    return window.erepublik.functions.stripNumber($('#total_damage strong').html());
+    return window.erepublik.functions.stripNumber($('#total_damage strong').html() || 0);
 }
 
 export function currentDomination(useBattleEye = false) {
