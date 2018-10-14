@@ -79,7 +79,7 @@ export default class SettingsTab extends React.Component {
                         }}
                         buttonStyle={{ margin: '5px 0' }}
                         text="Reset settings to defaults"
-                        buttonClass="is-small is-warning~"
+                        buttonClass="is-small is-warning"
                     />
                 </div>
                 <div className="column">
