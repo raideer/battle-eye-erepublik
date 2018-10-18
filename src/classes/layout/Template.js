@@ -137,39 +137,40 @@ export default class Template extends React.Component {
                             <TabButton
                                 name='divisions'
                                 activeTab={this.state.activeTab}
-                                inactiveClass="is-outlined"
-                                className="is-info"
+                                inactiveClass="is-lighter"
+                                className="is-be-main"
                                 click={this.setTab.bind(this, 'divisions')}>
                                 <i className="fas fa-list be-menu-icon"></i> Divisions
                             </TabButton>
                             <TabButton
                                 name='charts'
                                 activeTab={this.state.activeTab}
-                                inactiveClass="is-outlined"
-                                className="is-info"
+                                inactiveClass="is-lighter"
+                                className="is-be-main"
                                 click={this.setTab.bind(this, 'charts')}>
                                 <i className="fas fa-chart-line be-menu-icon"></i> Charts
                             </TabButton>
                             <TabButton
                                 name='export'
                                 activeTab={this.state.activeTab}
-                                inactiveClass="is-outlined"
-                                className="is-info"
+                                inactiveClass="is-lighter"
+                                className="is-be-main"
                                 click={this.setTab.bind(this, 'export')}>
                                 <i className="fas fa-file-export be-menu-icon"></i> Export
                             </TabButton>
                             { BattleEyeStorage.get('showAutoattacker') ? <TabButton
                                 name='autoattacker'
                                 activeTab={this.state.activeTab}
-                                inactiveClass="is-outlined"
-                                className="is-info"
+                                inactiveClass="is-lighter"
+                                className="is-be-main"
                                 click={this.setTab.bind(this, 'autoattacker')}>
                                 Auto attacker <span style={{ marginLeft: '4px' }}>{window.BattleEye.autoattacker.enabled ? <i className="fas fa-toggle-on has-text-success"></i> : <i className="fas fa-toggle-off"></i>}</span>
                             </TabButton> : null}
                             <TabButton
                                 name='firstKills'
                                 activeTab={this.state.activeTab}
-                                inactiveClass="is-outlined"
+                                inactiveClass="is-lighter"
+                                className="is-be-main"
                                 click={this.setTab.bind(this, 'firstKills')}>
                                 First kills {window.BattleEye.fktVersion ? <i style={{ fontSize: '10px', marginLeft: '4px' }}>v{window.BattleEye.fktVersion}</i> : ''}
                             </TabButton>
@@ -181,12 +182,12 @@ export default class Template extends React.Component {
                                 name='about'
                                 activeTab={this.state.activeTab}
                                 click={this.setTab.bind(this, 'about')}
-                                className='is-dark is-outlined'>
+                                className='is-be-main is-outlined'>
                                 <i className="fas fa-info-circle be-menu-icon"></i> Info
                             </TabButton>
                             <TabButton
                                 click={this.reload.bind(this)}
-                                className='is-dark is-outlined'>
+                                className='is-be-main is-outlined'>
                                 <i className="fas fa-sync-alt be-menu-icon"></i> Reload
                             </TabButton>
                             <TabButton

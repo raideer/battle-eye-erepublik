@@ -1,0 +1,71 @@
+.field.is-be-main {
+    .input {
+        background-color: darken($colorMainbg, 10%);
+        color: white;
+        border-color: $custom_mainColor;
+        text-align: center;
+    }
+}
+
+.tag:not(body).is-info {
+    background-color: $custom_mainColor;
+}
+
+.button {
+    &.is-be-main {
+        background-color: $custom_mainColor;
+        color: white;
+        border-color: $custom_mainColor;
+
+        &.is-lighter {
+            background-color: $custom_mainDarken;
+            border-color: $custom_mainColor;
+            color: white;
+
+            &:hover {
+                background-color: $custom_mainColor;
+                color: white;
+            }
+        }
+
+        &.is-outlined {
+            background-color: transparent;
+            border-color: $custom_mainColor;
+            color: $custom_mainDarken;
+
+            &:hover {
+                color: white;
+            }
+        }
+
+        &:hover {
+            background-color: $custom_mainDarken;
+        }
+    }
+
+    &.is-dark.is-inverted {
+        background-color: $custom_mainColor;
+        color: white;
+
+        &.is-active {
+            font-weight: bold;
+        }
+
+        &.is-outlined {
+            border-color: $custom_mainColor;
+
+            &:hover, &:focus {
+                background-color: $custom_mainDarken;
+                color: white;
+            }
+        }
+
+        &:hover {
+            background-color: $custom_mainDarken;
+        }
+    }
+
+    &:focus {
+        box-shadow: none !important;
+    }
+}

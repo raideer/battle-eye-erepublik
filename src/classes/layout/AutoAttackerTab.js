@@ -91,7 +91,7 @@ export default class AutoAttackerTab extends React.Component {
     renderButton(id, text) {
         return (
             <BulmaButton
-                buttonClass={`aa-button aa-fixed-height ${this.state[id] ? 'is-success' : ''}`}
+                buttonClass={`aa-button aa-fixed-height ${this.state[id] ? 'is-success' : 'is-be-main'}`}
                 onClick={this.toggleOption.bind(this, id)}
                 text={text}
                 icon={this.state[id] ? 'fas fa-check' : 'fas fa-times'}
@@ -101,10 +101,10 @@ export default class AutoAttackerTab extends React.Component {
 
     renderInput(id, text, placeholder, disabled = false, append = null) {
         return (
-            <div className="field has-addons">
+            <div className="field is-be-main has-addons">
                 { disabled ? <div className="aa-disabled"><i className="fas fa-ban"></i><span>Inactive</span></div> : ''}
                 <p className="control" style={{ width: '60%' }}>
-                    <a className="button is-static is-small aa-fixed-height" style={{ color: '#363636', width: '100%' }}>
+                    <a className="button is-be-main is-static is-small aa-fixed-height" style={{ width: '100%' }}>
                         { text }
                     </a>
                 </p>
@@ -196,7 +196,7 @@ export default class AutoAttackerTab extends React.Component {
                     }
                     {
                         this.renderInput('damage', 'Target damage', 'Target damage (million)', this.state.allIn || this.state.damagePadding > 0, <p className="control">
-                            <a className="button is-static is-small aa-fixed-height">
+                            <a className="button is-be-main is-static is-small aa-fixed-height">
                                 {isAir ? 'k' : 'm'}
                             </a>
                         </p>)
@@ -207,7 +207,7 @@ export default class AutoAttackerTab extends React.Component {
                     <div className="aa-tooltip" original-title="Auto attacker will fight only when domination drops below this number">
                         {
                             this.renderInput('maxDomination', <span>Max <b>Domination %</b></span>, '0% - 100%', this.state.damagePadding > 0, <p className="control">
-                                <a className="button is-static is-small aa-fixed-height">
+                                <a className="button is-be-main is-static is-small aa-fixed-height">
                                     %
                                 </a>
                             </p>)

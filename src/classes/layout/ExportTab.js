@@ -297,7 +297,7 @@ export default class ExportTab extends React.Component {
     renderIndex() {
         return (
             <div>
-                <button onClick={this.generateSummary.bind(this)} className="button is-info is-inverted">Generate summary</button>
+                <button onClick={this.generateSummary.bind(this)} className="button is-be-main">Generate summary</button>
             </div>
         );
     }

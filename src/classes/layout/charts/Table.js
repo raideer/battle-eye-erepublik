@@ -36,10 +36,10 @@ export default class Table extends React.Component {
                         return (
                             <div key={i} className="columns country-row has-text-right">
                                 <div className="column tags has-addons is-two-thirds">
-                                    <span className="tag is-white">
+                                    <span className="tag is-info">
                                         {country.kills} kills
                                     </span>
-                                    <span className="tag is-white">
+                                    <span className="tag is-info">
                                         {getPerc(country.damage, totalDamage)}%
                                     </span>
                                     <span className="tag is-dark">
@@ -63,10 +63,10 @@ export default class Table extends React.Component {
                                     <span className="tag is-dark">
                                         { country.damage.toLocaleString() } dmg
                                     </span>
-                                    <span className="tag is-white">
+                                    <span className="tag is-info">
                                         {getPerc(country.damage, totalDamage)}%
                                     </span>
-                                    <span className="tag is-white">
+                                    <span className="tag is-info">
                                         {country.kills} kills
                                     </span>
                                 </div>

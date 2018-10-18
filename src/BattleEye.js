@@ -13,7 +13,7 @@ const erepublik = window.erepublik;
 
 export default class BattleEye {
     constructor() {
-        this.version = '2.1.1';
+        this.version = '2.1.2';
         this.fktVersion = null; // Current First Kill Tracker version
         this.connected = true; // Has BE connected to the socket
         this.loading = true; // Is BattleEye still loading

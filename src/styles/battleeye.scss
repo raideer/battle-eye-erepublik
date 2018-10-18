@@ -1,5 +1,7 @@
 $colorMainbg: #3a4470;
 $colorWhite: #dfdfdf;
+$custom_mainColor: #4b53f0;
+$custom_mainDarken: #5f67fd;
 $tabColor: $colorWhite;
 
 #battleeye__live {
@@ -109,6 +111,11 @@ $tabColor: $colorWhite;
         &__menu {
             .logo {
                 margin-right: 10px;
+                
+                a {
+                    font-weight: bold;
+                    color: $custom_mainColor;
+                }
             }
 
             margin-top: 5px;
@@ -139,8 +146,8 @@ $tabColor: $colorWhite;
     @import "~bulma/bulma.sass";
 
     .tag:not(body).is-main {
-        background-color: $colorMainbg;
-        color: $tabColor;
+        background-color: $custom_mainColor;
+        color: white;
     }
 
     .tag:not(body).is-small {
@@ -188,6 +195,7 @@ $tabColor: $colorWhite;
     @import "./battleeye/about.scss";
     @import "./battleeye/firstkills.scss";
     @import "./battleeye/autoattacker.scss";
+    @import "./battleeye/bulma_custom.scss";
 }
 
 @import "./battleeye/monitor.scss";
