@@ -182,7 +182,8 @@ export default class Template extends React.Component {
                                 name='about'
                                 activeTab={this.state.activeTab}
                                 click={this.setTab.bind(this, 'about')}
-                                className='is-be-main is-outlined'>
+                                inactiveClass="is-outlined"
+                                className='is-be-main'>
                                 <i className="fas fa-info-circle be-menu-icon"></i> Info
                             </TabButton>
                             <TabButton
@@ -194,7 +195,7 @@ export default class Template extends React.Component {
                                 name='settings'
                                 activeTab={this.state.activeTab}
                                 click={this.setTab.bind(this, 'settings')}
-                                className='is-primary'>
+                                className='is-be-main'>
                                 <i className="fas fa-cog be-menu-icon"></i> Settings
                             </TabButton>
                         </div>

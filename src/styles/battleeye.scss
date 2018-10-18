@@ -1,7 +1,7 @@
-$colorMainbg: #3a4470;
+$colorMainbg: #323750;
 $colorWhite: #dfdfdf;
-$custom_mainColor: #4b53f0;
-$custom_mainDarken: #5f67fd;
+$custom_mainColor: #0c2569;
+$custom_mainDarken: #0648c8;
 $tabColor: $colorWhite;
 
 #battleeye__live {
@@ -18,9 +18,8 @@ $tabColor: $colorWhite;
     position: relative;
     float: left;
     border-radius: 0px 0px 20px 20px;
-    background-color: #ffffff;
+    background-color: #171b2c;
     font-size: 14px;
-    // font-family: "Lato",Helvetica,Arial,sans-serif;
     text-align: center;
     line-height: 1.7;
 
@@ -109,12 +108,18 @@ $tabColor: $colorWhite;
 
     .battleeye {
         &__menu {
+            padding: 0 5px;
+
             .logo {
                 margin-right: 10px;
                 
                 a {
                     font-weight: bold;
-                    color: $custom_mainColor;
+                    color: rgb(212, 216, 240);
+                }
+
+                .tag:not(.is-main) {
+                    background-color: #212538;
                 }
             }
 
@@ -124,7 +129,7 @@ $tabColor: $colorWhite;
         &__tab-content {
             color: $tabColor;
             background-color: $colorMainbg;
-            border-top: 4px solid #d4d4d4;
+            border-top: 4px solid #212538;
             padding: 4px 0;
             border-radius: 4px;
             padding-bottom: 5px;
