@@ -155,20 +155,15 @@ $progressHeight: 15px;
         margin-top: 2px;
         margin-bottom: -10px;
 
-        &.positive:after {
-            content: "➤";
+        .positive {
             color: $green;
         }
 
-        &.neutral:after {
-            content: "△";
+        .neutral {
             color: darken($colorMainbg, 10%);
         }
 
-        &.negative:after {
-            transform: rotate(-180deg);
-            display: inline-block;
-            content: "➤";
+        .negative {
             color: $red;
         }
     }
