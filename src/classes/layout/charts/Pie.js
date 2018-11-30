@@ -6,7 +6,7 @@ export default class PieComponent extends React.Component {
         const { labels, data, colors } = this.props;
         return (
             <Pie
-                height={350}
+                height={500}
                 data={{
                     labels: labels,
                     datasets: [{
@@ -19,8 +19,11 @@ export default class PieComponent extends React.Component {
                 options={{
                     maintainAspectRatio: false,
                     legend: {
+                        position: 'bottom',
                         labels: {
-                            fontColor: '#dfdfdf'
+                            fontColor: '#dfdfdf',
+                            boxWidth: 10,
+                            fontSize: 10
                         }
                     },
                     animation: {
