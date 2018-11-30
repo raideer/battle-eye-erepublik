@@ -20,6 +20,20 @@ export default class DominationBarNew extends React.Component {
         const dps = getPerc(dpsLeft, dpsRight);
         const difference = Math.abs(left - right);
 
+        function getProgressIcon() {
+            if (dpsLeft === 0 && dpsRight === 0) {
+                return <i className='fas fa-angle-up'></i>;
+            }
+
+            const double = Math.abs(aPerc - dps) >= 25 ? '-double' : '';
+
+            if (aPerc < dps) {
+                return <i className={`fas fa-angle${double}-right positive`}></i>;
+            } else {
+                return <i className={`fas fa-angle${double}-left negative`}></i>;
+            }
+        }
+
         return (
             <div className="battleeye__domination-bar">
                 <span className="progress-name">{ name }</span>
@@ -32,7 +46,9 @@ export default class DominationBarNew extends React.Component {
                     <div style={{ width: `${absGain}%` }} className={gain >= 0 ? 'left-progress' : 'right-progress'}></div>
                     <div style={{ width: `${gain >= 0 ? rightActual - gain : rightActual}%` }} className="right-actual-progress"></div>
                 </div>
-                <div className={`progress-bar-gain ${dpsLeft === 0 && dpsRight === 0 ? 'neutral' : aPerc < dps ? 'positive' : 'negative'}`}></div>
+                <div className="progress-bar-gain">
+                    { getProgressIcon() }
+                </div>
             </div>
         );
     }
