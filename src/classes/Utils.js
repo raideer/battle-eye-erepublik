@@ -5,6 +5,8 @@ export function uid() {
 }
 
 export function prettifyCountryName(country) {
+    if (!country) return '';
+
     var prettyName = country;
     if (prettyName === 'Republic-of-Macedonia-FYROM') {
         prettyName = 'Republic of Macedonia (FYROM)';
@@ -146,6 +148,8 @@ export function currentDamage() {
 }
 
 export function currentDomination(useBattleEye = false) {
+    if (window.BattleEye.nbpStats.error) return 0;
+
     if (useBattleEye) {
         const aDamage = window.BattleEye.teamA.divisions.get(division).damage;
         const bDamage = window.BattleEye.teamB.divisions.get(division).damage;
@@ -161,6 +165,10 @@ export function currentDomination(useBattleEye = false) {
 }
 
 export function currentStats(side) {
+    if (window.BattleEye.nbpStats.error) {
+        return [];
+    }
+
     return window.BattleEye.nbpStats.stats.current[currentRound][division][side].top_damage;
 }
 
