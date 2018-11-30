@@ -8,6 +8,7 @@ import ExportTab from './ExportTab';
 import SettingsTab from './SettingsTab';
 import AboutTab from './AboutTab';
 import FirstKillsTab from './FirstKillsTab';
+// import OtherTab from './OtherTab';
 import AutoAttackerTab from './AutoAttackerTab';
 
 export default class Template extends React.Component {
@@ -59,15 +60,28 @@ export default class Template extends React.Component {
                     <AutoAttackerTab />
                 </div>
             );
+        // case 'other':
+        //     return (
+        //         <OtherTab />
+        //     );
         default:
             return null;
         }
     }
 
     renderLoader() {
-        const zoneFinished = window.BattleEye.nbpStats ? window.BattleEye.nbpStats.zone_finished : false;
+        if (!window.BattleEye.nbpStats) return;
+
+        if (window.BattleEye.nbpStats.error) {
+            return (
+                <div id="battleeye-loading" className="level-item">
+                    <img style={{ width: '18px' }} src="https://cdn.raideer.xyz/headless.png" alt="Headless chicken"/>
+                </div>
+            );
+        }
+
         return (
-            <div id="battleeye-loading" style={zoneFinished ? { display: 'none' } : {}} className="level-item">
+            <div id="battleeye-loading" style={window.BattleEye.nbpStats.zone_finished ? { display: 'none' } : {}} className="level-item">
                 <div className="spinner" original-title="Loading stats">
                     <div className="rect1"></div>
                     <div className="rect2"></div>
@@ -174,6 +188,14 @@ export default class Template extends React.Component {
                                 click={this.setTab.bind(this, 'firstKills')}>
                                 First kills {window.BattleEye.fktVersion ? <i style={{ fontSize: '10px', marginLeft: '4px' }}>v{window.BattleEye.fktVersion}</i> : ''}
                             </TabButton>
+                            {/* <TabButton
+                                name='other'
+                                activeTab={this.state.activeTab}
+                                inactiveClass="is-lighter"
+                                className="is-be-main"
+                                click={this.setTab.bind(this, 'other')}>
+                                Other stats
+                            </TabButton> */}
                         </div>
                     </div>
                     <div className="level-right">
@@ -184,19 +206,19 @@ export default class Template extends React.Component {
                                 click={this.setTab.bind(this, 'about')}
                                 inactiveClass="is-outlined"
                                 className='is-be-main'>
-                                <i className="fas fa-info-circle be-menu-icon"></i> Info
+                                <i className="fas fa-info-circle"></i>
                             </TabButton>
                             <TabButton
                                 click={this.reload.bind(this)}
                                 className='is-be-main is-outlined'>
-                                <i className="fas fa-sync-alt be-menu-icon"></i> Reload
+                                <i className="fas fa-sync-alt"></i>
                             </TabButton>
                             <TabButton
                                 name='settings'
                                 activeTab={this.state.activeTab}
                                 click={this.setTab.bind(this, 'settings')}
                                 className='is-be-main'>
-                                <i className="fas fa-cog be-menu-icon"></i> Settings
+                                <i className="fas fa-cog"></i>
                             </TabButton>
                         </div>
                     </div>
