@@ -7,7 +7,7 @@ import Radar from './charts/Radar';
 import Bar from './charts/Bar';
 
 import { Line } from 'react-chartjs-2';
-import { intToRGB, hashCode, getPerc, division } from '../Utils';
+import { intToRGB, hashCode, getPerc, division, prettifyCountryName } from '../Utils';
 
 export default class ChartsTab extends React.Component {
     constructor() {
@@ -37,7 +37,7 @@ export default class ChartsTab extends React.Component {
         const chartColors = [];
 
         for (var i in countries) {
-            chartLabels.push(i);
+            chartLabels.push(prettifyCountryName(i));
             chartData.push(countries[i].damage);
             chartColors.push(`#${intToRGB(hashCode(i))}`);
         }
