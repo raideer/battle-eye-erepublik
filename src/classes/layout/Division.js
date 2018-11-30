@@ -8,7 +8,7 @@ export default class Division extends React.Component {
         const { division, className, i } = this.props;
 
         let actualDomination = 0;
-        if (window.BattleEye.nbpStats) {
+        if (window.BattleEye.nbpStats && !window.BattleEye.nbpStats.error) {
             actualDomination = window.BattleEye.nbpStats.division.domination[i];
             if (window.SERVER_DATA.mustInvert) {
                 actualDomination = 100 - actualDomination;
