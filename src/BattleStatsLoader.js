@@ -275,6 +275,17 @@ class BattleStatsLoader {
 
         return null;
     }
+
+    async getCampaigns() {
+        try {
+            const data = await $.getJSON('https://www.erepublik.com/en/military/campaigns-new/');
+            return data;
+        } catch (e) {
+            console.error('Failed to fetch campaigns-new');
+        }
+
+        return null;
+    }
 }
 
 export default new BattleStatsLoader();
