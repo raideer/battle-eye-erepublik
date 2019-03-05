@@ -79,7 +79,7 @@ class BattleStatsLoader {
                 if (!division) return;
 
                 division.damage.forEach(player => {
-                    const dmg = Number(String(player.value).replace(/[^0-9]/g, ''));
+                    const dmg = parseInt(player.raw_value);
                     const bareData = {
                         damage: dmg,
                         permalink: player.country_permalink
@@ -97,7 +97,7 @@ class BattleStatsLoader {
                 });
 
                 division.kills.forEach(player => {
-                    const kills = Number(String(player.value).replace(/[^0-9]/g, ''));
+                    const kills = parseInt(player.raw_value);
 
                     if (side == 'left') {
                         leftKl += kills;
@@ -230,7 +230,7 @@ class BattleStatsLoader {
         });
     }
 
-    async getNbpStats(battleId) {
+    async getNbpStats(battleId = SERVER_DATA.battleId) {
         let data;
 
         try {
@@ -247,7 +247,7 @@ class BattleStatsLoader {
         let data;
 
         try {
-            data = await $.post('https://www.erepublik.com/en/military/battle-console', {
+            data = await $.post(`https://www.erepublik.com/${erepublik.settings.culture}/military/battle-console`, {
                 _token: SERVER_DATA.csrfToken,
                 action: 'battleStatistics',
                 battleId: battleId,
@@ -265,9 +265,9 @@ class BattleStatsLoader {
         return data;
     }
 
-    async getFirstKills(battleId) {
+    async getFirstKills(battleId, round) {
         try {
-            const data = await $.getJSON(`https://battleeye.raideer.xyz/firstHits/${battleId}`);
+            const data = await $.getJSON(`https://battleeye.raideer.xyz/v2/firstHits/${window.btoa(`${battleId}:${round}:yu4oFSgaJvXk1PQVPiWH`)}`);
             return data;
         } catch (e) {
             console.error('Failed to fetch firstKills for this battle');
@@ -278,7 +278,7 @@ class BattleStatsLoader {
 
     async getCampaigns() {
         try {
-            const data = await $.getJSON('https://www.erepublik.com/en/military/campaigns-new/');
+            const data = await $.getJSON(`https://www.erepublik.com/${erepublik.settings.culture}/military/campaigns-new/`);
             return data;
         } catch (e) {
             console.error('Failed to fetch campaigns-new');
