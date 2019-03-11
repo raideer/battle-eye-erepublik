@@ -63,7 +63,7 @@ class ExcelGenerator {
             ]).style({ bold: true, horizontalAlignment: 'center', fontColor: 'f7ad6f' });
 
             s.range(valueRange).value([
-                [side.damage, side.hits, side.avgHit]
+                [side.damage, side.kills, Math.round(side.damage / side.kills)]
             ]).style({ horizontalAlignment: 'center' });
         }
 
@@ -120,7 +120,7 @@ class ExcelGenerator {
                 row += 2;
                 s.range(range(row)).value([['Total damage', 'Total kills', 'Average damage']]).style({ horizontalAlignment: 'center', bold: true, fontColor: 'f7ad6f' });
                 row += 1;
-                s.range(range(row)).value([[div.damage, div.hits, div.avgHit]]).style({ horizontalAlignment: 'center' });
+                s.range(range(row)).value([[div.damage, div.kills, Math.round(side.damage / side.kills)]]).style({ horizontalAlignment: 'center' });
                 row += 2;
 
                 s.range(range(row)).value([['', 'Damage', 'Kills']]).style({ horizontalAlignment: 'center', fontColor: '68b5fc', bold: true });
