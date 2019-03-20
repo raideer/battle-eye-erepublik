@@ -57,7 +57,8 @@ class OtherTab extends React.Component {
             getFirepower(this.props.activeWeapon)
         );
 
-        const hitInfluenceWithBooster = hitInfluence + (hitInfluence * boosterBonus / 100);
+        const legendBonus = Math.max(Math.round((100 * hc.fighterInfo[fieldType].damagePerHitLegend / hc.fighterInfo[fieldType].damagePerHit) - 100), 0);
+        const hitInfluenceWithBooster = hitInfluence + (hitInfluence * boosterBonus / 100) + (hitInfluence * legendBonus / 100);
         const hitsToNextRank = Math.ceil(rankPointsToNext / (hitInfluenceWithBooster / 10));
 
         return {

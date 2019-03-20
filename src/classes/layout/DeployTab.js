@@ -30,6 +30,7 @@ class DeployTab extends React.Component {
 
         let str = 0;
         let rank = 0;
+        let legendBonus = 0;
         const bonus = getWeaponBoosterBonus();
 
         if (isAir) {
@@ -38,6 +39,7 @@ class DeployTab extends React.Component {
         } else {
             str = hc.fighterInfo.military.strength;
             rank = hc.fighterInfo.military.rank;
+            legendBonus = Math.max(Math.round((100 * hc.fighterInfo.military.damagePerHitLegend / hc.fighterInfo.military.damagePerHit) - 100), 0);
         }
 
         const hitInfluence = calculateInfluence(
@@ -49,7 +51,7 @@ class DeployTab extends React.Component {
         return {
             damage: number(
                 Math.floor(
-                    (hitInfluence + (hitInfluence * bonus / 100)) * Math.floor(this.state.inputVal / 10)
+                    (hitInfluence + (hitInfluence * bonus / 100) + (hitInfluence * legendBonus / 100)) * Math.floor(this.state.inputVal / 10)
                 ), true
             ),
             bonus
