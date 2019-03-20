@@ -57,13 +57,14 @@ export default class BattleEye {
                 BattleStatsLoader.calibrateDominationPercentages(data, this.statsA, this.statsB, this.second);
             });
 
-            this.fetchBattleEyeData();
+            this.fetchBattleEyeData().then(() => {
+                this.updateMuData();
+            });
 
             return Promise.resolve();
         })
         .then(() => {
             this.layout.render();
-            this.updateMuData();
 
             window.ajaxSuccess.push((data, url) => {
                 // If data is nbp-stats
@@ -113,9 +114,9 @@ export default class BattleEye {
         let downloadMuData = false;
 
         if (BattleEyeStorage.has('muDataChecksum')) {
-            const checksum = await BattleStatsLoader.getMuDataChecksum();
+            const store = this.store.getState();
 
-            if (BattleEyeStorage.get('muDataChecksum') != checksum) {
+            if (BattleEyeStorage.get('muDataChecksum') != store.main.muListChecksum) {
                 downloadMuData = true;
             }
         } else {
@@ -175,11 +176,28 @@ export default class BattleEye {
         exportStep: 0,
         exportData: null,
 
+        activeUsers: 0,
+        totalUsers: 0,
+        contributors: {},
+        contributorList: [],
+        contributorCount: 0,
+        muListChecksum: null,
+
         countryImages: {}
     }, action) {
         const state = cloneObject(oldState);
 
         switch (action.type) {
+        case 'UPDATE_METADATA': {
+            state.activeUsers = action.value.activeUsers;
+            state.totalUsers = action.value.users;
+            state.contributors = action.value.contributors;
+            state.contributorList = Object.keys(action.value.contributorList).map(key => action.value.contributorList[key]);
+            state.contributorCount = action.value.contributorCount;
+            state.fktVersion = action.value.fktVersion;
+            state.muListChecksum = action.value.checksum;
+            return state;
+        }
         case 'ADD_COUNTRY_IMAGE': {
             const images = cloneObject(state.countryImages);
             images[action.code] = action.value;
@@ -279,38 +297,18 @@ export default class BattleEye {
         belLog('Fetching data.json');
         let data;
         try {
-            data = await $.getJSON('https://cdn.raideer.xyz/data.json');
-            this.contributors = data.contributors;
-            this.fktVersion = data.fktVersion;
+            data = await $.getJSON(`https://battleeye.raideer.xyz/cdn/data/${window.SERVER_DATA.citizenId}/${this.version.replace('.', '-')}`);
+
+            this.store.dispatch({
+                type: 'UPDATE_METADATA',
+                value: data
+            });
 
             this.displayContributors();
 
-            if (data.knownErrors) {
-                this.knownErrors = data.knownErrors;
-            }
-
             belLog('Data JSON received and processed');
-            this.events.emit('log', 'Data.json synced');
         } catch (e) {
             belLog('Failed to download data.json');
-            throw e;
-        }
-
-        try {
-            if (!data) return;
-            $.ajax({
-                type: 'POST',
-                url: `${this.apiURL}/touch`,
-                data: {
-                    citizen: window.erepublik.citizen.citizenId,
-                    version: this.version
-                }
-            }).then(() => {
-                belLog('API touched');
-                this.events.emit('log', 'API touched');
-            });
-        } catch (e) {
-            belLog('Failed to reach the API');
             throw e;
         }
     }
@@ -383,6 +381,7 @@ export default class BattleEye {
     }
 
     displayContributors() {
+        const store = this.store.getState();
         const styles = [];
 
         const playerIsContributor = this.isPlayerContributor();
@@ -395,8 +394,8 @@ export default class BattleEye {
 
         const ids = [];
 
-        for (const color in this.contributors) {
-            const colorStyles = this.contributors[color].map(id => {
+        for (const color in store.main.contributors) {
+            const colorStyles = store.main.contributors[color].map(id => {
                 return `li[data-citizen-id="${id}"] .player_name a`;
             });
 
@@ -412,11 +411,12 @@ export default class BattleEye {
     }
 
     isPlayerContributor(citizen = window.erepublik.citizen.citizenId) {
+        const state = this.store.getState();
         let res = null;
 
-        for (const color in this.contributors) {
-            for (const i in this.contributors[color]) {
-                if (this.contributors[color][i] == citizen) {
+        for (const color in state.main.contributors) {
+            for (const i in state.main.contributors[color]) {
+                if (state.main.contributors[color][i] == citizen) {
                     res = color;
                     break;
                 }

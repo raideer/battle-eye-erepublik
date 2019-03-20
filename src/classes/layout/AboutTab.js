@@ -1,23 +1,7 @@
 import React from 'react';
-import $ from 'jQuery';
+import { connect } from 'react-redux';
 
-export default class AboutTab extends React.Component {
-    constructor() {
-        super();
-
-        this.state = {
-            activeUsers: 'loading...',
-            currentlyUsing: 'loading...'
-        };
-
-        this.loadActiveUsers();
-    }
-
-    async loadActiveUsers() {
-        this.state.activeUsers = await $.getJSON(`${BattleEye.apiURL}/users`);
-        this.state.currentlyUsing = await $.getJSON(`${BattleEye.apiURL}/users/5minutes`);
-    }
-
+class AboutTab extends React.Component {
     renderKnownBugs() {
         return (
             <div>
@@ -45,22 +29,39 @@ export default class AboutTab extends React.Component {
 
     render() {
         return (
-            <div className="battleeye__about has-text-left be__columns">
+            <div className="be__about has-text-left be__columns">
                 <div className="be__column">
                     <h1>BattleEye</h1>
 
                     { this.renderField('Installed version', `v${BattleEye.version}`) }
-                    { this.renderField('Total active BattleEye users', this.state.activeUsers) }
-                    { this.renderField('Currently using', this.state.currentlyUsing) }
+                    { this.renderField('Total active BattleEye users', this.props.totalUsers) }
+                    { this.renderField('Currently using', this.props.activeUsers) }
 
-                    { this.renderKnownBugs() }
-                </div>
-                <div className="be__column">
                     <h2>Have questions or suggestions?</h2>
                     <div>Join our <b>Discord</b> channel:</div>
                     <div style={{ padding: '10px 0' }}><a rel="noopener noreferrer" target="_blank" className="be__button is-round" href="https://discord.gg/4qeExQz">https://discord.gg/4qeExQz</a></div>
+                </div>
+                <div className="be__column is-half">
+                    <h2>BattleEye is driven by the community</h2>
+                    <div className="be__about-contributorsTitle">Here are some of the generous people, that have contributed to BattleEye</div>
+                    <div className="be__about-contributors">{
+                        this.props.contributorList.map((item, i) =>
+                            <a style={{ color: item[1] }} href={`https://www.erepublik.com/${window.erepublik.settings.culture}/citizen/profile/${item[2]}`} key={i}>{item[0]}</a>)
+                    }</div>
+                    <a rel="noopener noreferrer" target="_blank" href={`https://www.erepublik.com/${window.erepublik.settings.culture}/citizen/profile/8075739`} className="be__button is-round">If you want to become a contributor, you can donate here</a>
                 </div>
             </div>
         );
     }
 }
+
+function mapState(state) {
+    return {
+        activeUsers: state.main.activeUsers,
+        totalUsers: state.main.totalUsers,
+        contributorList: state.main.contributorList,
+        contributorCount: state.main.contributorCount
+    };
+}
+
+export default connect(mapState)(AboutTab);

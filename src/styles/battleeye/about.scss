@@ -1,4 +1,4 @@
-.battleeye__about {
+.be__about {
     padding: 1em;
 
     h1, h2 {
@@ -19,6 +19,20 @@
 
     .tags:not(:last-child) {
         margin-bottom: 0;
+    }
+    
+    &-contributorsTitle {
+        font-weight: 300;
+    }
+
+    &-contributors {
+        margin-top: 20px;
+        margin-bottom: 20px;
+
+        a {
+            margin-right: 10px;
+            display: inline-block;
+        }
     }
 
     .bug {

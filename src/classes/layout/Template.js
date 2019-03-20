@@ -163,7 +163,7 @@ class Template extends React.Component {
                                 activeTab={this.state.activeTab}
                                 inactiveClass="is-lighter"
                                 click={this.setTab.bind(this, 'firstKills')}>
-                                First kills {window.BattleEye.fktVersion ? <i style={{ fontSize: '10px', marginLeft: '4px' }}>v{window.BattleEye.fktVersion}</i> : ''}
+                                First kills {this.props.fktVersion ? <i style={{ fontSize: '10px', marginLeft: '4px' }}>v{this.props.fktVersion}</i> : ''}
                             </TabButton>
                             { !SERVER_DATA.spectatorOnly
                             && <TabButton
@@ -236,6 +236,7 @@ class Template extends React.Component {
 
 function mapState(state) {
     return {
+        fktVersion: state.main.fktVersion,
         loading: state.main.loading,
         leftStats: state.main.leftStats,
         rightStats: state.main.rightStats,
