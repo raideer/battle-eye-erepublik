@@ -1,4 +1,5 @@
-import XlsxPopulate from './vendor/xlsx-populate';
+// import XlsxPopulate from './vendor/xlsx-populate';
+import { leftSideName, rightSideName } from './classes/Utils';
 
 class ExcelGenerator {
     async exportStats(type, data) {
@@ -46,8 +47,8 @@ class ExcelGenerator {
             horizontalAlignment: 'center'
         };
 
-        sheet.range('A1:C1').merged(true).value(window.BattleEye.teamAName).style(headingStyle).style({ fontColor: '27ad60', bold: true });
-        sheet.range('I1:K1').merged(true).value(window.BattleEye.teamBName).style(headingStyle).style({ fontColor: 'c1392b', bold: true });
+        sheet.range('A1:C1').merged(true).value(leftSideName).style(headingStyle).style({ fontColor: '27ad60', bold: true });
+        sheet.range('I1:K1').merged(true).value(rightSideName).style(headingStyle).style({ fontColor: 'c1392b', bold: true });
 
         if (round % 4 != 0) {
             sheet.range('E1:G1').merged(true).value('Divisions').style(headingStyle).style({ fontColor: '27ad60', bold: true });

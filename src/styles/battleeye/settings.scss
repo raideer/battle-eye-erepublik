@@ -5,21 +5,21 @@
         font-weight: bold;
         width: 100%;
         padding: 5px 1em;
-        background-color: darken($colorMainbg, 10%);
+        background-color: darken($colorSecondary, 10%);
     }
 
     .column {
         padding: 0 0 10px 0;
-        border-left: 2px solid darken($colorMainbg, 10%);
+        border-left: 2px solid darken($colorSecondary, 10%);
     }
 
     .setting-name {
-        background-color: darken($colorMainbg, 10%);
-        border-color: darken($colorMainbg, 10%);
+        background-color: darken($colorSecondary, 10%);
+        border-color: darken($colorSecondary, 10%);
         color: $colorWhite;
 
         &:hover {
-            border-color: darken($colorMainbg, 10%);
+            border-color: darken($colorSecondary, 10%);
             cursor: inherit;
         }
     }
@@ -28,9 +28,11 @@
         display: inline-flex;
         height: 26px;
         width: 70px;
-        margin-bottom: 8px;
         padding: 3px;
         text-align: center;
+        border: 0;
+        background-color: lighten($colorSecondary, 5%);
+        color: white;
     }
 
     .setting {
@@ -40,7 +42,7 @@
         padding: 5px;
 
         &:not(:last-child) {
-            border-bottom: 1px solid darken($colorMainbg, 10%);
+            border-bottom: 1px solid darken($colorSecondary, 10%);
         }
     }
 }

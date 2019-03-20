@@ -1,20 +1,43 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { Pie } from 'react-chartjs-2';
+import { textToColor } from '../../Utils';
 
-export default class PieComponent extends React.Component {
+class PieComponent extends React.Component {
     render() {
-        const { labels, data, colors } = this.props;
+        const { labels, data, displayStats, countryImages } = this.props;
         return (
             <Pie
-                height={500}
-                data={{
-                    labels: labels,
-                    datasets: [{
-                        fontColor: '#dfdfdf',
-                        data: data,
-                        borderColor: '#3a4470',
-                        backgroundColor: colors
-                    }]
+                height={400}
+                data={canvas => {
+                    const ctx = canvas.getContext('2d');
+
+                    const bgImages = [];
+
+                    labels.forEach(label => {
+                        let color = textToColor(label);
+
+                        if (displayStats === 'countries') {
+                            const code = String(label).toLowerCase();
+                            if (countryImages[code]) {
+                                color = ctx.createPattern(countryImages[code], 'repeat');
+                            } else {
+                                window.BattleEye.loadCountryImage(code);
+                            }
+                        }
+
+                        bgImages.push(color);
+                    });
+
+                    return {
+                        labels,
+                        datasets: [{
+                            fontColor: '#ffffff',
+                            data: data,
+                            borderColor: '#3a4470',
+                            backgroundColor: bgImages
+                        }]
+                    };
                 }}
                 options={{
                     maintainAspectRatio: false,
@@ -37,3 +60,11 @@ export default class PieComponent extends React.Component {
         );
     }
 }
+
+function mapState(state) {
+    return {
+        countryImages: state.main.countryImages
+    };
+}
+
+export default connect(mapState)(PieComponent);

@@ -3,72 +3,43 @@ import Table from './charts/Table';
 import TabButton from './TabButton';
 import Pie from './charts/Pie';
 import Bar from './charts/Bar';
-import Radar from './charts/Radar';
-import { intToRGB, hashCode, currentRound } from '../Utils';
+import { currentRound, getStatsName, findCountry, textToColor } from '../Utils';
+import { connect } from 'react-redux';
 
-export default class ExportTab extends React.Component {
+class ExportTab extends React.Component {
     constructor() {
         super();
         this.state = {
             step: 0,
-            progress: {
-                current: 0,
-                max: ((currentRound * 4) - (Math.floor(currentRound / 4) * 3)) * 2,
-                status: 'Fetching data'
-            },
             activeRound: 'overall',
             activeDiv: 'overall',
-            activeChart: 'table'
-        };
-
-        this.data = {
-            left: null,
-            right: null,
-            rounds: null
+            activeChart: 'table',
+            exportMaxProgress: ((currentRound * 4) - (Math.floor(currentRound / 4) * 3)) * 2
         };
     }
 
-    generateSummary() {
-        this.setState({
-            step: 1
-        });
-
-        window.BattleEye.generateSummary();
-
-        window.BattleEye.events.on('summary.update', step => {
-            if (step.page == 1) {
-                this.state.progress.current++;
-            }
-
-            this.setState({
-                progress: {
-                    status: `[Round ${step.round}] Processed ${step.type} for division ${step.div} (${step.page}/${step.maxPage})`,
-                    current: this.state.progress.current,
-                    max: this.state.progress.max
-                }
-            });
-        });
-
-        window.BattleEye.events.on('summary.finished', ([left, right, rounds]) => {
-            this.state.progress.status = 'Data fetching done. Organizing data';
-
-            this.data.left = left;
-            this.data.right = right;
-            this.data.rounds = rounds;
-
-            this.state.step = 2;
-        });
-    }
-
-    getChart(countries, side) {
+    getChart(fields, side) {
         const chartLabels = [];
         const chartData = [];
-        const chartColors = [];
 
-        for (var i in countries) {
-            chartLabels.push(i);
-            chartData.push(countries[i].damage);
-            chartColors.push(`#${intToRGB(hashCode(i))}`.toLocaleLowerCase());
+        for (const i in fields) {
+            let label = i;
+
+            if (this.props.displayStats == 'military_units') {
+                if (window.BattleEye.muData[i]) {
+                    label = window.BattleEye.muData[i].name;
+                } else {
+                    label = `Unit #${i}`;
+                }
+            } else {
+                const country = findCountry('permalink', i);
+                if (country) {
+                    label = country.code;
+                }
+            }
+
+            chartLabels.push(label);
+            chartData.push(fields[i].damage);
         }
 
         const googleImg = () => {
@@ -77,7 +48,7 @@ export default class ExportTab extends React.Component {
             image += '&chs=440x300&chl=';
             image += chartLabels.join('|');
             image += '&chco=';
-            image += chartColors.map(color => color.substr(1, color.length)).join(',');
+            image += Object.keys(fields).map(label => textToColor(label, false)).join(',');
 
             return image;
         };
@@ -86,17 +57,10 @@ export default class ExportTab extends React.Component {
         case 'pie':
             return (
                 <Pie
+                    displayStats={this.props.displayStats}
                     labels={chartLabels}
                     data={chartData}
-                    colors={chartColors}
-                />
-            );
-        case 'radar':
-            return (
-                <Radar
-                    labels={chartLabels}
-                    data={chartData}
-                    colors={chartColors}
+                    // colors={chartColors}
                 />
             );
         case 'google':
@@ -108,15 +72,16 @@ export default class ExportTab extends React.Component {
         case 'bar': {
             return (
                 <Bar
+                    displayStats={this.props.displayStats}
                     labels={chartLabels}
                     data={chartData}
-                    colors={chartColors}
+                    // colors={chartColors}
                 />
             );
         }
         default:
             return (
-                <Table side={side} countries={countries} />
+                <Table side={side} fields={fields} />
             );
         }
     }
@@ -127,39 +92,42 @@ export default class ExportTab extends React.Component {
         if (this.state.activeRound == 'overall') {
             if (this.state.activeDiv == 'overall') {
                 countries = {
-                    left: this.data.left.countries,
-                    right: this.data.right.countries
+                    left: this.props.exportData.left[this.props.displayStats],
+                    right: this.props.exportData.right[this.props.displayStats]
                 };
             } else {
                 countries = {
-                    left: this.data.left.divisions[this.state.activeDiv].countries,
-                    right: this.data.right.divisions[this.state.activeDiv].countries
+                    left: this.props.exportData.left.divisions[this.state.activeDiv][this.props.displayStats],
+                    right: this.props.exportData.right.divisions[this.state.activeDiv][this.props.displayStats]
                 };
             }
         } else if (this.state.activeDiv == 'overall') {
             countries = {
-                left: this.data.rounds[this.state.activeRound].left.countries,
-                right: this.data.rounds[this.state.activeRound].right.countries
+                left: this.props.exportData.rounds[this.state.activeRound].left[this.props.displayStats],
+                right: this.props.exportData.rounds[this.state.activeRound].right[this.props.displayStats]
             };
         } else {
             countries = {
-                left: this.data.rounds[this.state.activeRound].left.divisions[this.state.activeDiv].countries,
-                right: this.data.rounds[this.state.activeRound].right.divisions[this.state.activeDiv].countries
+                left: this.props.exportData.rounds[this.state.activeRound].left.divisions[this.state.activeDiv][this.props.displayStats],
+                right: this.props.exportData.rounds[this.state.activeRound].right.divisions[this.state.activeDiv][this.props.displayStats]
             };
         }
 
         if (this.state.activeChart == 'export') {
             return (
-                <button onClick={this.exportData.bind(this, 'excel')} className="button is-primary is-inverted">Generate EXCEL file</button>
+                <div>
+                    <div>Does not include MU data (yet)</div>
+                    <button onClick={this.exportData.bind(this, 'excel')} className="be__button is-large ">Generate EXCEL file</button>
+                </div>
             );
         }
 
         return (
-            <div className="columns">
-                <div className="column is-half">
+            <div className="be__columns">
+                <div className="be__column">
                     { this.getChart(countries.left, 'left') }
                 </div>
-                <div className="column is-half">
+                <div className="be__column">
                     { this.getChart(countries.right, 'right') }
                 </div>
             </div>
@@ -185,7 +153,7 @@ export default class ExportTab extends React.Component {
     }
 
     exportData(type) {
-        window.BattleEye.exportStats(type, this.data);
+        window.BattleEye.exportStats(type, this.props.exportData);
     }
 
     renderSummary() {
@@ -208,7 +176,6 @@ export default class ExportTab extends React.Component {
         const charts = [
             ['table', 'Table'],
             ['pie', 'Pie chart'],
-            ['radar', 'Radar chart'],
             ['bar', 'Bar chart'],
             ['google', 'Google charts image'],
             ['export', 'Export data']
@@ -216,17 +183,28 @@ export default class ExportTab extends React.Component {
 
         return (
             <div className="battleeye__countries">
-                <div className="filters">
-                    <div className="level">
-                        <div className="level-item buttons has-addons">
+                <div className="be__filters">
+                    <div className="be__level">
+                        <div className="be__button-group">
+                            { ['countries', 'military_units'].map(tab => {
+                                return (
+                                    <TabButton
+                                        key={tab}
+                                        name={tab}
+                                        activeTab={this.props.displayStats}
+                                        click={() => this.props.changeStats(tab)}>
+                                        {getStatsName(tab)}
+                                    </TabButton>
+                                );
+                            }) }
+                        </div>
+                        <div className="be__button-group">
                             { charts.map(tab => {
                                 return (
                                     <TabButton
                                         key={tab[0]}
                                         name={tab[0]}
                                         activeTab={this.state.activeChart}
-                                        inactiveClass='is-outlined'
-                                        className='is-inverted is-dark'
                                         click={this.setChart.bind(this, tab[0])}>
                                         {tab[1]}
                                     </TabButton>
@@ -234,16 +212,14 @@ export default class ExportTab extends React.Component {
                             }) }
                         </div>
                     </div>
-                    <div className="level">
-                        <div className="level-item buttons has-addons">
+                    <div className="be__level is-fullwidth">
+                        <div className="be__button-group">
                             { rounds.map(tab => {
                                 return (
                                     <TabButton
                                         key={tab[0]}
                                         name={tab[0]}
                                         activeTab={this.state.activeRound}
-                                        inactiveClass='is-outlined'
-                                        className='is-inverted is-dark'
                                         click={this.setRound.bind(this, tab[0])}>
                                         {tab[1]}
                                     </TabButton>
@@ -251,16 +227,14 @@ export default class ExportTab extends React.Component {
                             }) }
                         </div>
                     </div>
-                    <div className="level">
-                        <div className="level-item buttons has-addons">
+                    <div className="be__level">
+                        <div className="be__button-group">
                             { divisions.map(tab => {
                                 return (
                                     <TabButton
                                         key={tab[0]}
                                         name={tab[0]}
                                         activeTab={this.state.activeDiv}
-                                        inactiveClass='is-outlined'
-                                        className='is-inverted is-dark'
                                         click={this.setDiv.bind(this, tab[0])}>
                                         {tab[1]}
                                     </TabButton>
@@ -275,14 +249,14 @@ export default class ExportTab extends React.Component {
     }
 
     renderProgress() {
-        const perc = Math.round(this.state.progress.current / this.state.progress.max * 100);
+        const perc = Math.round(this.props.exportProgress / this.state.exportMaxProgress * 100);
         const style = {
             width: `${perc}%`
         };
 
         return (
             <div>
-                <h4>{this.state.progress.status}</h4>
+                <h4>{this.props.exportProgressStatus}</h4>
                 <div style={{ padding: '5px' }} className="battleeye__domination-bar">
                     <span className="progress-name">Downloading Top 50</span>
                     <div className="progress-bar">
@@ -297,7 +271,7 @@ export default class ExportTab extends React.Component {
     renderIndex() {
         return (
             <div>
-                <button onClick={this.generateSummary.bind(this)} className="button is-be-main">Generate summary</button>
+                <button onClick={() => window.BattleEye.generateSummary()} className="be__button is-large is-round">Generate summary</button>
             </div>
         );
     }
@@ -307,7 +281,7 @@ export default class ExportTab extends React.Component {
             return null;
         }
 
-        switch (this.state.step) {
+        switch (this.props.exportStep) {
         case 1:
             return this.renderProgress();
         case 2:
@@ -317,3 +291,26 @@ export default class ExportTab extends React.Component {
         }
     }
 }
+
+function mapState(state) {
+    return {
+        exportProgress: state.main.exportProgress,
+        exportProgressStatus: state.main.exportProgressStatus,
+        exportStep: state.main.exportStep,
+        exportData: state.main.exportData,
+        displayStats: state.main.displayStats
+    };
+}
+
+function mapDispatch(dispatch) {
+    return {
+        changeStats(value) {
+            dispatch({
+                type: 'CHANGE_STATS',
+                value
+            });
+        }
+    };
+}
+
+export default connect(mapState, mapDispatch)(ExportTab);

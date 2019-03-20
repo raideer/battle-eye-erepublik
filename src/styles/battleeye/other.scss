@@ -1,0 +1,36 @@
+.be__other {
+    width: 70%;
+    margin: 0 auto;
+
+    .be__column {
+        padding: 0 5px;
+    }
+
+    &-section {
+        width: 100%;
+        text-align: center;
+        padding: 2px;
+        margin-bottom: 5px;
+        border-bottom: 2px solid $colorPrimaryAccent;
+    }
+
+    &-field {
+        display: flex;
+        justify-content: space-between;
+        border-radius: $borderRadius;
+        overflow: hidden;
+        margin-bottom: 5px;
+        text-align: center;
+
+        &-name {
+            padding: 5px 10px;
+            background-color: $colorSecondaryDarker;
+        }
+
+        &-value {
+            padding: 5px 0;
+            background-color: darken($colorSecondary, 5%);
+            flex: 1;
+        }
+    }
+}

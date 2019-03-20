@@ -1,10 +1,11 @@
 .first-kills {
-    background-color: $colorMainbg;
+    background-color: $colorSecondary;
     color: white;
     border-radius: 5px;
+    width: 100%;
 
     td, th {
-        border-color: darken($colorMainbg, 15%) !important;
+        border-color: darken($colorSecondary, 15%) !important;
         padding: 0.2em 0.5em;
         text-align: center;
     }
@@ -14,7 +15,7 @@
     }
 
     tbody tr:not(&__div):hover {
-        background-color: darken($colorMainbg, 1%);
+        background-color: darken($colorSecondary, 1%);
     }
 
     tbody tr a {
@@ -25,15 +26,19 @@
     }
 
     thead {
-        background-color: darken($colorMainbg, 10%);
+        background-color: darken($colorSecondary, 10%);
     }
 
     &__div {
         width: 100%;
-        background-color: darken($colorMainbg, 10%);
+        background-color: darken($colorSecondary, 10%);
         td {
             text-align: center;
         }
+    }
+
+    &--first {
+        background-color: $colorPrimaryDarker;
     }
 
     &__item {

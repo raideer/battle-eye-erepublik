@@ -14,6 +14,10 @@ export default class Storage {
         this.items[id] = value;
     }
 
+    clear(id) {
+        localStorage.removeItem(`${this.prepend}${id}`);
+    }
+
     get(id, force = false) {
         if (this.items[id] && !force) {
             return this.items[id];

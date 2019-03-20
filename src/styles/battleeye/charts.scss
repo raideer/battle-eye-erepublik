@@ -1,0 +1,72 @@
+$rowHeight: 30px;
+
+.be__charts {
+    &-stats {
+        display: flex !important;
+        justify-content: space-between;
+        padding: 0 5px !important;
+
+        &-field {
+            padding: 0 4px;
+        }
+    }
+    
+    &-header {
+        height: $rowHeight;
+        line-height: ($rowHeight - 5px);
+    }
+
+    &-row {
+        position: relative;
+        height: $rowHeight;
+        line-height: $rowHeight;
+
+        .be__column {
+            z-index: 2;
+        }
+
+        &--left {
+            text-align: right;
+
+            .be__charts-background {
+                left: 0;
+                border-right: 1px solid $colorPrimaryDarker;
+                // border-radius: 0 $borderRadius $borderRadius 0;
+            }
+        }
+
+        &--right {
+            text-align: left;
+            flex-direction: row-reverse;
+
+            .be__charts-stats {
+                flex-direction: row-reverse;
+            }
+
+            .be__charts-background {
+                right: 0;
+                border-left: 1px solid $colorPrimaryDarker;
+                // border-radius: $borderRadius 0 0 $borderRadius;
+            }
+
+            .be__charts-title {
+                flex-direction: row-reverse;
+            }
+        }
+    }
+
+    &-title {
+        display: flex !important;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    &-background {
+        position: absolute;
+        height: ($rowHeight - 2px);
+        z-index: 1;
+        background-color: #552365;
+        border-top: 1px solid $colorPrimaryDarker;
+        border-bottom: 1px solid $colorPrimaryDarker;
+    }
+}

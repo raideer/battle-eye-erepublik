@@ -36,30 +36,29 @@ export default class AboutTab extends React.Component {
         );
     }
 
+    renderField(name, value) {
+        return <div className="be__other-field" style={{ display: 'inline-flex', marginRight: '5px' }}>
+            <div className="be__other-field-name">{name}</div>
+            <div className="be__other-field-value" style={{ padding: '5px' }}>{ value }</div>
+        </div>;
+    }
+
     render() {
         return (
-            <div className="battleeye__about has-text-left columns">
-                <div className="column">
+            <div className="battleeye__about has-text-left be__columns">
+                <div className="be__column">
                     <h1>BattleEye</h1>
-                    <div className="tags has-addons">
-                        <div className="tag is-dark">Installed version</div>
-                        <div className="tag is-info">v{ BattleEye.version }</div>
-                    </div>
-                    <div className="tags has-addons">
-                        <div className="tag is-dark">Total active BattleEye users</div>
-                        <div className="tag is-info">{ this.state.activeUsers }</div>
-                    </div>
-                    <div className="tags has-addons">
-                        <div className="tag is-dark">Currently using</div>
-                        <div className="tag is-info">{ this.state.currentlyUsing }</div>
-                    </div>
+
+                    { this.renderField('Installed version', `v${BattleEye.version}`) }
+                    { this.renderField('Total active BattleEye users', this.state.activeUsers) }
+                    { this.renderField('Currently using', this.state.currentlyUsing) }
 
                     { this.renderKnownBugs() }
                 </div>
-                <div className="column">
+                <div className="be__column">
                     <h2>Have questions or suggestions?</h2>
                     <div>Join our <b>Discord</b> channel:</div>
-                    <div><a rel="noopener noreferrer" target="_blank" className="button is-be-main" href="https://discord.gg/4qeExQz">https://discord.gg/4qeExQz</a></div>
+                    <div style={{ padding: '10px 0' }}><a rel="noopener noreferrer" target="_blank" className="be__button is-round" href="https://discord.gg/4qeExQz">https://discord.gg/4qeExQz</a></div>
                 </div>
             </div>
         );

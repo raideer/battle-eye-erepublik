@@ -1,5 +1,5 @@
 import React from 'react';
-import $ from 'jQuery';
+import { connect } from 'react-redux';
 
 import DivisionsTab from './DivisionsTab';
 import ChartsTab from './ChartsTab';
@@ -8,10 +8,11 @@ import ExportTab from './ExportTab';
 import SettingsTab from './SettingsTab';
 import AboutTab from './AboutTab';
 import FirstKillsTab from './FirstKillsTab';
-// import OtherTab from './OtherTab';
-import AutoAttackerTab from './AutoAttackerTab';
+import DeployTab from './DeployTab';
+import OtherTab from './OtherTab';
+import Loader from './Loader';
 
-export default class Template extends React.Component {
+class Template extends React.Component {
     constructor() {
         super();
 
@@ -27,19 +28,21 @@ export default class Template extends React.Component {
     }
 
     getTab() {
-        const { left, right } = this.props.feedData;
+        const { leftStats, rightStats } = this.props;
+
+        if (!leftStats || !rightStats) return <Loader />;
 
         switch (this.state.activeTab) {
         case 'divisions':
             return (
                 <DivisionsTab divisions={{
-                    left: left.divisions,
-                    right: right.divisions
+                    left: leftStats.divisions,
+                    right: rightStats.divisions
                 }} />
             );
         case 'charts':
             return (
-                <ChartsTab data={this.props.feedData} />
+                <ChartsTab />
             );
         case 'settings':
             return (
@@ -51,50 +54,38 @@ export default class Template extends React.Component {
             );
         case 'firstKills':
             return (
-                <FirstKillsTab firstKills={this.props.feedData.firstKills} />
+                <FirstKillsTab />
             );
-        case 'autoattacker':
+        case 'deploy':
             return (
-                <div>
-                    <div>This feature is still being tested. Use with caution</div>
-                    <AutoAttackerTab />
-                </div>
+                <DeployTab />
             );
-        // case 'other':
-        //     return (
-        //         <OtherTab />
-        //     );
+        case 'other':
+            return (
+                <OtherTab />
+            );
         default:
             return null;
         }
     }
 
     renderLoader() {
-        if (!window.BattleEye.nbpStats) return;
+        if (!this.props.nbp) return;
+        if (!this.props.loading) return;
 
-        if (window.BattleEye.nbpStats.error) {
+        if (this.props.nbp.error) {
             return (
-                <div id="battleeye-loading" className="level-item">
-                    <img style={{ width: '18px' }} src="https://cdn.raideer.xyz/headless.png" alt="Headless chicken"/>
+                <div id="battleeye-loading">
+                    <img style={{ width: '13px', display: 'block' }} src="https://cdn.raideer.xyz/headless.png" alt="Headless chicken"/>
                 </div>
             );
         }
 
         return (
-            <div id="battleeye-loading" style={window.BattleEye.nbpStats.zone_finished ? { display: 'none' } : {}} className="level-item">
-                <div className="spinner" original-title="Loading stats">
-                    <div className="rect1"></div>
-                    <div className="rect2"></div>
-                    <div className="rect3"></div>
-                    <div className="rect4"></div>
-                    <div className="rect5"></div>
-                </div>
+            <div id="battleeye-loading">
+                <Loader title="Loading BattleEye" />
             </div>
         );
-    }
-
-    componentDidMount() {
-        $('.spinner').tipsy();
     }
 
     reload() {
@@ -103,7 +94,7 @@ export default class Template extends React.Component {
 
     getProgressBar() {
         if (BattleEyeStorage.get('showBattleProgressbar')) {
-            const nbpProgress = ((window.BattleEye.second - window.BattleEye.lastNbp) / 30) * 100;
+            const nbpProgress = ((window.BattleEye.second - this.props.lastNbp) / 30) * 100;
             return (
                 <div className="battleeye__nbp-progress">
                     <div style={{ width: `${nbpProgress}%` }} className="battleeye__nbp-progress-bar"></div>
@@ -135,24 +126,21 @@ export default class Template extends React.Component {
     render() {
         return (
             <div style={this.getContainerStyle()} className={BattleEyeStorage.get('showTransitionAnimations') ? '' : 'no-transitions'}>
-                <div className="level battleeye__menu">
-                    <div className="level-left">
-                        <div className="level-item">
-                            <div className="tags has-addons logo">
-                                <a target="_blank" href="https://battleeye.raideer.xyz/" className="tag">BATTLE EYE</a>
-                                <span id="battleeye-version" className="tag is-main">v{ BattleEye.version }</span>
-                                <span className="tag">
-                                    <span id="be_connected" style={{ display: 'none' }}></span>
-                                    { this.renderLoader() }
-                                </span>
+                <div className="be__menu be__columns">
+                    <div className="be__column be__menu-section">
+                        <div className="be__logo">
+                            <a target="_blank" href="https://battleeye.raideer.xyz/">BATTLE EYE</a>
+                            <div className="be__logo-status">
+                                <span id="battleeye-version">v{ BattleEye.version }</span>
+                                <span id="be_connected"></span>
                             </div>
+                            { this.renderLoader() }
                         </div>
-                        <div className="level-item buttons has-addons">
+                        <div className="be__button-group">
                             <TabButton
                                 name='divisions'
                                 activeTab={this.state.activeTab}
                                 inactiveClass="is-lighter"
-                                className="is-be-main"
                                 click={this.setTab.bind(this, 'divisions')}>
                                 <i className="fas fa-list be-menu-icon"></i> Divisions
                             </TabButton>
@@ -160,7 +148,6 @@ export default class Template extends React.Component {
                                 name='charts'
                                 activeTab={this.state.activeTab}
                                 inactiveClass="is-lighter"
-                                className="is-be-main"
                                 click={this.setTab.bind(this, 'charts')}>
                                 <i className="fas fa-chart-line be-menu-icon"></i> Charts
                             </TabButton>
@@ -168,56 +155,68 @@ export default class Template extends React.Component {
                                 name='export'
                                 activeTab={this.state.activeTab}
                                 inactiveClass="is-lighter"
-                                className="is-be-main"
                                 click={this.setTab.bind(this, 'export')}>
                                 <i className="fas fa-file-export be-menu-icon"></i> Export
                             </TabButton>
-                            { BattleEyeStorage.get('showAutoattacker') ? <TabButton
-                                name='autoattacker'
-                                activeTab={this.state.activeTab}
-                                inactiveClass="is-lighter"
-                                className="is-be-main"
-                                click={this.setTab.bind(this, 'autoattacker')}>
-                                Auto attacker <span style={{ marginLeft: '4px' }}>{window.BattleEye.autoattacker.enabled ? <i className="fas fa-toggle-on has-text-success"></i> : <i className="fas fa-toggle-off"></i>}</span>
-                            </TabButton> : null}
                             <TabButton
                                 name='firstKills'
                                 activeTab={this.state.activeTab}
                                 inactiveClass="is-lighter"
-                                className="is-be-main"
                                 click={this.setTab.bind(this, 'firstKills')}>
                                 First kills {window.BattleEye.fktVersion ? <i style={{ fontSize: '10px', marginLeft: '4px' }}>v{window.BattleEye.fktVersion}</i> : ''}
                             </TabButton>
-                            {/* <TabButton
+                            { !SERVER_DATA.spectatorOnly
+                            && <TabButton
+                                name='deploy'
+                                activeTab={this.state.activeTab}
+                                inactiveClass="is-lighter"
+                                className="be-deploy-btn"
+                                click={this.setTab.bind(this, 'deploy')}>
+                                Deploy
+                                {
+                                    this.props.deployActive
+                                    && ` (${Math.round(this.props.deployProgress)}%)`
+                                }
+                                {
+                                    (
+                                        this.props.deployActive
+                                        && <i className="fas fa-toggle-on"></i>
+                                    )
+                                    || (
+                                        !this.props.deployActive
+                                        && <i className="fas fa-toggle-off"></i>
+                                    )
+                                }
+                            </TabButton>}
+                            <TabButton
                                 name='other'
                                 activeTab={this.state.activeTab}
                                 inactiveClass="is-lighter"
-                                className="is-be-main"
                                 click={this.setTab.bind(this, 'other')}>
-                                Other stats
-                            </TabButton> */}
+                                Other
+                            </TabButton>
                         </div>
                     </div>
-                    <div className="level-right">
-                        <div className="level-item buttons">
+                    <div className="be__column be__column-right be__menu-section">
+                        <div className="be__button-group">
                             <TabButton
                                 name='about'
                                 activeTab={this.state.activeTab}
                                 click={this.setTab.bind(this, 'about')}
-                                inactiveClass="is-outlined"
-                                className='is-be-main'>
+                                className="is-gradient">
                                 <i className="fas fa-info-circle"></i>
                             </TabButton>
                             <TabButton
                                 click={this.reload.bind(this)}
-                                className='is-be-main is-outlined'>
+                                activeTab={this.state.activeTab}
+                                className='be__button-white'>
                                 <i className="fas fa-sync-alt"></i>
                             </TabButton>
                             <TabButton
                                 name='settings'
                                 activeTab={this.state.activeTab}
-                                click={this.setTab.bind(this, 'settings')}
-                                className='is-be-main'>
+                                className="be__button-white"
+                                click={this.setTab.bind(this, 'settings')}>
                                 <i className="fas fa-cog"></i>
                             </TabButton>
                         </div>
@@ -234,3 +233,17 @@ export default class Template extends React.Component {
         );
     }
 }
+
+function mapState(state) {
+    return {
+        loading: state.main.loading,
+        leftStats: state.main.leftStats,
+        rightStats: state.main.rightStats,
+        nbp: state.main.nbp,
+        lastNbp: state.main.lastNbp,
+        deployProgress: state.deployer.progress,
+        deployActive: state.deployer.deployActive
+    };
+}
+
+export default connect(mapState)(Template);

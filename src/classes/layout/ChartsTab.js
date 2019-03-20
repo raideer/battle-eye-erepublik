@@ -3,13 +3,20 @@ import TabButton from './TabButton';
 
 import Table from './charts/Table';
 import Pie from './charts/Pie';
-import Radar from './charts/Radar';
 import Bar from './charts/Bar';
 
 import { Line } from 'react-chartjs-2';
-import { intToRGB, hashCode, getPerc, division, prettifyCountryName } from '../Utils';
+import {
+    getPerc,
+    division,
+    findCountry,
+    leftSideName,
+    rightSideName,
+    getStatsName
+} from '../Utils';
+import { connect } from 'react-redux';
 
-export default class ChartsTab extends React.Component {
+class ChartsTab extends React.Component {
     constructor() {
         super();
 
@@ -31,45 +38,50 @@ export default class ChartsTab extends React.Component {
         });
     }
 
-    getChart(countries, side) {
+    getChart(fields, side) {
         const chartLabels = [];
         const chartData = [];
-        const chartColors = [];
 
-        for (var i in countries) {
-            chartLabels.push(prettifyCountryName(i));
-            chartData.push(countries[i].damage);
-            chartColors.push(`#${intToRGB(hashCode(i))}`);
+        for (const i in fields) {
+            let label = i;
+
+            if (this.props.displayStats == 'military_units') {
+                if (window.BattleEye.muData[i]) {
+                    label = window.BattleEye.muData[i].name;
+                } else {
+                    label = `Unit #${i}`;
+                }
+            } else {
+                const country = findCountry('permalink', i);
+                if (country) {
+                    label = country.code;
+                }
+            }
+
+            chartLabels.push(label);
+            chartData.push(fields[i].damage);
         }
 
         switch (this.state.activeChart) {
         case 'pie':
             return (
                 <Pie
+                    displayStats={this.props.displayStats}
                     labels={chartLabels}
                     data={chartData}
-                    colors={chartColors}
-                />
-            );
-        case 'radar':
-            return (
-                <Radar
-                    labels={chartLabels}
-                    data={chartData}
-                    colors={chartColors}
                 />
             );
         case 'table': {
             return (
-                <Table side={side} countries={countries} />
+                <Table side={side} fields={fields} />
             );
         }
         case 'bar': {
             return (
                 <Bar
+                    displayStats={this.props.displayStats}
                     labels={chartLabels}
                     data={chartData}
-                    colors={chartColors}
                 />
             );
         }
@@ -83,9 +95,6 @@ export default class ChartsTab extends React.Component {
         if (type == 'dps') {
             dataLeft = data.left.map(point => point.dps);
             dataRight = data.right.map(point => point.dps);
-        } else if (type == 'kills') {
-            dataLeft = data.left.map(point => point.kills);
-            dataRight = data.right.map(point => point.kills);
         } else if (type == 'activeFighters') {
             dataLeft = data.left.map(point => point.activeFighters);
             dataRight = data.right.map(point => point.activeFighters);
@@ -107,14 +116,14 @@ export default class ChartsTab extends React.Component {
                     }),
                     datasets: [
                         {
-                            label: BattleEye.teamAName,
+                            label: leftSideName,
                             fill: false,
                             lineTension: 0,
                             borderColor: '#23d160',
                             data: dataLeft
                         },
                         {
-                            label: BattleEye.teamBName,
+                            label: rightSideName,
                             fill: false,
                             lineTension: 0,
                             borderColor: '#fe385f',
@@ -150,18 +159,18 @@ export default class ChartsTab extends React.Component {
     }
 
     renderTab() {
-        const { data } = this.props;
+        const { leftStats, rightStats } = this.props;
+        if (!leftStats || !rightStats) return null;
         const tab = this.state.activeTab;
         const overall = tab == 'overall';
 
         switch (this.state.activeChart) {
-        case 'kills':
         case 'domination':
         case 'activeFighters':
         case 'dps': {
             const damageHistory = {
-                left: overall ? data.left.damageHistory : data.left.divisions[tab].damageHistory,
-                right: overall ? data.right.damageHistory : data.right.divisions[tab].damageHistory
+                left: overall ? leftStats.damageHistory : leftStats.divisions[tab].damageHistory,
+                right: overall ? rightStats.damageHistory : rightStats.divisions[tab].damageHistory
             };
 
             return (
@@ -171,18 +180,18 @@ export default class ChartsTab extends React.Component {
             );
         }
         default: {
-            const countries = {
-                left: overall ? data.left.countries : data.left.divisions[tab].countries,
-                right: overall ? data.right.countries : data.right.divisions[tab].countries
+            const stats = {
+                left: overall ? leftStats[this.props.displayStats] : leftStats.divisions[tab][this.props.displayStats],
+                right: overall ? rightStats[this.props.displayStats] : rightStats.divisions[tab][this.props.displayStats]
             };
 
             return (
-                <div className="columns">
-                    <div className="column is-half">
-                        {this.getChart(countries.left, 'left')}
+                <div className="be__columns">
+                    <div className="be__column is-half">
+                        {this.getChart(stats.left, 'left')}
                     </div>
-                    <div className="column is-half">
-                        {this.getChart(countries.right, 'right')}
+                    <div className="be__column is-half">
+                        {this.getChart(stats.right, 'right')}
                     </div>
                 </div>
             );
@@ -212,25 +221,37 @@ export default class ChartsTab extends React.Component {
             ['table', 'Table'],
             ['bar', 'Bar charts'],
             ['pie', 'Pie charts'],
-            ['radar', 'Radar charts'],
             ['dps', 'DPS'],
             ['domination', 'Domination'],
-            ['kills', 'Kill count'],
             ['activeFighters', 'Active fighters']
         ];
 
         return (
-            <div className="battleeye__countries">
-                <div className="filters">
-                    <div className="level">
-                        <div className="level-item buttons has-addons">
+            <div className="be__charts">
+                <div className="be__filters">
+                    <div className="be__level">
+                        <div className="be__button-group">
+                            { ['countries', 'military_units'].map(tab => {
+                                return (
+                                    <TabButton
+                                        key={tab}
+                                        name={tab}
+                                        activeTab={this.props.displayStats}
+                                        click={() => this.props.changeStats(tab)}>
+                                        {getStatsName(tab)}
+                                    </TabButton>
+                                );
+                            }) }
+                        </div>
+                    </div>
+                    <div className="be__level">
+                        <div className="be__button-group">
                             { charts.map(tab => {
                                 return (
                                     <TabButton
                                         key={tab[0]}
                                         name={tab[0]}
                                         activeTab={this.state.activeChart}
-                                        className={`${this.state.activeChart == tab[0] ? '' : 'is-outlined'} is-inverted is-dark`}
                                         click={this.setChart.bind(this, tab[0])}>
                                         {tab[1]}
                                     </TabButton>
@@ -238,15 +259,14 @@ export default class ChartsTab extends React.Component {
                             }) }
                         </div>
                     </div>
-                    <div className="level">
-                        <div className="level-item buttons has-addons">
+                    <div className="be__level">
+                        <div className="be__button-group">
                             { tabs.map(tab => {
                                 return (
                                     <TabButton
                                         key={tab[0]}
                                         name={tab[0]}
                                         activeTab={this.state.activeTab}
-                                        className={`${this.state.activeTab == tab[0] ? '' : 'is-outlined'} is-inverted is-dark`}
                                         click={this.setTab.bind(this, tab[0])}>
                                         {tab[1]}
                                     </TabButton>
@@ -260,3 +280,25 @@ export default class ChartsTab extends React.Component {
         );
     }
 }
+
+function mapState(state) {
+    return {
+        leftStats: state.main.leftStats,
+        rightStats: state.main.rightStats,
+        displayStats: state.main.displayStats
+    };
+}
+
+function mapDispatch(dispatch) {
+    return {
+        changeStats(value) {
+            dispatch({
+                type: 'CHANGE_STATS',
+                value
+            });
+        }
+    };
+}
+
+// Connect them:
+export default connect(mapState, mapDispatch)(ChartsTab);

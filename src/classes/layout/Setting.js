@@ -7,10 +7,10 @@ export default class Setting extends React.Component {
         if (input) {
             return (
                 <div className="setting">
-                    <span className="buttons has-addons">
-                        <span className="button is-static setting-name is-small">{ title }</span>
+                    <span className="be__button-group">
+                        <span className="be__button setting-name">{ title }</span>
                         <input onChange={input} value={value} className="setting-input" type="text"/>
-                        { inputType ? <span className="button is-static setting-name is-small">{inputType}</span> : null}
+                        { inputType ? <span className="be__button setting-name">{inputType}</span> : null}
                     </span>
                 </div>
             );
@@ -19,14 +19,14 @@ export default class Setting extends React.Component {
         if (options) {
             return (
                 <div className="setting">
-                    <span className="buttons has-addons">
-                        <span className="button is-static setting-name is-small">{ title }</span>
+                    <span className="be__button-group">
+                        <span className="be__button setting-name">{ title }</span>
                         { options.map(option => {
                             return (
                                 <span
                                     key={option[0]}
                                     onClick={handleClick.bind(null, name, option[0])}
-                                    className={`button is-small ${value == option[0] ? 'is-info' : 'is-light'}`}>{option[1]}</span>
+                                    className={`be__button ${value == option[0] ? 'is-active' : ''}`}>{option[1]}</span>
                             );
                         }) }
                     </span>
@@ -36,10 +36,10 @@ export default class Setting extends React.Component {
 
         return (
             <div className="setting">
-                <span className="buttons has-addons">
-                    <span className="button is-static setting-name is-small">{ title }</span>
-                    <span onClick={handleClick.bind(null, name, true)} className={`button is-small ${value === true ? 'is-success' : 'is-light'}`}>On</span>
-                    <span onClick={handleClick.bind(null, name, false)} className={`button is-small ${value === false ? 'is-danger' : 'is-light'}`}>Off</span>
+                <span className="be__button-group">
+                    <span className="be__button setting-name">{ title }</span>
+                    <span onClick={handleClick.bind(null, name, true)} className={`be__button ${value === true ? 'is-active' : ''}`}>On</span>
+                    <span onClick={handleClick.bind(null, name, false)} className={`be__button ${value === false ? 'is-active' : ''}`}>Off</span>
                 </span>
             </div>
         );

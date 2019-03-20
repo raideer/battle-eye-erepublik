@@ -27,8 +27,8 @@ export default class SettingsTab extends React.Component {
 
     render() {
         return (
-            <div className="columns battleeye__settings">
-                <div className="column is-one-third">
+            <div className="be__columns battleeye__settings">
+                <div className="be__column is-one-third">
                     <div className="section-title">General</div>
                     <Setting
                         title="Show BattleEye above battlefield"
@@ -79,10 +79,10 @@ export default class SettingsTab extends React.Component {
                         }}
                         buttonStyle={{ margin: '5px 0' }}
                         text="Reset settings to defaults"
-                        buttonClass="is-small is-warning"
+                        buttonClass="is-round"
                     />
                 </div>
-                <div className="column">
+                <div className="be__column is-one-third">
                     <div className="section-title">Divisions tab</div>
                     <Setting
                         title="Show DIV 1"
@@ -121,15 +121,16 @@ export default class SettingsTab extends React.Component {
                         handleClick={this.handleClick.bind(this)}
                     />
                 </div>
-                <div className="column is-two-fifths">
+                <div className="be__column is-one-third">
                     <div className="section-title">Display and performance</div>
                     <Setting
                         title="Layout update rate"
                         name="layoutUpdateRate"
                         options={[
-                            [1, 'every second'],
-                            [2, 'every 2s'],
-                            [4, 'every 4s']
+                            [1, '1s'],
+                            [2, '2s'],
+                            [3, '3s'],
+                            [4, '4s']
                         ]}
                         value={this.state.layoutUpdateRate}
                         handleClick={this.handleClick.bind(this)}
@@ -138,15 +139,6 @@ export default class SettingsTab extends React.Component {
                         title="Smooth transitions"
                         name="showTransitionAnimations"
                         value={this.state.showTransitionAnimations}
-                        handleClick={this.handleClick.bind(this)}
-                    />
-                </div>
-                <div className="column is-one-third">
-                    <div className="section-title">Experimental features</div>
-                    <Setting
-                        title="Autoattacker"
-                        name="showAutoattacker"
-                        value={this.state.showAutoattacker}
                         handleClick={this.handleClick.bind(this)}
                     />
                 </div>

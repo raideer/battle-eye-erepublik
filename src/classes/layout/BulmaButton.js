@@ -21,7 +21,7 @@ export default class BulmaButton extends React.Component {
         buttonClass = buttonClass ? buttonClass : '';
 
         return (
-            <div onClick={this.props.onClick} style={buttonStyle} className={`button ${buttonClass}`}>
+            <div onClick={this.props.onClick} style={buttonStyle} className={`be__button ${buttonClass}`}>
                 { this.renderIcon(this.props.icon) }
                 <span>{ text }</span>
                 { this.renderIcon(this.props.bottomIcon) }

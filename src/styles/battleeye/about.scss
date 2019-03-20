@@ -22,13 +22,13 @@
     }
 
     .bug {
-        border-left: 3px solid darken($colorMainbg, 10%);
+        border-left: 3px solid $colorPrimaryAccent;
         padding-left: 10px;
         margin-bottom: 4px;
 
         .bug-problem, .bug-solution  {
             padding: 2px 5px;
-            background-color: darken($colorMainbg, 10%);
+            background-color: darken($colorSecondary, 10%);
         }
 
         .bug-problem {
@@ -37,7 +37,7 @@
 
         .bug-text {
             background-color: $colorWhite;
-            color: $colorMainbg;
+            color: $colorSecondary;
             padding: 5px;
         }
 

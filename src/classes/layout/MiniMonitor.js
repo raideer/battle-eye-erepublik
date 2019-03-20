@@ -1,13 +1,15 @@
 import React from 'react';
 import { getPerc, divisions } from '../Utils';
+import { connect } from 'react-redux';
 
-export default class MiniMonitor extends React.Component {
+class MiniMonitor extends React.Component {
     renderDivisions() {
-        const { left, right } = this.props.feedData;
+        const { leftStats, rightStats } = this.props;
+        if (!leftStats || !rightStats) return null;
 
         return divisions.map(div => {
-            const leftDamage = left.divisions[div].damage;
-            const rightDamage = right.divisions[div].damage;
+            const leftDamage = leftStats.divisions[div].damage;
+            const rightDamage = rightStats.divisions[div].damage;
 
             return (
                 <div key={div}>
@@ -30,3 +32,13 @@ export default class MiniMonitor extends React.Component {
         );
     }
 }
+
+function mapState(state) {
+    return {
+        leftStats: state.main.leftStats,
+        rightStats: state.main.rightStats
+    };
+}
+
+// Connect them:
+export default connect(mapState)(MiniMonitor);

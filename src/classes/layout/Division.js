@@ -3,13 +3,15 @@ import StatsField from './StatsField';
 import DominationBar from './DominationBar';
 import DominationBarNew from './DominationBarNew';
 
-export default class Division extends React.Component {
+import { connect } from 'react-redux';
+
+class Division extends React.Component {
     render() {
         const { division, className, i } = this.props;
 
         let actualDomination = 0;
-        if (window.BattleEye.nbpStats && !window.BattleEye.nbpStats.error) {
-            actualDomination = window.BattleEye.nbpStats.division.domination[i];
+        if (this.props.nbp) {
+            actualDomination = this.props.nbp.division.domination[i];
             if (window.SERVER_DATA.mustInvert) {
                 actualDomination = 100 - actualDomination;
             }
@@ -17,16 +19,16 @@ export default class Division extends React.Component {
 
         return (
             <div className={`battleeye__division ${className ? className : ''}`}>
-                <div className="columns">
-                    <div className="column has-text-left division__stats">
+                <div className="be__columns">
+                    <div className="be__column division__stats">
                         <StatsField
                             left={division.left.damage}
                             right={division.right.damage}
                             name="Damage"
                         />
                         <StatsField
-                            left={division.left.hits}
-                            right={division.right.hits}
+                            left={division.left.kills}
+                            right={division.right.kills}
                             name="Kills"
                         />
                         <StatsField
@@ -35,12 +37,12 @@ export default class Division extends React.Component {
                             name="DPS"
                         />
                         <StatsField
-                            left={division.left.recentFighters}
-                            right={division.right.recentFighters}
+                            left={division.left.recentFightersCount}
+                            right={division.right.recentFightersCount}
                             name="Currently fighting"
                         />
                     </div>
-                    <div className="column is-three-fifths division__domination">
+                    <div className="be__column is-three-fifths division__domination">
                         <DominationBarNew
                             left={division.left.damage}
                             right={division.right.damage}
@@ -58,3 +60,11 @@ export default class Division extends React.Component {
         );
     }
 }
+
+function mapState(state) {
+    return {
+        nbp: state.main.nbp
+    };
+}
+
+export default connect(mapState)(Division);

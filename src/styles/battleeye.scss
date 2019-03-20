@@ -1,27 +1,32 @@
-$colorMainbg: #323750;
 $colorWhite: #dfdfdf;
-$custom_mainColor: #0c2569;
-$custom_mainDarken: #0648c8;
 $tabColor: $colorWhite;
 
+$colorPrimary: #501ea1;
+$colorPrimaryDarker: #311068;
+$colorSecondary: #2e3347;
+$colorSecondaryDarker: darken($colorSecondary, 10%);
+$colorPrimaryAccent: #fcb045;
+$borderRadius: 10px;
+$mainGradient: linear-gradient(90deg, rgb(253, 29, 29) 0%, rgb(252, 176, 69) 100%);
+$mainGradientLong: linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%);
+$fontFamily: 'Open Sans', sans-serif;
+
+$red: #de2828;
+$green: #60d534;
+
 #battleeye__live {
-    @import "~bulma/sass/utilities/initial-variables.sass";
-    @import "~bulma/sass/utilities/functions.sass";
-
-    $widescreen-enabled: false;
-    $fullhd-enabled: false;
-
-    $tabs-link-padding: 0.1em 0.6em;
-    $navbar-height: 2.2rem;
+    // @import "~bulma/sass/utilities/initial-variables.sass";
+    // @import "~bulma/sass/utilities/functions.sass";
+    @import "./battleeye/layout.scss";
 
     width: 954px;
     position: relative;
     float: left;
     border-radius: 0px 0px 20px 20px;
-    background-color: #171b2c;
+    background-color: $colorSecondaryDarker;
     font-size: 14px;
     text-align: center;
-    line-height: 1.7;
+    font-family: $fontFamily;
 
     #be_connected {
         width: 10px;
@@ -50,19 +55,26 @@ $tabColor: $colorWhite;
         transition-duration: 0s !important;
     }
 
-    .navbar {
-        margin-top: 5px;
+    .be__logo {
+        .spinner {
+            width: 10px;
+            height: 20px;
+        }
+
+        .spinner > div {
+            background: $mainGradient;
+        }
     }
 
     .spinner {
-        width: 10px;
-        height: 20px;
+        width: 100%;
+        height: 40px;
         text-align: center;
         font-size: 10px;
       }
       
       .spinner > div {
-        background-color: $colorMainbg;
+        background-color: $colorPrimaryAccent;
         height: 100%;
         width: 2px;
         display: inline-block;
@@ -107,101 +119,37 @@ $tabColor: $colorWhite;
       }
 
     .battleeye {
-        &__menu {
-            padding: 0 5px;
-
-            .logo {
-                margin-right: 10px;
-                
-                a {
-                    font-weight: bold;
-                    color: rgb(212, 216, 240);
-                }
-
-                .tag:not(.is-main) {
-                    background-color: #212538;
-                }
-            }
-
-            margin-top: 5px;
-        }
-
         &__tab-content {
             color: $tabColor;
-            background-color: $colorMainbg;
-            border-top: 4px solid #212538;
-            padding: 4px 0;
+            background-color: $colorSecondary;
             border-radius: 4px;
-            padding-bottom: 5px;
+            padding: 5px 0;
         }
 
         &__nbp-progress {
             width: 100%;
             height: 5px;
             overflow: hidden;
+            background-color: $colorSecondary;
         }
 
         &__nbp-progress-bar {
             transition: width 1s linear;
             height: 5px;
-            background-color: rgb(189, 189, 189);
+            background: $mainGradientLong;
         }
     }
 
-    @import "~bulma/bulma.sass";
-
-    .tag:not(body).is-main {
-        background-color: $custom_mainColor;
-        color: white;
-    }
-
-    .tag:not(body).is-small {
-        padding: 2px 4px;
-        height: 1.7em;
-    }
-
-    .tag:not(body).is-dark {
-        background-color: darken($colorMainbg, 15%);
-        color: $tabColor;
-    }
-
-    .level:not(:last-child) {
-        margin-bottom: 5px;
-    }
-
-    *, *:before, *:after {
-        box-sizing: border-box;
-    }
-
-    .columns, .columns:last-child {
-        margin: 0;
-    }
-
-    .column {
-        padding: 5px 1em;
-    }
-
-    .col-half {
-        width: 50%;
-    }
-
-    .button {
-        font-size: 0.9em;
-    }
-    
-    .be-menu-icon {
-        margin: 0 4px 0 0;
-    }
-
+    // @import "~bulma/bulma.sass";
     @import "./battleeye/panel.scss";
     @import "./battleeye/divisions.scss";
-    @import "./battleeye/countries.scss";
+    @import "./battleeye/charts.scss";
     @import "./battleeye/settings.scss";
     @import "./battleeye/about.scss";
     @import "./battleeye/firstkills.scss";
-    @import "./battleeye/autoattacker.scss";
+    @import "./battleeye/deploy.scss";
     @import "./battleeye/other.scss";
-    @import "./battleeye/bulma_custom.scss";
+    // @import "./battleeye/bulma_custom.scss";
 }
 
 @import "./battleeye/monitor.scss";

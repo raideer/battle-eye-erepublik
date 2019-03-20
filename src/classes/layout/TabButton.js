@@ -8,7 +8,7 @@ export default class TabButton extends React.Component {
         return (
             <button
                 onClick={click}
-                className={`button is-small ${activeTab == name ? cn : icn} ${className ? className : ''}`}>
+                className={`be__button ${activeTab == name ? cn : icn} ${className ? className : ''}`}>
                 { this.props.children }
             </button>
         );

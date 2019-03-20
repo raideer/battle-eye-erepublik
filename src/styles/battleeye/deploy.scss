@@ -1,0 +1,298 @@
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 25px;
+    background: #d1d1d1;
+    background: url('https://cdn.raideer.xyz/sliderHandle.png');
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.be-deploy {
+    position: relative;
+    display: flex;
+
+    &-btn {
+        .fas {
+            margin-left: 5px;
+        }
+
+        .fa-toggle-on {
+            color: lime;
+        }
+    }
+
+    &__stats {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: darken($colorSecondary, 10%);
+        z-index: 99;
+        padding: 5px;
+        opacity: 0.97;
+        font-size: 12px;
+
+        .columns {
+            font-size: 0.9em;
+        }
+
+        &-close {
+            border: 0 none;
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            color: white;
+            background: transparent;
+            cursor: pointer;
+            font-size: 20px;
+        }
+    }
+
+    .spinner {
+        width: 100px;
+        height: 60px;
+    }
+    .spinner > div {
+        background-color: $colorPrimaryDarker;
+        width: 5px;
+    }
+
+    &__weapon-select, &__food-select, &__summary {
+        width: 33.333%;
+    }
+
+    &__title {
+        background-color: darken($colorSecondary, 10%);
+        margin-bottom: 10px;
+    }
+
+    &__button {
+        width: 200px;
+        height: 50px;
+        line-height: 50px;
+        border-radius: 10px;
+        border: none;
+        background: $green;
+        color: white;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 20px;
+        cursor: pointer;
+
+        &--active {
+            background: $colorPrimaryAccent;
+        }
+    }
+
+    &__food {
+        margin-top: 20px;
+        position: relative;
+
+        &-select {
+            &-addbtn {
+                right: 0;
+            }
+
+            &-subbtn {
+                left: 0;
+            }
+
+            &-poolbtn {
+                left: 45px;
+            }
+
+            &-maxbtn {
+                right: 45px;
+            }
+
+            &-addbtn, &-subbtn, &-poolbtn, &-maxbtn {
+                position: absolute;
+                border: 0;
+                background: $colorPrimaryDarker;
+                color: white;
+                top: 5px;
+                border-radius: 4px;
+                width: 40px;
+                height: 20px;
+                font-size: 10px;
+                cursor: pointer;
+
+                &:hover {
+                    background: $colorPrimary;
+                }
+            }
+
+            &-amount {
+                position: relative;
+                font-size: 12px;
+                margin-top: 10px;
+
+                div {
+                    padding: 5px;
+                }
+
+                input {
+                    border: 0;
+                    background-color: transparent;
+                    width: 50px;
+                    height: 25px;
+                    text-align: center;
+                    border-bottom: 2px solid #151820;
+                    color: white;
+                }
+            }
+        }
+
+        &-slider {
+            width: 100%;
+            height: 25px;
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: transparent;
+            outline: none;
+            overflow: hidden;
+            z-index: 10;
+            position: relative;
+            display: block;
+            &-energy, &-special, &-food {
+                height: 25px;
+                float: left;
+                display: block;
+            }
+
+            &-energy {
+                background-color: $green;
+                // box-shadow: inset 0 0px 5px #3dff4d;
+            }
+
+            &-food {
+                background-color: darken($green, 10%);
+                // box-shadow: inset 0 0px 5px #32d440;
+            }
+
+            &-special {
+                background-color: $red;
+                // box-shadow: inset 0 0px 5px #ff3d3d;
+            }
+
+            &-bg {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                border-radius: 4px;
+                background-color: #151820;
+                overflow: hidden;
+            }
+
+            &:hover {
+                opacity: 1;
+            }
+
+            &::-webkit-slider-thumb, &::-moz-range-thumb, &::-ms-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 15px;
+                height: 25px;
+                background: #d1d1d1;
+                background: url('https://cdn.raideer.xyz/sliderHandle.png');
+                border-radius: 4px;
+                border: none;
+                cursor: pointer;
+            }
+        }
+    }
+
+    &__weapons {
+        display: flex;
+        padding: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        &-item {
+            position: relative;
+            // background-image: url('https://cdn.raideer.xyz/weaponItemBg.png');
+            background-color: darken($colorSecondary, 10%);
+            border-radius: 5px;
+            width: 70px;
+            height: 80px;
+            margin: 2px;
+
+            border-top: 3px solid $colorPrimaryDarker;
+            border-left: 1px solid $colorPrimaryDarker;
+            border-bottom: 3px solid $colorPrimaryDarker;
+            border-right: 1px solid $colorPrimaryDarker;
+
+            transition: opacity 0.3s;
+
+            &--active {
+                // background-image: url('https://cdn.raideer.xyz/weaponItemBgActive.png');
+                background-color: $colorPrimary;
+                border-color: $colorPrimaryAccent;
+
+                .be-deploy__weapons-item-amount {
+                    background-color: $colorPrimaryDarker;
+                }
+            }
+
+            &:hover {
+                cursor: pointer;
+                opacity: 0.8;
+            }
+
+            img {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            &-quality, &-damage, &-amount {
+                position: absolute;
+                font-size: 10px;
+            }
+
+            &-amount {
+                // font-size: 12px;
+                right: 10px;
+                bottom: 10px;
+                background: #0c1435;
+                padding: 0 5px;
+                line-height: 15px;
+                border-radius: 7px;
+            }
+
+            &-damage {
+                right: 5px;
+                top: 2px;
+            }
+
+            &-quality {
+                left: 10px;
+                top: 2px;
+            }
+        }
+    }
+
+    &__weapon-select {
+        
+    }
+
+    &__food-select {
+
+    }
+
+    &__summary {
+        .be-deploy__title {
+            margin-bottom: 0;
+        }
+
+        &-estimations {
+            font-size: 11px;
+            padding: 5px;
+        }
+    }
+}

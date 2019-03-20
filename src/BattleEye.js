@@ -1,27 +1,32 @@
-import Stats from './classes/Stats';
 import Layout from './classes/Layout';
+import Side from './classes/stats/Side';
+import Deployer from './classes/Deployer';
 import EventHandler from './classes/EventHandler';
-import AutoAttacker from './classes/AutoAttacker';
-import { currentDamage } from './classes/Utils';
+import { currentDamage, cloneObject, loadImage } from './classes/Utils';
+
+import { createStore, combineReducers } from 'redux';
+import $ from 'jQuery';
 
 import BattleStatsLoader from './BattleStatsLoader';
 import ExcelGenerator from './ExcelGenerator';
-import $ from 'jQuery';
-
-const SERVER_DATA = window.SERVER_DATA;
-const erepublik = window.erepublik;
 
 export default class BattleEye {
     constructor() {
-        this.version = '2.1.2';
+        this.version = '2.2.0';
         this.fktVersion = null; // Current First Kill Tracker version
         this.connected = true; // Has BE connected to the socket
         this.loading = true; // Is BattleEye still loading
-        this.autoattacker = new AutoAttacker;
+        this.deployer = new Deployer(this);
+
+        this.store = createStore(combineReducers({
+            main: this.reducer,
+            deployer: this.deployer.reducer
+        }));
+
+        this.muData = null;
 
         this.interval = null; // Holds the main clock
         this.second = 0; // Current second
-        this.lastNbp = 999; // Time when last nbp was fetched
         this.nbpStats = null; // Last fetched nbp data
         this.contributors = {}; // List of contributors
         this.knownErrors = []; // List of known errors fetched from data.json
@@ -30,45 +35,14 @@ export default class BattleEye {
         this.events = new EventHandler();
         this.updateRate = BattleEyeStorage.get('layoutUpdateRate');
 
-        this.teamA = new Stats(SERVER_DATA.leftBattleId);
-        this.teamAName = SERVER_DATA.countries[SERVER_DATA.leftBattleId];
-        this.teamB = new Stats(SERVER_DATA.rightBattleId);
-        this.teamBName = SERVER_DATA.countries[SERVER_DATA.rightBattleId];
-
-        this.teamA.defender = SERVER_DATA.defenderId == SERVER_DATA.leftBattleId;
-        this.teamB.defender = SERVER_DATA.defenderId != SERVER_DATA.leftBattleId;
+        this.statsA = new Side(window.SERVER_DATA.leftBattleId);
+        this.statsB = new Side(window.SERVER_DATA.rightBattleId);
 
         this.personalDamage = currentDamage();
-        this.firstKills = null;
 
-        this.revolutionCountry = null;
-        if (SERVER_DATA.isCivilWar) {
-            if (SERVER_DATA.invaderId == SERVER_DATA.leftBattleId) {
-                this.teamA.revolution = true;
-                this.teamAName = `${this.teamBName} Revolution`;
-                this.revolutionCountry = this.teamBName;
-            } else {
-                this.teamB.revolution = true;
-                this.teamBName = `${this.teamAName} Revolution`;
-                this.revolutionCountry = this.teamBName;
-            }
-        }
+        this.layout = new Layout();
 
-        pomelo.disconnect = () => {
-            // tried to dc
-            setTimeout(() => {
-                this.connected = true;
-            }, 2000);
-        };
-
-        this.layout = new Layout({
-            teamAName: this.teamAName,
-            teamBName: this.teamBName,
-            version: this.version,
-            revolutionCountry: this.revolutionCountry
-        }, this);
-
-        BattleStatsLoader.getNbpStats(SERVER_DATA.battleId)
+        BattleStatsLoader.getNbpStats(window.SERVER_DATA.battleId)
         .then(data => {
             if (data.zone_finished) {
                 this.hideLoader();
@@ -76,11 +50,11 @@ export default class BattleEye {
             }
 
             BattleStatsLoader.loadStats().then(stats => {
-                BattleStatsLoader.processStats(stats, this.teamA, this.teamB);
-                this.events.emit('log', 'Battle stats loaded.');
+                BattleStatsLoader.processStats(stats, this.statsA, this.statsB);
+                belLog('Battle stats loaded');
                 this.hideLoader();
 
-                BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
+                BattleStatsLoader.calibrateDominationPercentages(data, this.statsA, this.statsB, this.second);
             });
 
             this.fetchBattleEyeData();
@@ -88,35 +62,196 @@ export default class BattleEye {
             return Promise.resolve();
         })
         .then(() => {
-            this.layout.update(this.getTeamStats());
+            this.layout.render();
+            this.updateMuData();
 
             window.ajaxSuccess.push((data, url) => {
                 // If data is nbp-stats
                 if (url.match('nbp-stats')) {
-                    this.nbpStats = data;
-                    this.lastNbp = this.second;
-                    BattleStatsLoader.calibrateDominationPercentages(data, this.teamA, this.teamB, this.second);
+                    this.store.dispatch({
+                        type: 'UPDATE_NBP',
+                        value: data,
+                        second: this.second
+                    });
+
+                    BattleStatsLoader.calibrateDominationPercentages(data, this.statsA, this.statsB, this.second);
                 } else if (url.match(/fight-shooot|fight-shoooot|deploy-bomb/) && !data.error && data.message == 'ENEMY_KILLED') {
                     this.personalDamage += data.user.givenDamage;
+                    if (data.user.weaponQuantity >= 0) {
+                        this.store.dispatch({
+                            type: 'SET_WEAPON_AMOUNT',
+                            qualityId: data.user.weaponId,
+                            amount: parseInt(data.user.weaponQuantity)
+                        });
+                    }
+                } else if (url.match('military/change-weapon')) {
+                    this.store.dispatch({
+                        type: 'SET_ACTIVE_WEAPON',
+                        value: data.weaponId
+                    });
                 }
             });
 
-            BattleStatsLoader.getFirstKills(SERVER_DATA.battleId).then(kills => {
-                this.firstKills = kills;
+            BattleStatsLoader.getHovercard(window.SERVER_DATA.citizenId).then(data => {
+                this.store.dispatch({
+                    type: 'MAIN_SET',
+                    field: 'hovercard',
+                    value: data
+                });
             });
+
+
+            this.loadFirstKills();
 
             this.notifyConnection(true);
         });
 
         this.runTicker();
+    }
 
-        this.handleEvents();
+    async updateMuData() {
+        let downloadMuData = false;
+
+        if (BattleEyeStorage.has('muDataChecksum')) {
+            const checksum = await BattleStatsLoader.getMuDataChecksum();
+
+            if (BattleEyeStorage.get('muDataChecksum') != checksum) {
+                downloadMuData = true;
+            }
+        } else {
+            downloadMuData = true;
+        }
+
+        if (downloadMuData) {
+            const data = await BattleStatsLoader.downloadMuData();
+            this.muData = data.data.reduce((acc, unit) => {
+                acc[unit.id] = unit;
+                return acc;
+            }, {});
+            BattleEyeStorage.set('muDataChecksum', data.checksum);
+            BattleEyeStorage.set('muData', JSON.stringify(this.muData));
+            console.log('Downloaded latest muData');
+        } else {
+            this.muData = JSON.parse(BattleEyeStorage.get('muData'));
+        }
+    }
+
+    loadCountryImage(countryCode) {
+        const code = String(countryCode).toLowerCase();
+
+        const images = this.store.getState().main.countryImages;
+
+        if (images[code]) {
+            return images[code];
+        }
+
+        const loading = loadImage(`https://cdn.jsdelivr.net/gh/hjnilsson/country-flags/png100px/${code}.png`);
+
+        if (loading) {
+            loading.then(data => {
+                this.store.dispatch({
+                    type: 'ADD_COUNTRY_IMAGE',
+                    code,
+                    value: data
+                });
+            });
+        }
+
+        return false;
+    }
+
+    reducer(oldState = {
+        loading: true,
+        hovercard: null,
+        leftStats: null,
+        rightStats: null,
+        firstKills: {},
+        nbp: null,
+        lastNbp: 0,
+        displayStats: 'countries',
+
+        exportProgress: 0,
+        exportProgressStatus: '',
+        exportStep: 0,
+        exportData: null,
+
+        countryImages: {}
+    }, action) {
+        const state = cloneObject(oldState);
+
+        switch (action.type) {
+        case 'ADD_COUNTRY_IMAGE': {
+            const images = cloneObject(state.countryImages);
+            images[action.code] = action.value;
+            state.countryImages = images;
+            return state;
+        }
+        case 'MAIN_SET': {
+            state[action.field] = action.value;
+            return state;
+        }
+        case 'SET_EXPORT_STEP': {
+            state.exportStep = parseInt(action.value);
+            return state;
+        }
+        case 'UPDATE_EXPORT_PROGRESS': {
+            state.exportProgress++;
+            return state;
+        }
+        case 'SET_EXPORT_PROGRESS_STATUS': {
+            state.exportProgressStatus = action.value;
+            return state;
+        }
+        case 'SET_EXPORT_DATA': {
+            state.exportData = JSON.parse(JSON.stringify(action.value));
+            return state;
+        }
+        case 'UPDATE_STATS': {
+            state.leftStats = JSON.parse(JSON.stringify(action.leftStats));
+            // state.leftStats = cloneObject(action.leftStats);
+            state.rightStats = JSON.parse(JSON.stringify(action.rightStats));
+            // state.rightStats = cloneObject(action.rightStats);
+            return state;
+        }
+        case 'UPDATE_FKT': {
+            const fk = cloneObject(state.firstKills);
+            fk[action.round] = action.value;
+            state.firstKills = fk;
+            return state;
+        }
+        case 'UPDATE_NBP': {
+            state.nbp = action.value;
+            state.lastNbp = action.second || 0;
+            return state;
+        }
+        case 'CHANGE_STATS': {
+            if (['countries', 'military_units'].indexOf(action.value) === -1) {
+                return state;
+            }
+
+            state.displayStats = action.value;
+            return state;
+        }
+        default:
+            return oldState;
+        }
+    }
+
+    loadFirstKills(round = window.SERVER_DATA.zoneId) {
+        return BattleStatsLoader.getFirstKills(window.SERVER_DATA.battleId, round).then(kills => {
+            this.store.dispatch({
+                type: 'UPDATE_FKT',
+                value: kills,
+                round
+            });
+        });
     }
 
     hideLoader() {
-        $('#battleeye-loading').hide();
-        $('#be_connected').css({
-            display: 'block'
+        this.store.dispatch({
+            type: 'MAIN_SET',
+            field: 'loading',
+            value: false
         });
     }
 
@@ -134,6 +269,10 @@ export default class BattleEye {
 
     resetSettings() {
         window.BattleEyeStorage.loadDefaults();
+    }
+
+    getCitizenInfo(citizenId) {
+        return $.getJSON(`https://www.erepublik.com/${window.SERVER_DATA.culture}/main/citizen-profile-json/${citizenId}`);
     }
 
     async fetchBattleEyeData() {
@@ -163,7 +302,7 @@ export default class BattleEye {
                 type: 'POST',
                 url: `${this.apiURL}/touch`,
                 data: {
-                    citizen: erepublik.citizen.citizenId,
+                    citizen: window.erepublik.citizen.citizenId,
                     version: this.version
                 }
             }).then(() => {
@@ -177,10 +316,11 @@ export default class BattleEye {
     }
 
     async generateSummary() {
-        const data = [];
-        this.events.emit('log', 'Generating summary...');
+        this.store.dispatch({ type: 'SET_EXPORT_STEP', value: 1 });
 
-        for (let round = 1; round <= SERVER_DATA.zoneId; round++) {
+        const data = [];
+
+        for (let round = 1; round <= window.SERVER_DATA.zoneId; round++) {
             let divs = [1, 2, 3, 4];
 
             if (round % 4 === 0) {
@@ -188,42 +328,58 @@ export default class BattleEye {
             }
 
             const stats = await BattleStatsLoader.loadStats(round, divs, state => {
-                this.events.emit('summary.update', state);
+                if (state.page == 1) {
+                    this.store.dispatch({ type: 'UPDATE_EXPORT_PROGRESS' });
+                }
+
+                this.store.dispatch({
+                    type: 'SET_EXPORT_PROGRESS_STATUS',
+                    value: `[Round ${state.round}] Processed ${state.type} for division ${state.div} (${state.page}/${state.maxPage})`
+                });
             });
 
             data[round] = stats;
         }
 
-        const leftTotalStats = new Stats(SERVER_DATA.leftBattleId);
-        const rightTotlaStats = new Stats(SERVER_DATA.rightBattleId);
-        const roundStats = [];
+        this.store.dispatch({
+            type: 'SET_EXPORT_PROGRESS_STATUS',
+            value: 'Data fetching done. Organizing data'
+        });
 
-        leftTotalStats.defender = SERVER_DATA.defenderId == SERVER_DATA.leftBattleId;
-        rightTotlaStats.defender = SERVER_DATA.defenderId != SERVER_DATA.leftBattleId;
+        const leftTotalStats = new Side(window.SERVER_DATA.leftBattleId);
+        const rightTotalStats = new Side(window.SERVER_DATA.rightBattleId);
+        const roundStats = [];
+        const processStats = [];
 
         for (const round in data) {
             const stats = data[round];
-            if (!roundStats) continue;
-            BattleStatsLoader.processStats(stats, leftTotalStats, rightTotlaStats);
+            processStats.push([stats, leftTotalStats, rightTotalStats]);
+            // await BattleStatsLoader.processStats(stats, leftTotalStats, rightTotalStats);
             roundStats[round] = {
-                left: new Stats(SERVER_DATA.leftBattleId),
-                right: new Stats(SERVER_DATA.rightBattleId)
+                left: new Side(window.SERVER_DATA.leftBattleId),
+                right: new Side(window.SERVER_DATA.rightBattleId)
             };
-
-            roundStats[round].left.defender = SERVER_DATA.defenderId == SERVER_DATA.leftBattleId;
-            roundStats[round].right.defender = SERVER_DATA.defenderId != SERVER_DATA.leftBattleId;
-
-            BattleStatsLoader.processStats(stats, roundStats[round].left, roundStats[round].right);
-            this.events.emit('log', `Processed round ${round + 1}`);
+            processStats.push([stats, roundStats[round].left, roundStats[round].right]);
+            // await BattleStatsLoader.processStats(stats, roundStats[round].left, roundStats[round].right);
         }
+
+        await BattleStatsLoader.processStatsMultiple(processStats);
 
         for (const i in roundStats) {
-            roundStats[i].left = roundStats[i].left.toObject();
-            roundStats[i].right = roundStats[i].right.toObject();
+            roundStats[i].left = roundStats[i].left.stats;
+            roundStats[i].right = roundStats[i].right.stats;
         }
 
-        this.events.emit('summary.finished', [leftTotalStats.toObject(), rightTotlaStats.toObject(), roundStats, data]);
-        this.events.emit('log', 'Summary data fetching done');
+        this.store.dispatch({
+            type: 'SET_EXPORT_DATA',
+            value: {
+                left: leftTotalStats.stats,
+                right: rightTotalStats.stats,
+                rounds: roundStats
+            }
+        });
+
+        this.store.dispatch({ type: 'SET_EXPORT_STEP', value: 2 });
     }
 
     displayContributors() {
@@ -255,7 +411,7 @@ export default class BattleEye {
         `);
     }
 
-    isPlayerContributor(citizen = erepublik.citizen.citizenId) {
+    isPlayerContributor(citizen = window.erepublik.citizen.citizenId) {
         let res = null;
 
         for (const color in this.contributors) {
@@ -272,34 +428,26 @@ export default class BattleEye {
         return res;
     }
 
-    getTeamStats() {
-        return {
-            left: this.teamA.toObject(),
-            right: this.teamB.toObject(),
-            firstKills: this.firstKills
-        };
-    }
-
     runTicker() {
         const ticker = () => {
             this.second++;
-            this.events.emit('tick', this.second);
-        };
+            this.statsA.update(this.second);
+            this.statsB.update(this.second);
 
-        this.interval = setInterval(ticker.bind(this), 1000);
-    }
-
-    handleEvents() {
-        const handleTick = second => {
-            this.teamA.updateDps(second);
-            this.teamB.updateDps(second);
-
-            if (second % this.updateRate === 0) {
-                this.layout.update(this.getTeamStats());
+            if (this.second % this.updateRate === 0) {
+                this.updateStats();
             }
         };
 
-        this.events.on('tick', handleTick.bind(this));
+        this.interval = setInterval(ticker, 1000);
+    }
+
+    updateStats() {
+        this.store.dispatch({
+            type: 'UPDATE_STATS',
+            leftStats: this.statsA.stats,
+            rightStats: this.statsB.stats
+        });
     }
 
     notifyConnection(connected = true) {
@@ -324,19 +472,23 @@ export default class BattleEye {
         const closeHandler = data => {
             belLog(`Socket closed [${data.reason}]`);
             this.connected = false;
-            this.layout.update(this.getTeamStats());
+            this.updateStats();
             this.notifyConnection(false);
+        };
+
+        pomelo.disconnect = () => {
+            this.connected = false;
         };
 
         pomelo.on('onMessage', messageHandler.bind(this));
         pomelo.on('close', closeHandler.bind(this));
 
-        this.layout.update(this.getTeamStats());
+        this.updateStats();
     }
 
     handle(data) {
-        this.teamA.handle(data);
-        this.teamB.handle(data);
+        this.statsA.handle(data);
+        this.statsB.handle(data);
         this.connected = true;
     }
 }

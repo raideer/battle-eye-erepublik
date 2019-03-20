@@ -1,13 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 import Template from './layout/Template';
 import MiniMonitor from './layout/MiniMonitor';
 import $ from 'jQuery';
 
 export default class Layout {
-    constructor(headerData) {
-        this.headerData = headerData;
-
+    constructor() {
         this.battleEye = document.createElement('div');
         this.battleEye.setAttribute('id', 'battleeye__live');
 
@@ -24,12 +23,8 @@ export default class Layout {
         $('#battleConsole').append(this.miniMonitor);
     }
 
-    update(feedData) {
-        const data = {
-            feedData
-        };
-
-        ReactDOM.render(<Template {...data} />, this.battleEye);
-        ReactDOM.render(<MiniMonitor {...data} />, this.miniMonitor);
+    render() {
+        ReactDOM.render(<Provider store={window.BattleEye.store}><Template /></Provider>, this.battleEye);
+        ReactDOM.render(<Provider store={window.BattleEye.store}><MiniMonitor /></Provider>, this.miniMonitor);
     }
 }

@@ -1,16 +1,20 @@
 $progressHeight: 15px;
 
 .battleeye__division {
-    border-bottom: 1px solid darken($colorMainbg, 5%);
+    border-bottom: 1px solid darken($colorSecondary, 5%);
 }
 
 .highlight-div {
-    background-color: #742626;
+    background-color: #342a5a;
 }
 
 .division {
     &__name, &__stats, &__domination {
-        border-right: 1px dotted darken($colorMainbg, 10%);
+        border-right: 1px dotted darken($colorSecondary, 10%);
+    }
+
+    &__domination {
+        padding: 0 5px !important;
     }
 
     &__name {
@@ -19,9 +23,14 @@ $progressHeight: 15px;
     }
 
     &__feed {
-        color: $colorMainbg;
+        color: $colorSecondary;
         width: 100%;
-        background-color: lighten($colorMainbg, 60%);
+        background-color: lighten($colorSecondary, 60%);
+    }
+
+    &__stats {
+        padding: 0 5px !important;
+        width: 35%;
     }
 }
 
@@ -31,29 +40,48 @@ $progressHeight: 15px;
     position: relative;
     height: 40px;
     line-height: 40px;
-    background-color: darken($colorMainbg, 10%);
+    background-color: darken($colorSecondary, 10%);
     color: $colorWhite;
 
-    .versus__left, .versus__right {
-        position: absolute;
+    &-round {
+        padding: 0 10px;
+        background: $mainGradient;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
-    .versus__left {
-        right: 50%;
-    }
-
-    .versus__right {
-        left: 50%;
+    &-side {
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
     }
 }
 
 .stats-field {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 3px;
+    margin: 3px 0;
 
     & > *:not(:last-child) {
         margin-right: 5px;
+    }
+
+    .tag {
+        border-radius: $borderRadius;
+        background-color: $colorSecondaryDarker;
+        font-size: 12px;
+
+        &.is-negative {
+            background-color: $red;
+        }
+
+        &.is-positive {
+            background-color: $green;
+            color: $colorSecondaryDarker;
+        }
     }
 }
 
@@ -69,7 +97,7 @@ $progressHeight: 15px;
     }
 
     .progress-bar {
-        background-color: darken($colorMainbg, 15%);
+        background-color: darken($colorSecondary, 15%);
         position: relative;
         border-radius: 4px;
         overflow: hidden;
@@ -86,7 +114,7 @@ $progressHeight: 15px;
         position: absolute;
         font-size: 0.9em;
         font-weight: bold;
-        color: $colorMainbg;
+        color: $colorSecondary;
         line-height: $progressHeight;
         padding: 0 6px;
         width: 80px;
@@ -105,7 +133,7 @@ $progressHeight: 15px;
     .progress-difference {
         font-size: 0.8em;
         padding-left: 10px;
-        border-left: 1px dotted darken($colorMainbg, 10%);
+        border-left: 1px dotted darken($colorSecondary, 10%);
         color: darken($colorWhite, 20%);
     }
 
@@ -116,7 +144,7 @@ $progressHeight: 15px;
         margin-left: -1px;
         width: 2px;
         height: $progressHeight;
-        background-color: lighten($colorMainbg, 20%);
+        background-color: lighten($colorSecondary, 20%);
     }
 
     .progress-name {
@@ -160,7 +188,7 @@ $progressHeight: 15px;
         }
 
         .neutral {
-            color: darken($colorMainbg, 10%);
+            color: darken($colorSecondary, 10%);
         }
 
         .negative {
